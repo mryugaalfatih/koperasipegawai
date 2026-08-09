@@ -16,6 +16,11 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createSavingsAccount, postSavingsTransaction } from "./actions";
 import { createClient } from "@/lib/supabase/server";
+import { DashboardNavigation } from "@/components/DashboardNavigation";
+import { navItems, mobileNavItems } from "@/lib/dashboardNavigation";
+import { CurrencyInput } from "@/components/CurrencyInput";
+import { SubmitButton } from "@/components/SubmitButton";
+import { ToastNotification } from "@/components/ToastNotification";
 
 type SimpananPageProps = {
   searchParams: Promise<{
@@ -130,7 +135,10 @@ export default async function SimpananPage({ searchParams }: SimpananPageProps) 
 
   return (
     <main className="min-h-screen bg-[#f4f7fb] text-[#0b1220]">
-      <header className="sticky top-0 z-20 border-b border-[#dbe5f1] bg-[#f8fbff]/95 px-4 py-3 backdrop-blur md:px-7">
+      <div className="lg:grid lg:min-h-screen lg:grid-cols-[280px_1fr]">
+        <DashboardNavigation navItems={navItems} mobileNavItems={mobileNavItems} />
+        <section className="min-w-0 pb-24 lg:pb-0">
+          <header className="sticky top-0 z-20 border-b border-[#dbe5f1] bg-[#f8fbff]/95 px-4 py-3 backdrop-blur md:px-7">
         <div className="mx-auto flex max-w-[1500px] items-center justify-between gap-3">
           <div className="flex min-w-0 items-center gap-3">
             <Link className="grid size-10 place-items-center rounded-2xl border border-[#dbe5f1] bg-white" href="/home">
@@ -138,10 +146,10 @@ export default async function SimpananPage({ searchParams }: SimpananPageProps) 
             </Link>
             <div>
               <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#2563eb]">Modul simpanan</p>
-              <h1 className="text-xl font-black md:text-2xl">Rekening dan transaksi simpanan</h1>
+              <h1 className="text-lg font-bold md:text-xl text-[#0b1220]">Rekening dan transaksi simpanan</h1>
             </div>
           </div>
-          <Link className="hidden h-10 items-center rounded-2xl bg-[#0b1220] px-4 text-sm font-black text-white md:inline-flex" href="/konfigurasi#simpanan">
+          <Link className="hidden h-10 items-center rounded-2xl bg-[#0b1220] px-4 text-sm font-bold text-white md:inline-flex" href="/konfigurasi#simpanan">
             Produk simpanan
           </Link>
         </div>
@@ -152,13 +160,13 @@ export default async function SimpananPage({ searchParams }: SimpananPageProps) 
           <section className="rounded-[28px] bg-[#07152f] p-5 text-white shadow-sm md:p-6">
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div>
-                <p className="text-sm font-bold text-[#bfdbfe]">Simpanan anggota</p>
-                <h2 className="mt-2 text-3xl font-black">Kelola setoran, penarikan, dan saldo</h2>
-                <p className="mt-3 max-w-3xl text-sm font-semibold leading-6 text-[#cbd5e1]">
+                <p className="text-xs font-bold uppercase tracking-wider text-[#bfdbfe]">Simpanan anggota</p>
+                <h2 className="mt-1.5 text-xl font-bold md:text-2xl">Kelola setoran, penarikan, dan saldo</h2>
+                <p className="mt-2 max-w-3xl text-sm font-medium leading-relaxed text-[#cbd5e1]">
                   Simpanan pokok, wajib, dan sukarela menjadi dasar saldo anggota dan perhitungan SHU.
                 </p>
               </div>
-              <PiggyBank className="size-9 text-[#93c5fd]" />
+              <PiggyBank className="size-8 text-[#93c5fd]" />
             </div>
           </section>
 
@@ -170,9 +178,9 @@ export default async function SimpananPage({ searchParams }: SimpananPageProps) 
               { label: "Simpanan sukarela", value: totals.sukarela, icon: Banknote },
             ].map((item) => (
               <article className="rounded-3xl bg-white p-5 shadow-sm ring-1 ring-[#dbe5f1]" key={item.label}>
-                <item.icon className="size-6 text-[#2563eb]" />
-                <p className="mt-4 text-sm font-bold text-[#64748b]">{item.label}</p>
-                <p className="mt-1 text-xl font-black">{currency.format(item.value)}</p>
+                <item.icon className="size-5 text-[#2563eb]" />
+                <p className="mt-3 text-xs font-bold text-[#64748b]">{item.label}</p>
+                <p className="mt-1 text-lg font-bold text-[#0b1220]">{currency.format(item.value)}</p>
               </article>
             ))}
           </div>
@@ -180,9 +188,10 @@ export default async function SimpananPage({ searchParams }: SimpananPageProps) 
           <section className="rounded-[28px] bg-white p-4 shadow-sm ring-1 ring-[#dbe5f1] md:p-5">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
-                <p className="text-sm font-bold text-[#64748b]">Rekening simpanan</p>
-                <h2 className="text-2xl font-black">Daftar rekening</h2>
+                <p className="text-xs font-bold uppercase tracking-wider text-[#64748b]">Rekening simpanan</p>
+                <h2 className="text-lg font-bold text-[#0b1220]">Daftar rekening</h2>
               </div>
+
               <div className="flex h-11 items-center gap-2 rounded-2xl bg-[#f4f7fb] px-4">
                 <Search className="size-4 text-[#64748b]" />
                 <span className="text-sm font-semibold text-[#64748b]">Pencarian segera ditambahkan</span>
@@ -295,11 +304,11 @@ export default async function SimpananPage({ searchParams }: SimpananPageProps) 
               </label>
               <label className="block">
                 <span className="text-sm font-black">Saldo awal</span>
-                <input className="mt-2 h-12 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 text-sm font-bold outline-none" name="opening_balance" placeholder="0" type="number" />
+                <CurrencyInput name="opening_balance" placeholder="0" />
               </label>
-              <button className="h-12 w-full rounded-2xl bg-[#2563eb] text-sm font-black text-white" type="submit">
+              <SubmitButton className="h-12 w-full rounded-2xl bg-[#2563eb] text-sm font-black text-white hover:bg-[#1d4ed8]">
                 Simpan rekening
-              </button>
+              </SubmitButton>
             </form>
           </section>
 
@@ -332,7 +341,7 @@ export default async function SimpananPage({ searchParams }: SimpananPageProps) 
               </label>
               <label className="block">
                 <span className="text-sm font-black">Nominal</span>
-                <input className="mt-2 h-12 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 text-sm font-bold outline-none" name="amount" placeholder="0" required type="number" />
+                <CurrencyInput name="amount" placeholder="0" required />
               </label>
               <label className="block">
                 <span className="text-sm font-black">Tanggal</span>
@@ -346,13 +355,18 @@ export default async function SimpananPage({ searchParams }: SimpananPageProps) 
                 <span className="text-sm font-black">Keterangan</span>
                 <textarea className="mt-2 min-h-20 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 py-3 text-sm font-bold outline-none" name="description" placeholder="Keterangan transaksi" />
               </label>
-              <button className="h-12 w-full rounded-2xl bg-[#0b1220] text-sm font-black text-white" type="submit">
+              <SubmitButton className="h-12 w-full rounded-2xl bg-[#0b1220] text-sm font-black text-white hover:bg-slate-800">
                 Posting transaksi
-              </button>
+              </SubmitButton>
             </form>
           </section>
         </aside>
       </div>
+    </section>
+    </div>
+    <ToastNotification error={params.error} saved={params.saved} />
     </main>
   );
 }
+
+

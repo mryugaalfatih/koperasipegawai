@@ -203,6 +203,50 @@ export async function disburseLoan(loanId: string) {
     redirect(`/pinjaman?error=${encodeURIComponent(error.message)}`);
   }
 
+  // Automatic Journal Creation for Loan Disbursement
+  try {
+    const { data: memberData } = await supabase
+      .from("loans")
+      .select("members(branch_id)")
+      .eq("id", loanId)
+      .single();
+
+    const branchId = (memberData?.members as unknown as { branch_id: string } | null)?.branch_id;
+
+    if (branchId) {
+      const [{ data: cashAccount }, { data: receivableAccount }] = await Promise.all([
+        supabase.from("accounts").select("id").eq("code", "1001").single(),
+        supabase.from("accounts").select("id").eq("code", "1101").single(),
+      ]);
+
+      if (cashAccount && receivableAccount) {
+        const entryNo = `KK-PINJ-${Date.now().toString().slice(-8)}`;
+        const { data: journal } = await supabase
+          .from("journal_entries")
+          .insert({
+            branch_id: branchId,
+            entry_no: entryNo,
+            entry_date: new Date().toISOString().slice(0, 10),
+            memo: `Pencairan Pinjaman (${principal.toLocaleString('id-ID')})`,
+            source_type: "loans",
+            source_id: loanId,
+            created_by: profileId,
+          })
+          .select("id")
+          .single();
+
+        if (journal) {
+          await supabase.from("journal_lines").insert([
+            { journal_entry_id: journal.id, account_id: receivableAccount.id, debit: principal, credit: 0 },
+            { journal_entry_id: journal.id, account_id: cashAccount.id, debit: 0, credit: principal },
+          ]);
+        }
+      }
+    }
+  } catch (err) {
+    console.error("Auto journal error on disbursement:", err);
+  }
+
   await writeAuditLog(supabase, profileId, "loan.disbursed", "loans", loanId, {
     principal,
     tenor_months: tenor,
@@ -211,6 +255,9 @@ export async function disburseLoan(loanId: string) {
 
   revalidatePath("/pinjaman");
   revalidatePath(`/pinjaman/${loanId}`);
+  revalidatePath("/kas-jurnal");
+  revalidatePath("/laporan");
   revalidatePath("/audit");
   redirect("/pinjaman?saved=disbursed");
 }
+

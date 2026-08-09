@@ -88,7 +88,67 @@ export async function postInstallmentPayment(loanId: string, formData: FormData)
     redirect(`/pinjaman/${loanId}?error=${encodeURIComponent(installmentError.message)}`);
   }
 
+  // Automatic Journal Creation for Installment Payment
+  try {
+    const { data: memberData } = await supabase
+      .from("loans")
+      .select("members(branch_id)")
+      .eq("id", loanId)
+      .single();
+
+    const branchId = (memberData?.members as unknown as { branch_id: string } | null)?.branch_id;
+
+    if (branchId) {
+      const [{ data: cashAccount }, { data: receivableAccount }, { data: interestAccount }, { data: penaltyAccount }] = await Promise.all([
+        supabase.from("accounts").select("id").eq("code", "1001").single(),
+        supabase.from("accounts").select("id").eq("code", "1101").single(),
+        supabase.from("accounts").select("id").eq("code", "4101").single(),
+        supabase.from("accounts").select("id").eq("code", "4103").single(),
+      ]);
+
+      if (cashAccount && receivableAccount) {
+        const entryNo = `KM-ANGS-${Date.now().toString().slice(-8)}`;
+        const { data: journal } = await supabase
+          .from("journal_entries")
+          .insert({
+            branch_id: branchId,
+            entry_no: entryNo,
+            entry_date: clean(formData.get("payment_date")) ?? new Date().toISOString().slice(0, 10),
+            memo: `Pembayaran Angsuran Pinjaman (Pokok: ${principalPaid.toLocaleString('id-ID')}, Bunga: ${interestPaid.toLocaleString('id-ID')})`,
+            source_type: "loan_payments",
+            source_id: loanId,
+            created_by: profileId,
+          })
+          .select("id")
+          .single();
+
+        if (journal) {
+          const lines = [
+            { journal_entry_id: journal.id, account_id: cashAccount.id, debit: totalPaid, credit: 0 },
+          ];
+
+          if (principalPaid > 0) {
+            lines.push({ journal_entry_id: journal.id, account_id: receivableAccount.id, debit: 0, credit: principalPaid });
+          }
+          if (interestPaid > 0 && interestAccount) {
+            lines.push({ journal_entry_id: journal.id, account_id: interestAccount.id, debit: 0, credit: interestPaid });
+          }
+          if (penaltyPaid > 0 && penaltyAccount) {
+            lines.push({ journal_entry_id: journal.id, account_id: penaltyAccount.id, debit: 0, credit: penaltyPaid });
+          }
+
+          await supabase.from("journal_lines").insert(lines);
+        }
+      }
+    }
+  } catch (err) {
+    console.error("Auto journal error on installment payment:", err);
+  }
+
   revalidatePath("/pinjaman");
   revalidatePath(`/pinjaman/${loanId}`);
+  revalidatePath("/kas-jurnal");
+  revalidatePath("/laporan");
   redirect(`/pinjaman/${loanId}?paid=1`);
 }
+

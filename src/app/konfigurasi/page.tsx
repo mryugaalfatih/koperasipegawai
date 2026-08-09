@@ -19,6 +19,8 @@ import {
   saveCooperativeProfile,
 } from "./actions";
 import { createClient } from "@/lib/supabase/server";
+import { DashboardNavigation } from "@/components/DashboardNavigation";
+import { navItems, mobileNavItems } from "@/lib/dashboardNavigation";
 
 type KonfigurasiPageProps = {
   searchParams: Promise<{
@@ -135,7 +137,10 @@ export default async function KonfigurasiPage({ searchParams }: KonfigurasiPageP
 
   return (
     <main className="min-h-screen bg-[#f4f7fb] text-[#0b1220]">
-      <header className="sticky top-0 z-20 border-b border-[#dbe5f1] bg-[#f8fbff]/95 px-4 py-3 backdrop-blur md:px-7">
+      <div className="lg:grid lg:min-h-screen lg:grid-cols-[280px_1fr]">
+        <DashboardNavigation navItems={navItems} mobileNavItems={mobileNavItems} />
+        <section className="min-w-0 pb-24 lg:pb-0">
+          <header className="sticky top-0 z-20 border-b border-[#dbe5f1] bg-[#f8fbff]/95 px-4 py-3 backdrop-blur md:px-7">
         <div className="mx-auto flex max-w-[1500px] items-center justify-between gap-3">
           <div className="flex min-w-0 items-center gap-3">
             <Link className="grid size-10 place-items-center rounded-2xl border border-[#dbe5f1] bg-white" href="/home">
@@ -365,6 +370,8 @@ export default async function KonfigurasiPage({ searchParams }: KonfigurasiPageP
           </div>
         </section>
       </div>
+    </section>
+    </div>
     </main>
   );
 }

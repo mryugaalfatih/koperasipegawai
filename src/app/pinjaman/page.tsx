@@ -13,6 +13,11 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { approveLoan, createLoan, disburseLoan } from "./actions";
 import { createClient } from "@/lib/supabase/server";
+import { DashboardNavigation } from "@/components/DashboardNavigation";
+import { navItems, mobileNavItems } from "@/lib/dashboardNavigation";
+import { CurrencyInput } from "@/components/CurrencyInput";
+import { SubmitButton } from "@/components/SubmitButton";
+import { ToastNotification } from "@/components/ToastNotification";
 
 type PinjamanPageProps = {
   searchParams: Promise<{
@@ -113,7 +118,10 @@ export default async function PinjamanPage({ searchParams }: PinjamanPageProps) 
 
   return (
     <main className="min-h-screen bg-[#f4f7fb] text-[#0b1220]">
-      <header className="sticky top-0 z-20 border-b border-[#dbe5f1] bg-[#f8fbff]/95 px-4 py-3 backdrop-blur md:px-7">
+      <div className="lg:grid lg:min-h-screen lg:grid-cols-[280px_1fr]">
+        <DashboardNavigation navItems={navItems} mobileNavItems={mobileNavItems} />
+        <section className="min-w-0 pb-24 lg:pb-0">
+          <header className="sticky top-0 z-20 border-b border-[#dbe5f1] bg-[#f8fbff]/95 px-4 py-3 backdrop-blur md:px-7">
         <div className="mx-auto flex max-w-[1500px] items-center justify-between gap-3">
           <div className="flex min-w-0 items-center gap-3">
             <Link className="grid size-10 place-items-center rounded-2xl border border-[#dbe5f1] bg-white" href="/home">
@@ -135,13 +143,13 @@ export default async function PinjamanPage({ searchParams }: PinjamanPageProps) 
           <section className="rounded-[28px] bg-[#07152f] p-5 text-white shadow-sm md:p-6">
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div>
-                <p className="text-sm font-bold text-[#bfdbfe]">Pinjaman anggota</p>
-                <h2 className="mt-2 text-3xl font-black">Flat dan anuitas dalam satu workflow</h2>
-                <p className="mt-3 max-w-3xl text-sm font-semibold leading-6 text-[#cbd5e1]">
+                <p className="text-xs font-bold uppercase tracking-wider text-[#bfdbfe]">Pinjaman anggota</p>
+                <h2 className="mt-1.5 text-xl font-bold md:text-2xl">Flat dan anuitas dalam satu workflow</h2>
+                <p className="mt-2 max-w-3xl text-sm font-medium leading-relaxed text-[#cbd5e1]">
                   Produk pinjaman menentukan metode default. Pengajuan menyimpan metode final agar jadwal angsuran konsisten.
                 </p>
               </div>
-              <CreditCard className="size-9 text-[#93c5fd]" />
+              <CreditCard className="size-8 text-[#93c5fd]" />
             </div>
           </section>
 
@@ -153,18 +161,19 @@ export default async function PinjamanPage({ searchParams }: PinjamanPageProps) 
               { label: "Dicairkan", value: String(loanRows.filter((loan) => loan.status === "disbursed").length), icon: BadgeCheck },
             ].map((item) => (
               <article className="rounded-3xl bg-white p-5 shadow-sm ring-1 ring-[#dbe5f1]" key={item.label}>
-                <item.icon className="size-6 text-[#2563eb]" />
-                <p className="mt-4 text-sm font-bold text-[#64748b]">{item.label}</p>
-                <p className="mt-1 text-xl font-black">{item.value}</p>
+                <item.icon className="size-5 text-[#2563eb]" />
+                <p className="mt-3 text-xs font-bold text-[#64748b]">{item.label}</p>
+                <p className="mt-1 text-lg font-bold text-[#0b1220]">{item.value}</p>
               </article>
             ))}
           </div>
 
           <section className="rounded-[28px] bg-white p-4 shadow-sm ring-1 ring-[#dbe5f1] md:p-5">
             <div>
-              <p className="text-sm font-bold text-[#64748b]">Daftar pinjaman</p>
-              <h2 className="text-2xl font-black">Pengajuan terbaru</h2>
+              <p className="text-xs font-bold uppercase tracking-wider text-[#64748b]">Daftar pinjaman</p>
+              <h2 className="text-lg font-bold text-[#0b1220]">Pengajuan terbaru</h2>
             </div>
+
             <div className="mt-5 overflow-hidden rounded-3xl border border-[#dbe5f1]">
               {loanRows.length ? (
                 loanRows.map((loan) => {
@@ -257,7 +266,7 @@ export default async function PinjamanPage({ searchParams }: PinjamanPageProps) 
               <div className="grid gap-3 sm:grid-cols-2">
                 <label className="block">
                   <span className="text-sm font-black">Plafon</span>
-                  <input className="mt-2 h-12 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 text-sm font-bold outline-none" name="principal" placeholder="0" required type="number" />
+                  <CurrencyInput name="principal" placeholder="0" required />
                 </label>
                 <label className="block">
                   <span className="text-sm font-black">Tenor bulan</span>
@@ -277,9 +286,9 @@ export default async function PinjamanPage({ searchParams }: PinjamanPageProps) 
                   </select>
                 </label>
               </div>
-              <button className="h-12 w-full rounded-2xl bg-[#2563eb] text-sm font-black text-white" type="submit">
+              <SubmitButton className="h-12 w-full rounded-2xl bg-[#2563eb] text-sm font-black text-white hover:bg-[#1d4ed8]">
                 Simpan pengajuan
-              </button>
+              </SubmitButton>
             </form>
           </section>
 
@@ -293,6 +302,11 @@ export default async function PinjamanPage({ searchParams }: PinjamanPageProps) 
           </section>
         </aside>
       </div>
+    </section>
+    </div>
+    <ToastNotification error={params.error} saved={params.saved} />
     </main>
   );
 }
+
+

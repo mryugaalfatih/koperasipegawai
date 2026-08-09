@@ -27,30 +27,30 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
     <main className="grid min-h-screen bg-[#f4f7fb] text-[#0b1220] lg:grid-cols-[1fr_0.95fr]">
       <section className="hidden bg-[#07152f] p-10 text-white lg:flex lg:flex-col lg:justify-between">
         <Link className="flex items-center gap-3" href="/">
-          <div className="grid size-11 place-items-center rounded-2xl bg-[#2563eb]">
-            <Building2 className="size-6" />
+          <div className="grid size-10 place-items-center rounded-2xl bg-[#2563eb]">
+            <Building2 className="size-5" />
           </div>
           <div>
-            <p className="text-xs font-black uppercase tracking-[0.18em] text-[#bfdbfe]">KoperasiPro</p>
-            <h1 className="text-xl font-black">Dashboard Admin</h1>
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#bfdbfe]">KoperasiPro</p>
+            <h1 className="text-base font-bold">Dashboard Admin</h1>
           </div>
         </Link>
 
         <div>
-          <p className="text-sm font-black text-[#93c5fd]">Akses pengguna</p>
-          <h2 className="mt-4 max-w-xl text-5xl font-black leading-tight">
+          <p className="text-xs font-bold uppercase tracking-wider text-[#93c5fd]">Akses Pengguna</p>
+          <h2 className="mt-3 max-w-xl text-3xl font-bold leading-tight">
             Masuk untuk mengelola data koperasi dengan akses berbasis role.
           </h2>
-          <p className="mt-5 max-w-lg text-base font-semibold leading-8 text-[#cbd5e1]">
-            Setiap user masuk dengan akun yang sama, lalu sistem menyesuaikan hak akses berdasarkan role dan cabang.
+          <p className="mt-3 max-w-lg text-sm font-medium leading-relaxed text-[#cbd5e1]">
+            Satu portal aman untuk Super Admin, Pengurus, Bendahara, Teller, dan Auditor sesuai cabang masing-masing.
           </p>
         </div>
 
-        <div className="grid gap-3">
-          {["Satu login untuk semua role", "Akses sesuai cabang", "Keamanan data dengan RLS"].map((item) => (
-            <div className="flex items-center gap-3 rounded-2xl bg-white/8 p-4" key={item}>
-              <ShieldCheck className="size-5 text-[#93c5fd]" />
-              <span className="font-bold">{item}</span>
+        <div className="grid gap-2.5">
+          {["Satu portal terpadu semua role", "Isolasi data cabang & RLS", "Keamanan transaksi ter-audit"].map((item) => (
+            <div className="flex items-center gap-3 rounded-2xl bg-white/8 p-3.5 text-xs font-semibold" key={item}>
+              <ShieldCheck className="size-4 text-[#93c5fd] shrink-0" />
+              <span>{item}</span>
             </div>
           ))}
         </div>
@@ -58,27 +58,27 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
 
       <section className="flex items-center justify-center px-4 py-8">
         <div className="w-full max-w-md">
-          <Link className="mb-8 flex items-center gap-3 lg:hidden" href="/">
-            <div className="grid size-11 place-items-center rounded-2xl bg-[#2563eb] text-white">
-              <Building2 className="size-6" />
+          <Link className="mb-6 flex items-center gap-3 lg:hidden" href="/">
+            <div className="grid size-10 place-items-center rounded-2xl bg-[#2563eb] text-white">
+              <Building2 className="size-5" />
             </div>
             <div>
-              <p className="text-xs font-black uppercase tracking-[0.18em] text-[#2563eb]">KoperasiPro</p>
-              <h1 className="text-xl font-black">Dashboard Admin</h1>
+              <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#2563eb]">KoperasiPro</p>
+              <h1 className="text-base font-bold">Dashboard Admin</h1>
             </div>
           </Link>
 
-          <div className="rounded-[32px] bg-white p-5 shadow-sm ring-1 ring-[#dbe5f1] md:p-7">
+          <div className="rounded-[32px] bg-white p-6 shadow-sm ring-1 ring-[#dbe5f1] md:p-7">
             <div>
-              <p className="text-sm font-black text-[#2563eb]">Login pengguna</p>
-              <h2 className="mt-2 text-3xl font-black">Selamat datang</h2>
-              <p className="mt-2 text-sm font-semibold leading-6 text-[#64748b]">
-                Gunakan email dan password yang terdaftar untuk mengakses dashboard.
+              <p className="text-xs font-bold uppercase tracking-wider text-[#2563eb]">Login Pengguna</p>
+              <h2 className="mt-1 text-2xl font-bold text-[#0b1220]">Selamat Datang</h2>
+              <p className="mt-1 text-xs font-medium text-[#64748b]">
+                Gunakan email dan password yang terdaftar untuk mengakses sistem.
               </p>
             </div>
 
             {params.error ? (
-              <div className="mt-5 rounded-2xl bg-[#fff1f2] p-4 text-sm font-bold text-[#be123c]">
+              <div className="mt-4 rounded-2xl bg-[#fff1f2] p-3.5 text-xs font-bold text-[#be123c]">
                 {params.error}
               </div>
             ) : null}
@@ -86,6 +86,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
             <LoginForm action={signIn} />
           </div>
         </div>
+
       </section>
     </main>
   );
