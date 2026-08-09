@@ -30,8 +30,14 @@ export async function middleware(request: NextRequest) {
     },
   });
 
-  // Refresh session token if needed
-  await supabase.auth.getUser();
+  // Skip heavy Supabase network call on prefetch requests for instant navigation
+  const isPrefetch =
+    request.headers.get("purpose") === "prefetch" ||
+    request.headers.get("x-middleware-prefetch") === "1";
+
+  if (!isPrefetch) {
+    await supabase.auth.getUser();
+  }
 
   return supabaseResponse;
 }
@@ -41,3 +47,4 @@ export const config = {
     "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],
 };
+
