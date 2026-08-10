@@ -11,7 +11,6 @@ type SavingsAccountRow = {
   account_no: string;
   type: "pokok" | "wajib" | "sukarela";
   balance: number;
-  is_active: boolean;
   members: {
     full_name: string;
     member_no: string;
@@ -44,10 +43,15 @@ export default async function LaporanSimpananPage() {
     redirect("/login?error=Profil%20user%20belum%20dibuat.");
   }
 
-  const { data: accounts } = await supabase
+  const { data: accounts, error: accountsError } = await supabase
     .from("savings_accounts")
-    .select("id, account_no, type, balance, is_active, members(full_name, member_no), savings_products(name, code)")
+    .select("id, account_no, type, balance, members(full_name, member_no), savings_products(name, code)")
     .order("created_at", { ascending: false });
+
+  // Log any DB errors to server console for debugging
+  if (accountsError) {
+    console.error("[Laporan Simpanan] Error fetching savings_accounts:", accountsError);
+  }
 
   const accountRows = (accounts ?? []) as unknown as SavingsAccountRow[];
 

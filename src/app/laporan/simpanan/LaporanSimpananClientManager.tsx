@@ -10,7 +10,6 @@ type SavingsAccountRow = {
   account_no: string;
   type: "pokok" | "wajib" | "sukarela";
   balance: number;
-  is_active: boolean;
   members: {
     full_name: string;
     member_no: string;
@@ -26,6 +25,7 @@ type SavingsAccountRow = {
     code: string;
   }[] | null;
 };
+
 
 type LaporanSimpananClientManagerProps = {
   accountRows: SavingsAccountRow[];
