@@ -59,16 +59,6 @@ export default async function AnggotaPage({ searchParams }: AnggotaPageProps) {
     redirect("/login");
   }
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("branch_id, role, full_name")
-    .eq("id", user.id)
-    .single();
-
-  if (!profile) {
-    redirect("/login?error=Profil%20user%20belum%20dibuat.");
-  }
-
   const selectedStatus: MemberStatus | "all" =
     params.status && statusValues.includes(params.status as MemberStatus) ? (params.status as MemberStatus) : "all";
 
@@ -82,12 +72,17 @@ export default async function AnggotaPage({ searchParams }: AnggotaPageProps) {
     membersQuery = membersQuery.eq("status", selectedStatus);
   }
 
-  const [{ data: members }, { count: activeCount }, { count: totalCount }, { data: branches }] = await Promise.all([
+  const [{ data: profile }, { data: members }, { count: activeCount }, { count: totalCount }, { data: branches }] = await Promise.all([
+    supabase.from("profiles").select("branch_id, role, full_name").eq("id", user.id).single(),
     membersQuery,
-    supabase.from("members").select("id", { count: "exact", head: true }).eq("status", "active"),
-    supabase.from("members").select("id", { count: "exact", head: true }),
-    supabase.from("branches").select("id, name, code").order("name"),
+    supabase.from("members").select("*", { count: "exact", head: true }).eq("status", "active"),
+    supabase.from("members").select("*", { count: "exact", head: true }),
+    supabase.from("branches").select("id, code, name").order("name"),
   ]);
+
+  if (!profile) {
+    redirect("/login?error=Profil%20user%20belum%20dibuat.");
+  }
 
   const memberRows = (members ?? []) as unknown as MemberRow[];
   const defaultBranchId = profile.branch_id ?? branches?.[0]?.id ?? "";

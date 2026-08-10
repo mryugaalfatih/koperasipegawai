@@ -70,6 +70,7 @@ export function DashboardNavigation({ navItems, mobileNavItems }: DashboardNavig
                 }`}
                 href={item.href}
                 key={item.label}
+                prefetch={true}
                 aria-current={active ? "page" : undefined}
               >
                 <Icon className="size-5" />
@@ -92,6 +93,7 @@ export function DashboardNavigation({ navItems, mobileNavItems }: DashboardNavig
                 }`}
                 href={item.href}
                 key={item.label}
+                prefetch={true}
                 aria-label={item.label}
                 aria-current={active ? "page" : undefined}
               >
@@ -102,6 +104,7 @@ export function DashboardNavigation({ navItems, mobileNavItems }: DashboardNavig
           })}
         </div>
       </nav>
+
     </>
   );
 }

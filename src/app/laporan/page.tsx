@@ -103,13 +103,8 @@ export default async function LaporanPage({ searchParams }: LaporanPageProps) {
     redirect("/login");
   }
 
-  const { data: profile } = await supabase.from("profiles").select("id").eq("id", user.id).single();
-
-  if (!profile) {
-    redirect("/login?error=Profil%20user%20belum%20dibuat.");
-  }
-
   const [
+    { data: profile },
     { data: profitLoss },
     { data: savingsSummary },
     { data: loanOutstanding },
@@ -117,6 +112,7 @@ export default async function LaporanPage({ searchParams }: LaporanPageProps) {
     { data: shuPeriods },
     { count: memberCount },
   ] = await Promise.all([
+    supabase.from("profiles").select("id").eq("id", user.id).single(),
     supabase.from("v_profit_loss_monthly").select("year, month, total_income, total_expense, net_surplus").order("year", { ascending: false }).order("month", { ascending: false }).limit(12),
     supabase.from("v_member_savings_summary").select("total_simpanan"),
     supabase.from("v_loan_outstanding").select("outstanding_amount, status"),
@@ -128,6 +124,11 @@ export default async function LaporanPage({ searchParams }: LaporanPageProps) {
       .limit(5),
     supabase.from("members").select("id", { count: "exact", head: true }).eq("status", "active"),
   ]);
+
+  if (!profile) {
+    redirect("/login?error=Profil%20user%20belum%20dibuat.");
+  }
+
 
   const profitRows = (profitLoss ?? []) as ProfitLossRow[];
   const savingsRows = (savingsSummary ?? []) as SavingsSummaryRow[];

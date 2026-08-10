@@ -87,13 +87,8 @@ export default async function KasJurnalPage({ searchParams }: KasJurnalPageProps
     redirect("/login");
   }
 
-  const { data: profile } = await supabase.from("profiles").select("id").eq("id", user.id).single();
-
-  if (!profile) {
-    redirect("/login?error=Profil%20user%20belum%20dibuat.");
-  }
-
-  const [{ data: accounts }, { data: cashTransactions }, { data: journalEntries }] = await Promise.all([
+  const [{ data: profile }, { data: accounts }, { data: cashTransactions }, { data: journalEntries }] = await Promise.all([
+    supabase.from("profiles").select("id").eq("id", user.id).single(),
     supabase.from("accounts").select("id, code, name, category").order("code"),
     supabase
       .from("cash_transactions")
@@ -106,6 +101,11 @@ export default async function KasJurnalPage({ searchParams }: KasJurnalPageProps
       .order("created_at", { ascending: false })
       .limit(20),
   ]);
+
+  if (!profile) {
+    redirect("/login?error=Profil%20user%20belum%20dibuat.");
+  }
+
 
   const accountRows = (accounts ?? []) as AccountRow[];
   const cashRows = (cashTransactions ?? []) as CashTransactionRow[];

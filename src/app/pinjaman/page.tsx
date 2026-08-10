@@ -89,13 +89,8 @@ export default async function PinjamanPage({ searchParams }: PinjamanPageProps) 
     redirect("/login");
   }
 
-  const { data: profile } = await supabase.from("profiles").select("id").eq("id", user.id).single();
-
-  if (!profile) {
-    redirect("/login?error=Profil%20user%20belum%20dibuat.");
-  }
-
-  const [{ data: members }, { data: products }, { data: loans }] = await Promise.all([
+  const [{ data: profile }, { data: members }, { data: products }, { data: loans }] = await Promise.all([
+    supabase.from("profiles").select("id").eq("id", user.id).single(),
     supabase.from("members").select("id, member_no, full_name").eq("status", "active").order("full_name").limit(100),
     supabase
       .from("loan_products")
@@ -108,6 +103,11 @@ export default async function PinjamanPage({ searchParams }: PinjamanPageProps) 
       .order("created_at", { ascending: false })
       .limit(50),
   ]);
+
+  if (!profile) {
+    redirect("/login?error=Profil%20user%20belum%20dibuat.");
+  }
+
 
   const memberOptions = (members ?? []) as MemberOption[];
   const productRows = (products ?? []) as LoanProduct[];

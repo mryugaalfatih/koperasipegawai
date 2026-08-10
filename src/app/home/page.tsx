@@ -123,19 +123,10 @@ export default async function Home() {
     redirect("/login");
   }
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("role, full_name")
-    .eq("id", user.id)
-    .single();
-
-  if (!profile) {
-    redirect("/login?error=Profil%20user%20belum%20dibuat.%20Jalankan%20helper%20SQL%20super%20admin.");
-  }
-
   const today = new Date();
   const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().slice(0, 10);
   const [
+    { data: profile },
     { count: activeMemberCount },
     { count: newMemberCount },
     { data: savingsAccounts },
@@ -146,6 +137,7 @@ export default async function Home() {
     { data: loanOutstandingRows },
     { data: shuRules },
   ] = await Promise.all([
+    supabase.from("profiles").select("role, full_name").eq("id", user.id).single(),
     supabase.from("members").select("id", { count: "exact", head: true }).eq("status", "active"),
     supabase.from("members").select("id", { count: "exact", head: true }).gte("joined_at", firstDayOfMonth),
     supabase.from("savings_accounts").select("balance, type"),
@@ -166,6 +158,11 @@ export default async function Home() {
     supabase.from("v_loan_outstanding").select("outstanding_amount, status"),
     supabase.from("shu_allocation_rules").select("component, percent").eq("is_active", true).order("component"),
   ]);
+
+  if (!profile) {
+    redirect("/login?error=Profil%20user%20belum%20dibuat.%20Jalankan%20helper%20SQL%20super%20admin.");
+  }
+
 
   const savingsRows = (savingsAccounts ?? []) as SavingsAccount[];
   const loanRows = (loans ?? []) as LoanRow[];

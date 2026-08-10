@@ -94,18 +94,14 @@ export default async function SimpananPage({ searchParams }: SimpananPageProps) 
     redirect("/login");
   }
 
-  const { data: profile } = await supabase.from("profiles").select("role, full_name").eq("id", user.id).single();
-
-  if (!profile) {
-    redirect("/login?error=Profil%20user%20belum%20dibuat.");
-  }
-
   const [
+    { data: profile },
     { data: members },
     { data: products },
     { data: accounts },
     { data: transactions },
   ] = await Promise.all([
+    supabase.from("profiles").select("role, full_name").eq("id", user.id).single(),
     supabase.from("members").select("id, member_no, full_name").eq("status", "active").order("full_name").limit(100),
     supabase.from("savings_products").select("id, code, name, type").eq("is_active", true).order("code"),
     supabase
@@ -119,6 +115,11 @@ export default async function SimpananPage({ searchParams }: SimpananPageProps) 
       .order("created_at", { ascending: false })
       .limit(12),
   ]);
+
+  if (!profile) {
+    redirect("/login?error=Profil%20user%20belum%20dibuat.");
+  }
+
 
   const memberOptions = (members ?? []) as MemberOption[];
   const productRows = (products ?? []) as SavingsProduct[];
