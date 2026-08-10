@@ -5,6 +5,7 @@ import {
   Calculator,
   ChartNoAxesCombined,
   CircleDollarSign,
+  CreditCard,
   FileBarChart2,
   Landmark,
   PiggyBank,
@@ -28,21 +29,41 @@ type LaporanPageProps = {
   }>;
 };
 
-type ProfitLossRow = {
-  year: number;
-  month: number;
-  total_income: number;
-  total_expense: number;
-  net_surplus: number;
+type SavingsAccount = {
+  id: string;
+  type: "pokok" | "wajib" | "sukarela";
+  balance: number;
 };
 
-type SavingsSummaryRow = {
-  total_simpanan: number;
-};
-
-type LoanOutstandingRow = {
-  outstanding_amount: number;
+type LoanRow = {
+  id: string;
+  principal: number;
   status: string;
+};
+
+type CashTransaction = {
+  id: string;
+  direction: "in" | "out";
+  amount: number;
+  source_type: string;
+  description: string | null;
+  transaction_date: string;
+};
+
+type JournalEntry = {
+  id: string;
+  transaction_date: string;
+  debit: number;
+  credit: number;
+  accounts: {
+    code: string;
+    name: string;
+    category: string;
+  } | {
+    code: string;
+    name: string;
+    category: string;
+  }[] | null;
 };
 
 type ShuAllocationRule = {
@@ -88,7 +109,7 @@ const monthNames = [
 
 const basisLabels: Record<string, string> = {
   manual: "Proses pengurus/manual",
-  savings: "Proporcional simpanan",
+  savings: "Proporsional simpanan",
   loan_interest: "Jasa pinjaman",
 };
 
@@ -103,19 +124,41 @@ export default async function LaporanPage({ searchParams }: LaporanPageProps) {
     redirect("/login");
   }
 
+  // ======================================================================
+  // FETCH ALL DATA FROM THE SAME REAL TABLES USED BY EACH MODULE
+  // ======================================================================
   const [
     { data: profile },
-    { data: profitLoss },
-    { data: savingsSummary },
-    { data: loanOutstanding },
+    { data: savingsAccounts },
+    { data: loans },
+    { data: cashTransactions },
+    { data: journalEntries },
     { data: shuRules },
     { data: shuPeriods },
     { count: memberCount },
   ] = await Promise.all([
     supabase.from("profiles").select("id").eq("id", user.id).single(),
-    supabase.from("v_profit_loss_monthly").select("year, month, total_income, total_expense, net_surplus").order("year", { ascending: false }).order("month", { ascending: false }).limit(12),
-    supabase.from("v_member_savings_summary").select("total_simpanan"),
-    supabase.from("v_loan_outstanding").select("outstanding_amount, status"),
+
+    // Same table as /simpanan/rekening
+    supabase.from("savings_accounts").select("id, type, balance"),
+
+    // Same table as /pinjaman
+    supabase.from("loans").select("id, principal, status"),
+
+    // Same table as /kas
+    supabase
+      .from("cash_transactions")
+      .select("id, direction, amount, source_type, description, transaction_date")
+      .order("transaction_date", { ascending: false })
+      .limit(200),
+
+    // Journal entries for income/expense calculation
+    supabase
+      .from("journal_entries")
+      .select("id, transaction_date, debit, credit, accounts(code, name, category)")
+      .order("transaction_date", { ascending: false })
+      .limit(500),
+
     supabase.from("shu_allocation_rules").select("id, component, percent, basis").eq("is_active", true).order("component"),
     supabase
       .from("shu_periods")
@@ -129,19 +172,64 @@ export default async function LaporanPage({ searchParams }: LaporanPageProps) {
     redirect("/login?error=Profil%20user%20belum%20dibuat.");
   }
 
+  // ======================================================================
+  // COMPUTE SAVINGS TOTALS (same logic as /simpanan/rekening)
+  // ======================================================================
+  const savingsRows = (savingsAccounts ?? []) as SavingsAccount[];
+  const totalSimpananPokok = savingsRows
+    .filter((a) => a.type === "pokok")
+    .reduce((s, a) => s + Number(a.balance ?? 0), 0);
+  const totalSimpananWajib = savingsRows
+    .filter((a) => a.type === "wajib")
+    .reduce((s, a) => s + Number(a.balance ?? 0), 0);
+  const totalSimpananSukarela = savingsRows
+    .filter((a) => a.type === "sukarela")
+    .reduce((s, a) => s + Number(a.balance ?? 0), 0);
+  const totalSavings = totalSimpananPokok + totalSimpananWajib + totalSimpananSukarela;
 
-  const profitRows = (profitLoss ?? []) as ProfitLossRow[];
-  const savingsRows = (savingsSummary ?? []) as SavingsSummaryRow[];
-  const loanRows = (loanOutstanding ?? []) as LoanOutstandingRow[];
+  // ======================================================================
+  // COMPUTE LOAN TOTALS (same logic as /pinjaman)
+  // ======================================================================
+  const loanRows = (loans ?? []) as LoanRow[];
+  const totalOutstanding = loanRows
+    .filter((l) => l.status === "disbursed")
+    .reduce((s, l) => s + Number(l.principal ?? 0), 0);
+  const activeLoans = loanRows.filter((l) => l.status === "disbursed").length;
+
+  // ======================================================================
+  // COMPUTE CASH TOTALS (same logic as /kas)
+  // ======================================================================
+  const cashRows = (cashTransactions ?? []) as CashTransaction[];
+  const totalCashIn = cashRows
+    .filter((c) => c.direction === "in")
+    .reduce((s, c) => s + Number(c.amount ?? 0), 0);
+  const totalCashOut = cashRows
+    .filter((c) => c.direction === "out")
+    .reduce((s, c) => s + Number(c.amount ?? 0), 0);
+  const netCash = totalCashIn - totalCashOut;
+
+  // ======================================================================
+  // COMPUTE INCOME / EXPENSE FROM JOURNAL ENTRIES
+  // ======================================================================
+  const journals = (journalEntries ?? []) as unknown as JournalEntry[];
+  let totalIncome = 0;
+  let totalExpense = 0;
+  journals.forEach((je) => {
+    const accountObj = Array.isArray(je.accounts) ? je.accounts[0] : je.accounts;
+    const category = accountObj?.category ?? "";
+    if (category === "pendapatan" || category === "income" || category === "revenue") {
+      totalIncome += Number(je.credit ?? 0) - Number(je.debit ?? 0);
+    } else if (category === "beban" || category === "expense") {
+      totalExpense += Number(je.debit ?? 0) - Number(je.credit ?? 0);
+    }
+  });
+  const totalSurplus = totalIncome - totalExpense;
+
+  // ======================================================================
+  // SHU DATA
+  // ======================================================================
   const ruleRows = (shuRules ?? []) as ShuAllocationRule[];
   const shuRows = (shuPeriods ?? []) as unknown as ShuPeriod[];
-  const latestProfit = profitRows[0];
-  const totalIncome = profitRows.reduce((sum, row) => sum + Number(row.total_income ?? 0), 0);
-  const totalExpense = profitRows.reduce((sum, row) => sum + Number(row.total_expense ?? 0), 0);
-  const totalSurplus = totalIncome - totalExpense;
-  const totalSavings = savingsRows.reduce((sum, row) => sum + Number(row.total_simpanan ?? 0), 0);
-  const totalOutstanding = loanRows.reduce((sum, row) => sum + Number(row.outstanding_amount ?? 0), 0);
-  const activeLoans = loanRows.filter((row) => row.status === "disbursed").length;
   const latestShu = shuRows[0];
 
   return (
@@ -161,6 +249,20 @@ export default async function LaporanPage({ searchParams }: LaporanPageProps) {
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <Link
+              className="inline-flex h-10 items-center gap-2 rounded-2xl border border-[#dbe5f1] bg-white px-4 text-xs font-bold text-[#0b1220] shadow-sm hover:bg-slate-50 transition-all"
+              href="/laporan/simpanan"
+            >
+              <PiggyBank className="size-4 text-[#2563eb]" />
+              <span>Laporan Simpanan</span>
+            </Link>
+            <Link
+              className="inline-flex h-10 items-center gap-2 rounded-2xl border border-[#dbe5f1] bg-white px-4 text-xs font-bold text-[#0b1220] shadow-sm hover:bg-slate-50 transition-all"
+              href="/laporan/pinjaman"
+            >
+              <CreditCard className="size-4 text-[#2563eb]" />
+              <span>Laporan Pinjaman</span>
+            </Link>
             <PrintReportButton />
             <Link className="hidden h-10 items-center rounded-2xl bg-[#0b1220] px-4 text-sm font-black text-white md:inline-flex" href="/kas-jurnal">
               Buka jurnal
@@ -171,25 +273,27 @@ export default async function LaporanPage({ searchParams }: LaporanPageProps) {
 
       <div className="mx-auto grid max-w-[1500px] gap-5 px-4 py-5 md:px-7 xl:grid-cols-[1fr_420px]">
         <section className="space-y-5">
+          {/* Hero Banner */}
           <section className="rounded-[28px] bg-[#07152f] p-5 text-white shadow-sm md:p-6">
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div>
                 <p className="text-xs font-bold uppercase tracking-wider text-[#bfdbfe]">Laporan manajemen</p>
                 <h2 className="mt-1.5 text-xl font-bold md:text-2xl">Kinerja koperasi siap dipresentasikan</h2>
                 <p className="mt-2 max-w-3xl text-sm font-medium leading-relaxed text-[#cbd5e1]">
-                  Data laporan dibaca dari jurnal, simpanan anggota, dan outstanding pinjaman. SHU bisa disimulasikan dari laba bersih berjalan.
+                  Data laporan dibaca langsung dari tabel simpanan, pinjaman, kas, dan jurnal akuntansi. SHU bisa disimulasikan dari laba bersih berjalan.
                 </p>
               </div>
               <FileBarChart2 className="size-8 text-[#93c5fd]" />
             </div>
           </section>
 
+          {/* Summary KPI Cards */}
           <div className="grid gap-3 md:grid-cols-4">
             {[
-              { label: "Pendapatan 12 bulan", value: currency.format(totalIncome), icon: TrendingUp },
-              { label: "Beban 12 bulan", value: currency.format(totalExpense), icon: TrendingDown },
-              { label: "SHU berjalan", value: currency.format(totalSurplus), icon: CircleDollarSign },
-              { label: "Anggota aktif", value: String(memberCount ?? 0), icon: UsersRound },
+              { label: "Total Simpanan Anggota", value: currency.format(totalSavings), icon: PiggyBank },
+              { label: "Outstanding Pinjaman Aktif", value: currency.format(totalOutstanding), icon: Landmark },
+              { label: "Pendapatan (Jurnal)", value: currency.format(totalIncome), icon: TrendingUp },
+              { label: "Anggota Aktif", value: String(memberCount ?? 0), icon: UsersRound },
             ].map((item) => (
               <article className="rounded-3xl bg-white p-5 shadow-sm ring-1 ring-[#dbe5f1]" key={item.label}>
                 <item.icon className="size-5 text-[#2563eb]" />
@@ -199,53 +303,46 @@ export default async function LaporanPage({ searchParams }: LaporanPageProps) {
             ))}
           </div>
 
+          {/* Detail Portfolio & P/L section */}
           <section className="grid gap-5 xl:grid-cols-[1fr_0.82fr]">
+            {/* Cash & P/L Card */}
             <div className="rounded-[28px] bg-white p-4 shadow-sm ring-1 ring-[#dbe5f1] md:p-5">
               <div>
-                <p className="text-xs font-bold uppercase tracking-wider text-[#64748b]">Laba rugi</p>
-                <h2 className="text-lg font-bold text-[#0b1220]">Per bulan</h2>
+                <p className="text-xs font-bold uppercase tracking-wider text-[#64748b]">Kas & Laba Rugi</p>
+                <h2 className="text-lg font-bold text-[#0b1220]">Ringkasan Arus Kas & Pendapatan</h2>
               </div>
 
               <div className="mt-5 overflow-hidden rounded-3xl border border-[#dbe5f1]">
-                {profitRows.length ? (
-                  profitRows.map((row) => (
-                    <div className="grid gap-3 border-b border-[#dbe5f1] p-4 last:border-b-0 md:grid-cols-[1fr_auto]" key={`${row.year}-${row.month}`}>
-                      <div className="flex items-center gap-3">
-                        <div className="grid size-11 place-items-center rounded-2xl bg-[#eaf2ff] text-[#2563eb]">
-                          <ChartNoAxesCombined className="size-5" />
-                        </div>
-                        <div>
-                          <p className="font-black">{monthNames[row.month - 1]} {row.year}</p>
-                          <p className="mt-1 text-sm font-semibold text-[#64748b]">
-                            Pendapatan {currency.format(Number(row.total_income ?? 0))} | Beban {currency.format(Number(row.total_expense ?? 0))}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="text-left md:text-right">
-                        <p className="font-black text-[#2563eb]">{currency.format(Number(row.net_surplus ?? 0))}</p>
-                        <p className="mt-1 text-xs font-black text-[#64748b]">Surplus bersih</p>
-                      </div>
+                <div className="divide-y divide-[#dbe5f1]">
+                  {[
+                    { label: "Kas Masuk", value: currency.format(totalCashIn), color: "text-emerald-600" },
+                    { label: "Kas Keluar", value: currency.format(totalCashOut), color: "text-rose-600" },
+                    { label: "Saldo Kas Bersih", value: currency.format(netCash), color: "text-[#2563eb]" },
+                    { label: "Pendapatan (Jurnal)", value: currency.format(totalIncome), color: "text-emerald-600" },
+                    { label: "Beban (Jurnal)", value: currency.format(totalExpense), color: "text-rose-600" },
+                    { label: "Surplus / SHU Berjalan", value: currency.format(totalSurplus), color: "text-[#2563eb]" },
+                  ].map((item) => (
+                    <div className="flex items-center justify-between gap-3 p-4" key={item.label}>
+                      <p className="text-sm font-black text-[#0b1220]">{item.label}</p>
+                      <p className={`text-sm font-black ${item.color}`}>{item.value}</p>
                     </div>
-                  ))
-                ) : (
-                  <div className="p-8 text-center">
-                    <BookOpenCheck className="mx-auto size-10 text-[#94a3b8]" />
-                    <p className="mt-3 font-black">Belum ada laba rugi</p>
-                    <p className="mt-1 text-sm font-semibold text-[#64748b]">Posting jurnal pendapatan atau beban di modul Kas & Jurnal.</p>
-                  </div>
-                )}
+                  ))}
+                </div>
               </div>
             </div>
 
+            {/* Portfolio Summary Card */}
             <div className="rounded-[28px] bg-white p-5 shadow-sm ring-1 ring-[#dbe5f1] md:p-6">
               <p className="text-sm font-bold text-[#64748b]">Posisi portofolio</p>
               <h2 className="text-2xl font-black">Ringkasan neraca kerja</h2>
               <div className="mt-5 space-y-3">
                 {[
-                  { label: "Total simpanan anggota", value: currency.format(totalSavings), icon: PiggyBank },
-                  { label: "Outstanding pinjaman", value: currency.format(totalOutstanding), icon: Landmark },
-                  { label: "Pinjaman aktif", value: String(activeLoans), icon: ReceiptText },
-                  { label: "Periode terakhir", value: latestProfit ? `${monthNames[latestProfit.month - 1]} ${latestProfit.year}` : "-", icon: Calculator },
+                  { label: "Simpanan Pokok", value: currency.format(totalSimpananPokok), icon: PiggyBank },
+                  { label: "Simpanan Wajib", value: currency.format(totalSimpananWajib), icon: PiggyBank },
+                  { label: "Simpanan Sukarela", value: currency.format(totalSimpananSukarela), icon: PiggyBank },
+                  { label: "Total Simpanan", value: currency.format(totalSavings), icon: Landmark },
+                  { label: "Outstanding Pinjaman", value: currency.format(totalOutstanding), icon: CreditCard },
+                  { label: "Pinjaman Aktif", value: `${activeLoans} Berkas`, icon: ReceiptText },
                 ].map((item) => (
                   <div className="flex items-center justify-between gap-4 rounded-2xl bg-[#f4f7fb] p-4" key={item.label}>
                     <div className="flex items-center gap-3">
@@ -259,6 +356,7 @@ export default async function LaporanPage({ searchParams }: LaporanPageProps) {
             </div>
           </section>
 
+          {/* SHU Section */}
           <section className="rounded-[28px] bg-white p-4 shadow-sm ring-1 ring-[#dbe5f1] md:p-5" id="shu">
             <div>
               <p className="text-sm font-bold text-[#64748b]">SHU</p>
@@ -295,6 +393,7 @@ export default async function LaporanPage({ searchParams }: LaporanPageProps) {
           </section>
         </section>
 
+        {/* Sidebar */}
         <aside className="space-y-5 xl:sticky xl:top-24 xl:self-start">
           {params.error ? (
             <div className="rounded-2xl bg-[#fff1f2] p-4 text-sm font-bold text-[#be123c]">{params.error}</div>
@@ -360,4 +459,3 @@ export default async function LaporanPage({ searchParams }: LaporanPageProps) {
     </main>
   );
 }
-

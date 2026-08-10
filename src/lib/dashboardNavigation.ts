@@ -21,7 +21,17 @@ export const unitNavItems: Record<string, NavItem[]> = {
     { label: "Pinjaman", icon: "Pinjaman", href: "/pinjaman" },
     { label: "Keuangan", icon: "Kas", href: "/kas" },
     { label: "Akuntansi", icon: "Akuntansi", href: "/akuntansi" },
-    { label: "Laporan", icon: "Laporan", href: "/laporan" },
+    {
+      label: "Laporan",
+      icon: "Laporan",
+      href: "/laporan",
+      children: [
+        { label: "Laba Rugi & Neraca", icon: "Laporan", href: "/laporan" },
+        { label: "Laporan Simpanan", icon: "Simpanan", href: "/laporan/simpanan" },
+        { label: "Laporan Pinjaman", icon: "Pinjaman", href: "/laporan/pinjaman" },
+      ],
+    },
+
     { label: "User", icon: "User", href: "/users" },
     {
       label: "Setup",
