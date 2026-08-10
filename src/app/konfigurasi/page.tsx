@@ -221,56 +221,74 @@ export default async function KonfigurasiPage({ searchParams }: KonfigurasiPageP
           </div>
 
           <div className="space-y-5">
-            <div className="rounded-[28px] bg-white p-5 shadow-sm ring-1 ring-[#dbe5f1] md:p-6" id="cabang">
+            <div className="rounded-[28px] bg-white p-5 shadow-sm ring-1 ring-[#dbe5f1] md:p-6" id="unit-usaha">
               <div className="flex items-center gap-3">
-                <Building2 className="size-6 text-[#2563eb]" />
-                <h2 className="text-2xl font-black">Cabang</h2>
+                <div className="grid size-10 place-items-center rounded-2xl bg-[#eaf2ff] text-[#2563eb]">
+                  <Building2 className="size-5" />
+                </div>
+                <div>
+                  <h2 className="text-lg font-bold text-[#0b1220]">Unit Usaha Koperasi</h2>
+                  <p className="text-xs font-semibold text-[#64748b]">Pengelolaan devisi & sektor bisnis terpisah</p>
+                </div>
               </div>
-              <form action={createBranch} className="mt-5 grid gap-3">
-                <input className="h-12 rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 text-sm font-bold outline-none" name="code" placeholder="Kode cabang" required />
-                <input className="h-12 rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 text-sm font-bold outline-none" name="name" placeholder="Nama cabang" required />
-                <input className="h-12 rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 text-sm font-bold outline-none" name="address" placeholder="Alamat cabang" />
-                <button className="h-11 rounded-2xl bg-[#0b1220] text-sm font-black text-white" type="submit">Tambah cabang</button>
-              </form>
-              <div className="mt-5 space-y-2">
-                {branchRows.map((branch) => (
-                  <div className="rounded-2xl bg-[#f4f7fb] p-4" key={branch.id}>
-                    <p className="font-black">{branch.code} · {branch.name}</p>
-                    <p className="mt-1 text-sm font-semibold text-[#64748b]">{branch.address ?? "Alamat belum diisi"}</p>
+              <div className="mt-4 space-y-2.5">
+                <div className="flex items-center justify-between gap-3 rounded-2xl bg-[#eff6ff] p-4 ring-1 ring-[#bfdbfe]">
+                  <div>
+                    <span className="font-bold text-sm text-[#1e40af]">Unit Simpan Pinjam (USP)</span>
+                    <p className="text-xs font-semibold text-[#3b82f6]">Pengelolaan simpanan, pinjaman, & angsuran anggota</p>
                   </div>
-                ))}
+                  <span className="shrink-0 rounded-full bg-[#2563eb] px-3 py-1 text-xs font-bold text-white shadow-sm">
+                    Aktif (Sistem Ini)
+                  </span>
+                </div>
+                <div className="flex items-center justify-between gap-3 rounded-2xl bg-[#f8fbff] p-4 border border-[#dbe5f1]">
+                  <div>
+                    <span className="font-bold text-sm text-[#0b1220]">Unit Toko / Waserda</span>
+                    <p className="text-xs font-semibold text-[#64748b]">Penjualan barang, kasir POS, & inventaris</p>
+                  </div>
+                  <span className="shrink-0 rounded-full bg-[#f1f5f9] px-3 py-1 text-xs font-bold text-[#64748b]">
+                    Siap Diaktifkan
+                  </span>
+                </div>
+                <div className="flex items-center justify-between gap-3 rounded-2xl bg-[#f8fbff] p-4 border border-[#dbe5f1]">
+                  <div>
+                    <span className="font-bold text-sm text-[#0b1220]">Unit Jasa & Penyewaan</span>
+                    <p className="text-xs font-semibold text-[#64748b]">Penyewaan aset & jasa umum koperasi</p>
+                  </div>
+                  <span className="shrink-0 rounded-full bg-[#f1f5f9] px-3 py-1 text-xs font-bold text-[#64748b]">
+                    Siap Diaktifkan
+                  </span>
+                </div>
               </div>
             </div>
 
             <div className="rounded-[28px] bg-white p-5 shadow-sm ring-1 ring-[#dbe5f1] md:p-6" id="tahun-buku">
+
               <div className="flex items-center gap-3">
-                <CalendarDays className="size-6 text-[#2563eb]" />
-                <h2 className="text-2xl font-black">Tahun buku</h2>
+                <CalendarDays className="size-5 text-[#2563eb]" />
+                <h2 className="text-lg font-bold text-[#0b1220]">Tahun Buku</h2>
               </div>
-              <form action={createFiscalPeriod} className="mt-5 grid gap-3 sm:grid-cols-3">
-                <select className="h-12 rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 text-sm font-bold outline-none" defaultValue={defaultBranchId} name="branch_id">
-                  {branchRows.map((branch) => (
-                    <option key={branch.id} value={branch.id}>{branch.name}</option>
-                  ))}
-                </select>
-                <input className="h-12 rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 text-sm font-bold outline-none" defaultValue={new Date().getFullYear()} name="year" type="number" />
-                <select className="h-12 rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 text-sm font-bold outline-none" defaultValue={1} name="month">
+              <form action={createFiscalPeriod} className="mt-5 grid gap-3 sm:grid-cols-2">
+                <input type="hidden" name="branch_id" value={defaultBranchId} />
+                <input className="h-11 rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 text-xs font-bold outline-none" defaultValue={new Date().getFullYear()} name="year" type="number" />
+                <select className="h-11 rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 text-xs font-bold outline-none" defaultValue={1} name="month">
                   {monthOptions.map((month, index) => (
                     <option key={month} value={index + 1}>{month}</option>
                   ))}
                 </select>
-                <button className="h-11 rounded-2xl bg-[#0b1220] text-sm font-black text-white sm:col-span-3" type="submit">Buka periode</button>
+                <button className="h-10 rounded-2xl bg-[#0b1220] text-xs font-bold text-white sm:col-span-2 shadow-sm hover:bg-slate-800 transition-all" type="submit">Buka Periode</button>
               </form>
-              <div className="mt-5 space-y-2">
+              <div className="mt-4 space-y-2">
                 {fiscalRows.map((period) => (
-                  <div className="flex items-center justify-between rounded-2xl bg-[#f4f7fb] p-4" key={period.id}>
-                    <span className="font-black">{period.branches?.[0]?.name ?? "Cabang"} · {monthOptions[period.month - 1]} {period.year}</span>
-                    <span className="text-sm font-black text-[#2563eb]">{period.status}</span>
+                  <div className="flex items-center justify-between rounded-2xl bg-[#f4f7fb] p-3.5" key={period.id}>
+                    <span className="text-xs font-bold text-[#0b1220]">{monthOptions[period.month - 1]} {period.year}</span>
+                    <span className="text-xs font-bold text-[#2563eb]">{period.status}</span>
                   </div>
                 ))}
               </div>
             </div>
           </div>
+
         </section>
 
         <section className="grid gap-5 xl:grid-cols-2" id="produk">

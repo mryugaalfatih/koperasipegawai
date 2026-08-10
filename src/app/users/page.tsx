@@ -71,15 +71,29 @@ export default async function UsersPage({ searchParams }: UsersPageProps) {
     redirect("/home");
   }
 
-  const [{ data: profiles }, { data: branches }] = await Promise.all([
-    supabase.from("profiles").select("id, full_name, role, phone, branch_id, branches(code, name)").order("created_at", { ascending: false }),
+  type BusinessUnitOption = {
+    id: string;
+    code: string;
+    name: string;
+    is_active: boolean;
+  };
+
+  const [{ data: profiles }, { data: branches }, { data: businessUnits }] = await Promise.all([
+    supabase.from("profiles").select("id, full_name, role, phone, branch_id, allowed_unit_codes, branches(code, name)").order("created_at", { ascending: false }),
     supabase.from("branches").select("id, code, name").order("name"),
+    supabase.from("business_units").select("id, code, name, is_active").order("code"),
   ]);
 
   const profileRows = (profiles ?? []) as unknown as ProfileRow[];
   const branchRows = (branches ?? []) as Branch[];
+  const unitRows = (businessUnits ?? [
+    { id: "1", code: "USP", name: "Unit Simpan Pinjam", is_active: true },
+    { id: "2", code: "TOKO", name: "Unit Toko / Waserda", is_active: false },
+    { id: "3", code: "JASA", name: "Unit Jasa & Penyewaan", is_active: false },
+  ]) as BusinessUnitOption[];
   const defaultBranchId = branchRows[0]?.id ?? "";
   const superAdminCount = profileRows.filter((profile) => profile.role === "super_admin").length;
+
 
   return (
     <main className="min-h-screen bg-[#f4f7fb] text-[#0b1220]">
@@ -233,23 +247,42 @@ export default async function UsersPage({ searchParams }: UsersPageProps) {
                   ))}
                 </select>
               </label>
-              <label className="block">
-                <span className="text-sm font-black">Cabang</span>
-                <select className="mt-2 h-12 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 text-sm font-bold outline-none" defaultValue={defaultBranchId} name="branch_id">
-                  {branchRows.map((branch) => (
-                    <option key={branch.id} value={branch.id}>{branch.code} | {branch.name}</option>
+              <input type="hidden" name="branch_id" value={defaultBranchId} />
+
+              <div className="rounded-2xl bg-[#f8fbff] p-4 border border-[#dbe5f1] space-y-2.5">
+                <span className="text-xs font-bold uppercase text-[#475569]">Custom Hak Akses Unit Usaha</span>
+                <label className="flex items-center gap-2.5 pb-2 border-b border-[#dbe5f1]">
+                  <input type="checkbox" name="is_multi_unit" value="true" className="size-4 accent-[#2563eb]" />
+                  <span className="text-xs font-bold text-[#1d4ed8]">Akses Semua Unit Usaha (Multi-Unit)</span>
+                </label>
+                <div className="space-y-2 pt-1">
+                  {unitRows.map((unit) => (
+                    <label className="flex items-center gap-2.5" key={unit.code}>
+                      <input
+                        className="size-4 accent-[#2563eb]"
+                        defaultChecked={unit.code === "USP"}
+                        name="allowed_unit_codes"
+                        type="checkbox"
+                        value={unit.code}
+                      />
+                      <span className="text-xs font-bold text-[#0b1220]">{unit.name} ({unit.code})</span>
+                    </label>
                   ))}
-                </select>
-              </label>
+                </div>
+                <p className="text-[11px] font-semibold text-[#64748b]">Superadmin dapat memilih kustom kombinasi unit usaha yang berhak diakses user ini.</p>
+              </div>
+
+
               <label className="block">
-                <span className="text-sm font-black">Telepon</span>
-                <input className="mt-2 h-12 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 text-sm font-bold outline-none" name="phone" placeholder="Opsional" />
+                <span className="text-xs font-bold uppercase text-[#475569]">Telepon</span>
+                <input className="mt-1.5 h-11 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 text-xs font-bold outline-none" name="phone" placeholder="Opsional" />
               </label>
-              <button className="h-12 w-full rounded-2xl bg-[#2563eb] text-sm font-black text-white" type="submit">
-                Buat akun
+              <button className="h-11 w-full rounded-2xl bg-[#2563eb] text-xs font-bold text-white hover:bg-[#1d4ed8]" type="submit">
+                Buat Akun User
               </button>
             </form>
           </section>
+
 
           <section className="rounded-[28px] bg-white p-5 shadow-sm ring-1 ring-[#dbe5f1] md:p-6">
             <div className="flex items-center gap-3">

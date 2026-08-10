@@ -264,17 +264,23 @@ export default async function Home() {
             <section className="rounded-[28px] bg-[#07152f] p-5 text-white shadow-sm md:p-6">
               <div className="flex flex-wrap items-center justify-between gap-5">
                 <div>
-                  <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs font-bold text-[#bfdbfe]">
-                    <CalendarDays className="size-4" />
-                    Data operasional {today.toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })}
+                  <div className="flex flex-wrap items-center gap-2">
+                    <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs font-bold text-[#bfdbfe]">
+                      <CalendarDays className="size-4" />
+                      Data operasional {today.toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })}
+                    </div>
+                    <span className="rounded-full bg-[#2563eb] px-3 py-0.5 text-xs font-bold text-white shadow-sm">
+                      Unit Usaha: Simpan Pinjam (USP)
+                    </span>
                   </div>
                   <h1 className="mt-3 text-xl font-bold md:text-2xl">
-                    Dashboard Operasional Koperasi
+                    Dashboard Operasional Unit Simpan Pinjam
                   </h1>
                   <p className="mt-1 max-w-xl text-xs font-medium text-[#cbd5e1]">
-                    Pantau kas, simpanan, tagihan pinjaman, dan performa SHU secara real-time.
+                    Pantau kas unit, simpanan anggota, tagihan pinjaman, dan performa SHU USP secara real-time.
                   </p>
                 </div>
+
                 <div className="grid w-full grid-cols-2 gap-2 sm:w-auto sm:grid-cols-4">
                   {quickActions.map((item) => (
                     <a

@@ -14,6 +14,8 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { updateMemberStatus } from "./actions";
 import { createClient } from "@/lib/supabase/server";
+import { MemberPhotoGalleryModal } from "@/components/MemberPhotoGalleryModal";
+
 
 type MemberDetailPageProps = {
   params: Promise<{
@@ -34,11 +36,27 @@ type MemberDetail = {
   address: string | null;
   joined_at: string;
   status: "active" | "inactive" | "resigned";
+  photo_url?: string | null;
+  ktp_url?: string | null;
+  email?: string | null;
+  gender?: string | null;
+  birth_place?: string | null;
+  birth_date?: string | null;
+  department?: string | null;
+  employee_no?: string | null;
+  bank_name?: string | null;
+  bank_account_no?: string | null;
+  bank_account_name?: string | null;
+  heir_name?: string | null;
+  heir_relation?: string | null;
+  heir_phone?: string | null;
   branches: {
     name: string;
     code: string;
   }[] | null;
 };
+
+
 
 type SavingsSummary = {
   total_simpanan: number | null;
@@ -88,9 +106,11 @@ export default async function MemberDetailPage({ params, searchParams }: MemberD
   const [{ data: member }, { data: savings }, { data: loanOutstanding }] = await Promise.all([
     supabase
       .from("members")
-      .select("id, member_no, full_name, nik, phone, address, joined_at, status, branches(name, code)")
+      .select("id, member_no, full_name, nik, phone, address, joined_at, status, photo_url, ktp_url, email, gender, birth_place, birth_date, department, employee_no, bank_name, bank_account_no, bank_account_name, heir_name, heir_relation, heir_phone, branches(name, code)")
       .eq("id", id)
       .single(),
+
+
     supabase
       .from("v_member_savings_summary")
       .select("total_simpanan, simpanan_pokok, simpanan_wajib, simpanan_sukarela")
@@ -185,23 +205,42 @@ export default async function MemberDetailPage({ params, searchParams }: MemberD
           </div>
 
           <section className="rounded-[28px] bg-white p-5 shadow-sm ring-1 ring-[#dbe5f1] md:p-6">
-            <h3 className="text-xl font-black">Informasi anggota</h3>
+            <h3 className="text-xl font-black">Dokumen Identitas & Foto</h3>
+            <p className="mt-1 text-xs font-semibold text-[#64748b]">Pas foto profil dan dokumen KTP anggota yang tersimpan di Supabase Storage.</p>
+            <div className="mt-4">
+              <MemberPhotoGalleryModal
+                memberName={memberDetail.full_name}
+                photoUrl={memberDetail.photo_url}
+                ktpUrl={memberDetail.ktp_url}
+              />
+            </div>
+          </section>
+
+          <section className="rounded-[28px] bg-white p-5 shadow-sm ring-1 ring-[#dbe5f1] md:p-6">
+            <h3 className="text-xl font-black">Informasi Lengkap Anggota</h3>
             <div className="mt-5 grid gap-3 md:grid-cols-2">
               {[
-                { label: "Cabang", value: memberDetail.branches?.[0]?.name ?? "-", icon: Building2 },
-                { label: "NIK", value: memberDetail.nik ?? "-", icon: CheckCircle2 },
-                { label: "Nomor HP", value: memberDetail.phone ?? "-", icon: Phone },
-                { label: "Tanggal bergabung", value: memberDetail.joined_at, icon: CalendarDays },
-                { label: "Alamat", value: memberDetail.address ?? "-", icon: MapPin },
+                { label: "NIK (KTP)", value: memberDetail.nik ?? "-", icon: CheckCircle2 },
+                { label: "Nomor HP / WA", value: memberDetail.phone ?? "-", icon: Phone },
+                { label: "Email", value: memberDetail.email ?? "-", icon: CheckCircle2 },
+                { label: "Tempat / Tgl Lahir", value: memberDetail.birth_place || memberDetail.birth_date ? `${memberDetail.birth_place ?? "-"}, ${memberDetail.birth_date ?? "-"}` : "-", icon: CalendarDays },
+                { label: "Departemen / Unit Kerja", value: memberDetail.department ?? "-", icon: CheckCircle2 },
+                { label: "NIP / No Pegawai", value: memberDetail.employee_no ?? "-", icon: CheckCircle2 },
+                { label: "Rekening Bank", value: memberDetail.bank_name ? `${memberDetail.bank_name} - ${memberDetail.bank_account_no} a.n ${memberDetail.bank_account_name}` : "-", icon: CreditCard },
+                { label: "Ahli Waris / Kontak Darurat", value: memberDetail.heir_name ? `${memberDetail.heir_name} (${memberDetail.heir_relation ?? "Keluarga"}) · ${memberDetail.heir_phone ?? "-"}` : "-", icon: Phone },
+                { label: "Tanggal Bergabung", value: memberDetail.joined_at, icon: CalendarDays },
+                { label: "Alamat Lengkap", value: memberDetail.address ?? "-", icon: MapPin },
               ].map((item) => (
                 <div className="rounded-3xl bg-[#f4f7fb] p-4" key={item.label}>
                   <item.icon className="size-5 text-[#2563eb]" />
-                  <p className="mt-3 text-sm font-bold text-[#64748b]">{item.label}</p>
-                  <p className="mt-1 font-black">{item.value}</p>
+                  <p className="mt-3 text-xs font-bold text-[#64748b]">{item.label}</p>
+                  <p className="mt-1 text-sm font-bold text-[#0b1220]">{item.value}</p>
                 </div>
               ))}
             </div>
           </section>
+
+
 
           <section className="grid gap-5 xl:grid-cols-2">
             <div className="rounded-[28px] bg-white p-5 shadow-sm ring-1 ring-[#dbe5f1] md:p-6">

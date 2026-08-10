@@ -89,12 +89,18 @@ export async function createUserProfile(formData: FormData) {
     redirect(`/users?error=${encodeURIComponent(authError?.message ?? "User Auth gagal dibuat.")}`);
   }
 
+  const isMultiUnit = clean(formData.get("is_multi_unit")) === "true";
+  const unitCodes = formData.getAll("allowed_unit_codes").map(String).filter(Boolean);
+
+  const allowedUnitCodes = isMultiUnit ? ["*"] : unitCodes.length ? unitCodes : ["USP"];
+
   const { error } = await supabase.from("profiles").insert({
     id: authData.user.id,
     branch_id: branchId,
     full_name: fullName,
     role,
     phone: clean(formData.get("phone")),
+    allowed_unit_codes: allowedUnitCodes,
   });
 
   if (error) {
@@ -105,6 +111,7 @@ export async function createUserProfile(formData: FormData) {
     email,
     role,
     branch_id: branchId,
+    allowed_unit_codes: allowedUnitCodes,
   });
 
   revalidatePath("/users");
@@ -117,6 +124,10 @@ export async function updateUserProfile(userId: string, formData: FormData) {
   const fullName = clean(formData.get("full_name"));
   const role = clean(formData.get("role")) ?? "operator";
   const branchId = clean(formData.get("branch_id"));
+  const isMultiUnit = clean(formData.get("is_multi_unit")) === "true";
+  const unitCodes = formData.getAll("allowed_unit_codes").map(String).filter(Boolean);
+
+  const allowedUnitCodes = isMultiUnit || role === "super_admin" ? ["*"] : unitCodes.length ? unitCodes : ["USP"];
 
   if (!fullName || !branchId) {
     redirect("/users?error=Nama%20dan%20cabang%20wajib%20diisi.");
@@ -129,6 +140,7 @@ export async function updateUserProfile(userId: string, formData: FormData) {
       full_name: fullName,
       role,
       phone: clean(formData.get("phone")),
+      allowed_unit_codes: allowedUnitCodes,
     })
     .eq("id", userId);
 
@@ -139,9 +151,11 @@ export async function updateUserProfile(userId: string, formData: FormData) {
   await writeAuditLog(supabase, profileId, "user.profile.updated", userId, {
     role,
     branch_id: branchId,
+    allowed_unit_codes: allowedUnitCodes,
   });
 
   revalidatePath("/users");
   revalidatePath("/audit");
   redirect("/users?saved=updated");
 }
+

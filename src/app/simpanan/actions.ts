@@ -229,9 +229,114 @@ export async function postSavingsTransaction(formData: FormData) {
   });
 
   revalidatePath("/simpanan");
+  revalidatePath("/simpanan/transaksi");
   revalidatePath("/kas-jurnal");
   revalidatePath("/laporan");
   revalidatePath("/audit");
-  redirect("/simpanan?saved=transaksi");
+  redirect("/simpanan/transaksi?saved=transaksi");
 }
+
+export async function updateSavingsAccountStatus(accountId: string, formData: FormData) {
+  const { supabase, profileId } = await requireUser();
+  const status = clean(formData.get("status")) ?? "active";
+
+  if (!accountId) {
+    redirect("/simpanan/rekening?error=ID%20Rekening%20wajib%20diisi.");
+  }
+
+  const { error } = await supabase
+    .from("savings_accounts")
+    .update({ is_active: status === "active" })
+    .eq("id", accountId);
+
+  if (error) {
+    redirect(`/simpanan/rekening?error=${encodeURIComponent(error.message)}`);
+  }
+
+  await writeAuditLog(supabase, profileId, "savings.account.updated_status", "savings_accounts", accountId, {
+    status,
+  });
+
+  revalidatePath("/simpanan/rekening");
+  redirect("/simpanan/rekening?saved=account_updated");
+}
+
+export async function voidSavingsTransaction(transactionId: string, formData: FormData) {
+  const { supabase, profileId } = await requireUser();
+  const voidReason = clean(formData.get("void_reason")) ?? "Koreksi kesalahan teller";
+
+  if (!transactionId) {
+    redirect("/simpanan/transaksi?error=ID%20Transaksi%20wajib%20diisi.");
+  }
+
+  // Fetch original transaction
+  const { data: origTx } = await supabase
+    .from("savings_transactions")
+    .select("account_id, direction, amount, description")
+    .eq("id", transactionId)
+    .single();
+
+  if (!origTx) {
+    redirect("/simpanan/transaksi?error=Transaksi%20asal%20tidak%20ditemukan.");
+  }
+
+  const accountId = origTx.account_id;
+  const origAmount = Number(origTx.amount ?? 0);
+  const reverseDirection = origTx.direction === "in" ? "out" : "in";
+
+  // Check current balance
+  const { data: account } = await supabase
+    .from("savings_accounts")
+    .select("balance")
+    .eq("id", accountId)
+    .single();
+
+  if (!account) {
+    redirect("/simpanan/transaksi?error=Rekening%20tidak%20ditemukan.");
+  }
+
+  const currentBalance = Number(account.balance ?? 0);
+  const nextBalance = reverseDirection === "in" ? currentBalance + origAmount : currentBalance - origAmount;
+
+  if (nextBalance < 0) {
+    redirect("/simpanan/transaksi?error=Saldo%20tidak%20mencukupi%20untuk%20pembatalan%20transaksi.");
+  }
+
+  // Post reversal transaction
+  const { data: voidTx, error: voidErr } = await supabase
+    .from("savings_transactions")
+    .insert({
+      account_id: accountId,
+      direction: reverseDirection,
+      amount: origAmount,
+      description: `KOREKSI / VOID: ${voidReason} (Ref ID: ${transactionId.slice(0, 8)})`,
+      transaction_date: new Date().toISOString().slice(0, 10),
+      created_by: profileId,
+    })
+    .select("id")
+    .single();
+
+  if (voidErr || !voidTx) {
+    redirect(`/simpanan/transaksi?error=${encodeURIComponent(voidErr?.message ?? "Gagal membatalkan transaksi.")}`);
+  }
+
+  // Update account balance
+  await supabase
+    .from("savings_accounts")
+    .update({ balance: nextBalance })
+    .eq("id", accountId);
+
+  // Write audit log
+  await writeAuditLog(supabase, profileId, "savings.transaction.voided", "savings_transactions", transactionId, {
+    voided_by: profileId,
+    void_reason: voidReason,
+    reversal_tx_id: voidTx.id,
+  });
+
+  revalidatePath("/simpanan/transaksi");
+  revalidatePath("/simpanan/rekening");
+  revalidatePath("/audit");
+  redirect("/simpanan/transaksi?saved=transaction_voided");
+}
+
 
