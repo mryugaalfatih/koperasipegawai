@@ -191,13 +191,20 @@ export function RekeningClientManager({
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between sm:justify-end gap-3 text-left sm:text-right">
-                    <div>
+                    <div className="flex items-center justify-between sm:justify-end gap-2 text-left sm:text-right">
+                    <div className="mr-1">
                       <p className="text-base font-bold text-[#2563eb]">
                         {currency.format(Number(account.balance ?? 0))}
                       </p>
                       <p className="text-[11px] font-medium text-[#94a3b8]">Saldo Efektif</p>
                     </div>
+
+                    <Link
+                      href={`/simpanan/rekening/${account.id}`}
+                      className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-[#2563eb] bg-[#eaf2ff] px-3 text-xs font-bold text-[#2563eb] hover:bg-[#dbeafe] active:scale-95 transition-all"
+                    >
+                      Mutasi
+                    </Link>
 
                     <button
                       type="button"
