@@ -266,15 +266,23 @@ export function TransaksiClientManager({
             </label>
 
             <label className="block">
-              <span className="text-xs font-bold uppercase text-[#475569]">Tanggal Transaksi</span>
-              <input
-                className="mt-1.5 h-11 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 text-xs font-bold outline-none focus:border-[#2563eb]"
-                name="transaction_date"
-                type="date"
-                defaultValue={new Date().toISOString().slice(0, 10)}
-              />
+              <span className="text-xs font-bold uppercase text-[#475569]">Metode Pembayaran</span>
+              <CustomSelect name="payment_method" defaultValue="kas" className="mt-1.5 h-11">
+                <option value="kas">Via Kas Tunai</option>
+                <option value="bank">Via Transfer Bank</option>
+              </CustomSelect>
             </label>
           </div>
+
+          <label className="block">
+            <span className="text-xs font-bold uppercase text-[#475569]">Tanggal Transaksi</span>
+            <input
+              className="mt-1.5 h-11 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 text-xs font-bold outline-none focus:border-[#2563eb]"
+              name="transaction_date"
+              type="date"
+              defaultValue={new Date().toISOString().slice(0, 10)}
+            />
+          </label>
 
           <label className="block">
             <span className="text-xs font-bold uppercase text-[#475569]">Nominal Transaksi (Rp) *</span>

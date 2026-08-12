@@ -28,6 +28,16 @@ type CashTransactionRow = {
   transaction_date: string;
 };
 
+type ApprovedLoanRow = {
+  id: string;
+  principal: number;
+  tenor_months: number;
+  interest_method: string;
+  annual_rate_snapshot: number | null;
+  members: { full_name: string; member_no: string }[] | null;
+  loan_products: { name: string }[] | null;
+};
+
 export default async function KasPage({ searchParams }: KasPageProps) {
   const supabase = await createClient();
   const params = await searchParams;
@@ -39,7 +49,7 @@ export default async function KasPage({ searchParams }: KasPageProps) {
     redirect("/login");
   }
 
-  const [{ data: profile }, { data: accounts }, { data: cashTransactions }] = await Promise.all([
+  const [{ data: profile }, { data: accounts }, { data: cashTransactions }, { data: approvedLoans }] = await Promise.all([
     supabase.from("profiles").select("id").eq("id", user.id).single(),
     supabase.from("accounts").select("id, code, name, category").order("code"),
     supabase
@@ -47,6 +57,11 @@ export default async function KasPage({ searchParams }: KasPageProps) {
       .select("id, direction, amount, source_type, description, transaction_date")
       .order("created_at", { ascending: false })
       .limit(30),
+    supabase
+      .from("loans")
+      .select("id, principal, tenor_months, interest_method, annual_rate_snapshot, members(full_name, member_no), loan_products(name)")
+      .eq("status", "approved")
+      .order("created_at", { ascending: false }),
   ]);
 
   if (!profile) {
@@ -55,6 +70,7 @@ export default async function KasPage({ searchParams }: KasPageProps) {
 
   const accountRows = (accounts ?? []) as AccountRow[];
   const cashRows = (cashTransactions ?? []) as CashTransactionRow[];
+  const approvedLoanRows = (approvedLoans ?? []) as unknown as ApprovedLoanRow[];
 
   const totalIn = cashRows
     .filter((item) => item.direction === "in")
@@ -80,6 +96,7 @@ export default async function KasPage({ searchParams }: KasPageProps) {
           totalIn={totalIn}
           totalOut={totalOut}
           netCash={netCash}
+          approvedLoans={approvedLoanRows}
         />
       </div>
     </main>

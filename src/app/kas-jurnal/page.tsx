@@ -50,6 +50,9 @@ type JournalLineRow = {
   accounts: {
     code: string;
     name: string;
+  } | {
+    code: string;
+    name: string;
   }[] | null;
 };
 
@@ -203,16 +206,22 @@ export default async function KasJurnalPage({ searchParams }: KasJurnalPageProps
                         </div>
                       </div>
                       <div className="mt-3 grid gap-2 md:grid-cols-2">
-                        {(journal.journal_lines ?? []).map((line, index) => (
-                          <div className="rounded-2xl bg-[#f4f7fb] p-3 text-sm font-semibold text-[#475569]" key={`${journal.id}-${index}`}>
-                            <p className="font-black text-[#0b1220]">
-                              {line.accounts?.[0]?.code ?? "-"} {line.accounts?.[0]?.name ?? "Akun"}
-                            </p>
-                            <p className="mt-1">
-                              Debit {currency.format(Number(line.debit ?? 0))} | Kredit {currency.format(Number(line.credit ?? 0))}
-                            </p>
-                          </div>
-                        ))}
+                        {(journal.journal_lines ?? []).map((line, index) => {
+                          const act = Array.isArray(line.accounts)
+                            ? line.accounts[0]
+                            : (line.accounts as unknown as { code: string; name: string } | null);
+
+                          return (
+                            <div className="rounded-2xl bg-[#f4f7fb] p-3 text-sm font-semibold text-[#475569]" key={`${journal.id}-${index}`}>
+                              <p className="font-black text-[#0b1220]">
+                                {act?.code ?? "-"} {act?.name ?? "Akun"}
+                              </p>
+                              <p className="mt-1">
+                                Debit {currency.format(Number(line.debit ?? 0))} | Kredit {currency.format(Number(line.credit ?? 0))}
+                              </p>
+                            </div>
+                          );
+                        })}
                       </div>
                     </div>
                   );

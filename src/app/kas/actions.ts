@@ -76,6 +76,7 @@ async function requireProfile() {
 export async function postCashTransaction(formData: FormData) {
   const { supabase, profileId, branchId } = await requireProfile();
   const direction = clean(formData.get("direction"));
+  const fundSource = clean(formData.get("fund_source")) ?? "kas";
   const amount = money(formData.get("amount"));
   const counterAccountId = clean(formData.get("counter_account_id"));
   const transactionDate = clean(formData.get("transaction_date")) ?? new Date().toISOString().slice(0, 10);
@@ -85,10 +86,13 @@ export async function postCashTransaction(formData: FormData) {
     redirect("/kas?error=Jenis%20kas,%20akun%20lawan,%20dan%20nominal%20wajib%20valid.");
   }
 
-  const { data: cashAccount } = await supabase.from("accounts").select("id").eq("code", "1001").single();
+  const cashCode = fundSource === "bank" ? "1002" : "1001";
+  const cashLabel = fundSource === "bank" ? "Bank" : "Kas";
+
+  const { data: cashAccount } = await supabase.from("accounts").select("id").eq("code", cashCode).single();
 
   if (!cashAccount) {
-    redirect("/kas?error=Akun%20Kas%201001%20belum%20ada.%20Jalankan%20seed%20COA.");
+    redirect(`/kas?error=Akun%20${cashLabel}%20${cashCode}%20belum%20ada.%20Jalankan%20seed%20COA.`);
   }
 
   const { data: cashTransaction, error: cashError } = await supabase
@@ -97,8 +101,8 @@ export async function postCashTransaction(formData: FormData) {
       branch_id: branchId,
       direction,
       amount,
-      source_type: "manual_cash",
-      description,
+      source_type: fundSource === "bank" ? "kas_bank" : "kas_tunai",
+      description: `${fundSource === "bank" ? "[Bank] " : "[Kas] "}${description}`,
       transaction_date: transactionDate,
       created_by: profileId,
     })
@@ -115,10 +119,11 @@ export async function postCashTransaction(formData: FormData) {
       branch_id: branchId,
       entry_no: makeEntryNo(direction === "in" ? "KM" : "KK"),
       entry_date: transactionDate,
-      memo: description,
+      memo: `${fundSource === "bank" ? "[Bank] " : "[Kas] "}${description}`,
       source_type: "cash_transactions",
       source_id: cashTransaction.id,
       created_by: profileId,
+      status: "draft",
     })
     .select("id")
     .single();

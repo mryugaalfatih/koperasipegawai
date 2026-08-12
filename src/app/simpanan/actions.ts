@@ -77,6 +77,7 @@ export async function createSavingsAccount(formData: FormData) {
 
   const accountNo = clean(formData.get("account_no")) ?? `${product.code}-${Date.now().toString().slice(-8)}`;
   const openingBalance = money(formData.get("opening_balance"));
+  const paymentMethod = clean(formData.get("payment_method")) ?? "kas";
 
   const { data: account, error } = await supabase
     .from("savings_accounts")
@@ -95,13 +96,76 @@ export async function createSavingsAccount(formData: FormData) {
   }
 
   if (openingBalance > 0 && account) {
-    await supabase.from("savings_transactions").insert({
-      account_id: account.id,
-      direction: "in",
-      amount: openingBalance,
-      description: "Saldo awal",
-      transaction_date: new Date().toISOString().slice(0, 10),
-    });
+    const { data: tx } = await supabase
+      .from("savings_transactions")
+      .insert({
+        account_id: account.id,
+        direction: "in",
+        amount: openingBalance,
+        description: "Saldo awal",
+        transaction_date: new Date().toISOString().slice(0, 10),
+      })
+      .select("id")
+      .single();
+
+    // Automatic Journal & Cash Transaction for Opening Balance
+    try {
+      const { data: memberData } = await supabase
+        .from("members")
+        .select("branch_id")
+        .eq("id", memberId)
+        .single();
+
+      const branchId = memberData?.branch_id;
+      if (branchId) {
+        const cashCode = paymentMethod === "bank" ? "1002" : "1001";
+        const [{ data: cashAccount }, { data: savingsAccount }] = await Promise.all([
+          supabase.from("accounts").select("id").eq("code", cashCode).single(),
+          supabase.from("accounts").select("id").eq("code", "2101").single(),
+        ]);
+
+        if (cashAccount && savingsAccount) {
+          const entryNo = `KM-SIMP-${Date.now().toString().slice(-8)}`;
+          const memo = `${paymentMethod === "bank" ? "[Bank] " : "[Kas] "}Saldo Awal Rekening ${accountNo}`;
+
+          const { data: journal } = await supabase
+            .from("journal_entries")
+            .insert({
+              branch_id: branchId,
+              entry_no: entryNo,
+              entry_date: new Date().toISOString().slice(0, 10),
+              memo,
+              source_type: "savings_transactions",
+              source_id: tx?.id,
+              created_by: profileId,
+              status: "draft",
+            })
+            .select("id")
+            .single();
+
+          if (journal) {
+            await supabase.from("journal_lines").insert([
+              { journal_entry_id: journal.id, account_id: cashAccount.id, debit: openingBalance, credit: 0 },
+              { journal_entry_id: journal.id, account_id: savingsAccount.id, debit: 0, credit: openingBalance },
+            ]);
+          }
+
+          // Record Cash Transaction
+          await supabase.from("cash_transactions").insert({
+            branch_id: branchId,
+            direction: "in",
+            amount: openingBalance,
+            source_type: paymentMethod === "bank" ? "kas_bank" : "kas_tunai",
+            source_id: tx?.id,
+            description: memo,
+            transaction_date: new Date().toISOString().slice(0, 10),
+            created_by: profileId,
+          });
+        }
+      }
+    } catch (err) {
+      console.error("Auto journal error on opening balance:", err);
+    }
   }
 
   if (account) {
@@ -112,6 +176,8 @@ export async function createSavingsAccount(formData: FormData) {
   }
 
   revalidatePath("/simpanan");
+  revalidatePath("/kas");
+  revalidatePath("/kas-jurnal");
   revalidatePath("/audit");
   redirect("/simpanan?saved=rekening");
 }
@@ -120,6 +186,7 @@ export async function postSavingsTransaction(formData: FormData) {
   const { supabase, profileId } = await requireUser();
   const accountId = clean(formData.get("account_id"));
   const direction = clean(formData.get("direction"));
+  const paymentMethod = clean(formData.get("payment_method")) ?? "kas";
   const amount = money(formData.get("amount"));
 
   if (!accountId || !["in", "out"].includes(direction ?? "") || amount <= 0) {
@@ -170,7 +237,7 @@ export async function postSavingsTransaction(formData: FormData) {
     redirect(`/simpanan?error=${encodeURIComponent(balanceError.message)}`);
   }
 
-  // Automatic Journal Creation
+  // Automatic Journal & Cash Transaction Creation
   try {
     const { data: memberData } = await supabase
       .from("savings_accounts")
@@ -181,23 +248,29 @@ export async function postSavingsTransaction(formData: FormData) {
     const branchId = (memberData?.members as unknown as { branch_id: string } | null)?.branch_id;
 
     if (branchId) {
+      const cashCode = paymentMethod === "bank" ? "1002" : "1001";
       const [{ data: cashAccount }, { data: savingsAccount }] = await Promise.all([
-        supabase.from("accounts").select("id").eq("code", "1001").single(),
+        supabase.from("accounts").select("id").eq("code", cashCode).single(),
         supabase.from("accounts").select("id").eq("code", "2101").single(),
       ]);
 
       if (cashAccount && savingsAccount) {
+        const txDate = clean(formData.get("transaction_date")) ?? new Date().toISOString().slice(0, 10);
+        const userDesc = clean(formData.get("description")) ?? `Transaksi Simpanan ${direction === "in" ? "Masuk" : "Keluar"}`;
+        const memo = `${paymentMethod === "bank" ? "[Bank] " : "[Kas] "}${userDesc}`;
         const entryNo = `${direction === "in" ? "KM" : "KK"}-SIMP-${Date.now().toString().slice(-8)}`;
+
         const { data: journal } = await supabase
           .from("journal_entries")
           .insert({
             branch_id: branchId,
             entry_no: entryNo,
-            entry_date: clean(formData.get("transaction_date")) ?? new Date().toISOString().slice(0, 10),
-            memo: clean(formData.get("description")) ?? `Transaksi Simpanan ${direction === "in" ? "Masuk" : "Keluar"}`,
+            entry_date: txDate,
+            memo,
             source_type: "savings_transactions",
             source_id: transaction.id,
             created_by: profileId,
+            status: "draft",
           })
           .select("id")
           .single();
@@ -215,6 +288,18 @@ export async function postSavingsTransaction(formData: FormData) {
                 ];
           await supabase.from("journal_lines").insert(lines);
         }
+
+        // Record Cash Transaction (Buku Kas Harian)
+        await supabase.from("cash_transactions").insert({
+          branch_id: branchId,
+          direction,
+          amount,
+          source_type: paymentMethod === "bank" ? "kas_bank" : "kas_tunai",
+          source_id: transaction.id,
+          description: memo,
+          transaction_date: txDate,
+          created_by: profileId,
+        });
       }
     }
   } catch (err) {
@@ -230,6 +315,7 @@ export async function postSavingsTransaction(formData: FormData) {
 
   revalidatePath("/simpanan");
   revalidatePath("/simpanan/transaksi");
+  revalidatePath("/kas");
   revalidatePath("/kas-jurnal");
   revalidatePath("/laporan");
   revalidatePath("/audit");

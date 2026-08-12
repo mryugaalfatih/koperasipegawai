@@ -78,7 +78,7 @@ export default async function MutasiRekeningPage({ params }: MutasiPageProps) {
   const { data: transactions } = await supabase
     .from("savings_transactions")
     .select("id, direction, amount, description, transaction_date, reference_no, created_at")
-    .eq("savings_account_id", id)
+    .eq("account_id", id)
     .order("transaction_date", { ascending: false })
     .order("created_at", { ascending: false });
 

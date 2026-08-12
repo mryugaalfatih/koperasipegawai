@@ -94,6 +94,7 @@ export async function postManualJournal(formData: FormData) {
       memo,
       source_type: "manual",
       created_by: profileId,
+      status: "draft",
     })
     .select("id")
     .single();
@@ -121,4 +122,107 @@ export async function postManualJournal(formData: FormData) {
   revalidatePath("/kas-jurnal");
   revalidatePath("/laporan");
   redirect("/akuntansi?saved=jurnal");
+}
+
+export async function approveJournal(journalId: string) {
+  const { supabase, profileId } = await requireProfile();
+
+  const { error } = await supabase
+    .from("journal_entries")
+    .update({ status: "approved" })
+    .eq("id", journalId);
+
+  if (error) {
+    redirect(`/akuntansi?error=${encodeURIComponent(error.message)}`);
+  }
+
+  await writeAuditLog(supabase, profileId, "journal.approved", "journal_entries", journalId, { status: "approved" });
+
+  revalidatePath("/akuntansi");
+  revalidatePath("/kas-jurnal");
+  revalidatePath("/laporan");
+  redirect("/akuntansi?saved=approved");
+}
+
+export async function rejectJournal(journalId: string) {
+  const { supabase, profileId } = await requireProfile();
+
+  const { error } = await supabase
+    .from("journal_entries")
+    .update({ status: "rejected" })
+    .eq("id", journalId);
+
+  if (error) {
+    redirect(`/akuntansi?error=${encodeURIComponent(error.message)}`);
+  }
+
+  await writeAuditLog(supabase, profileId, "journal.rejected", "journal_entries", journalId, { status: "rejected" });
+
+  revalidatePath("/akuntansi");
+  revalidatePath("/kas-jurnal");
+  revalidatePath("/laporan");
+  redirect("/akuntansi?saved=rejected");
+}
+
+export async function updateJournalLines(journalId: string, formData: FormData) {
+  const { supabase, profileId } = await requireProfile();
+  const memo = clean(formData.get("memo"));
+  const linesJson = clean(formData.get("lines"));
+
+  if (!linesJson) {
+    redirect(`/akuntansi?error=Data%20baris%20jurnal%20tidak%20valid.`);
+  }
+
+  let lines: { account_id: string; debit: number; credit: number }[];
+  try {
+    lines = JSON.parse(linesJson);
+  } catch {
+    redirect(`/akuntansi?error=Format%20baris%20jurnal%20tidak%20valid.`);
+  }
+
+  // Validate debit = credit
+  const totalDebit = lines.reduce((s, l) => s + Number(l.debit ?? 0), 0);
+  const totalCredit = lines.reduce((s, l) => s + Number(l.credit ?? 0), 0);
+  if (Math.abs(totalDebit - totalCredit) > 1) {
+    redirect(`/akuntansi?error=Total%20debit%20dan%20kredit%20harus%20balance.`);
+  }
+
+  // Delete old lines
+  const { error: deleteError } = await supabase
+    .from("journal_lines")
+    .delete()
+    .eq("journal_entry_id", journalId);
+
+  if (deleteError) {
+    redirect(`/akuntansi?error=${encodeURIComponent(deleteError.message)}`);
+  }
+
+  // Insert new lines
+  const { error: insertError } = await supabase.from("journal_lines").insert(
+    lines.map((l) => ({
+      journal_entry_id: journalId,
+      account_id: l.account_id,
+      debit: Number(l.debit ?? 0),
+      credit: Number(l.credit ?? 0),
+    })),
+  );
+
+  if (insertError) {
+    redirect(`/akuntansi?error=${encodeURIComponent(insertError.message)}`);
+  }
+
+  // Update memo if provided
+  if (memo) {
+    await supabase.from("journal_entries").update({ memo }).eq("id", journalId);
+  }
+
+  await writeAuditLog(supabase, profileId, "journal.lines.updated", "journal_entries", journalId, {
+    line_count: lines.length,
+    total_debit: totalDebit,
+  });
+
+  revalidatePath("/akuntansi");
+  revalidatePath("/kas-jurnal");
+  revalidatePath("/laporan");
+  redirect("/akuntansi?saved=updated");
 }

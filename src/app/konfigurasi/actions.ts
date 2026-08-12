@@ -162,3 +162,121 @@ export async function createLoanProduct(formData: FormData) {
   revalidatePath("/konfigurasi");
   redirect("/konfigurasi?saved=pinjaman#pinjaman");
 }
+
+export async function updateSavingsProduct(productId: string, formData: FormData) {
+  const supabase = await requireUser();
+  const code = text(formData.get("code"));
+  const name = text(formData.get("name"));
+
+  if (!productId || !code || !name) {
+    redirect("/konfigurasi?error=Kode%20dan%20nama%20produk%20simpanan%20wajib%20diisi.#simpanan");
+  }
+
+  const { error } = await supabase
+    .from("savings_products")
+    .update({
+      code,
+      name,
+      type: text(formData.get("type")) ?? "sukarela",
+      minimum_balance: numberValue(formData.get("minimum_balance")),
+      monthly_required_amount: numberValue(formData.get("monthly_required_amount")),
+      withdrawable: formData.get("withdrawable") === "on",
+    })
+    .eq("id", productId);
+
+  if (error) {
+    redirect(`/konfigurasi?error=${encodeURIComponent(error.message)}#simpanan`);
+  }
+
+  revalidatePath("/konfigurasi");
+  redirect("/konfigurasi?saved=simpanan_updated#simpanan");
+}
+
+export async function updateLoanProduct(productId: string, formData: FormData) {
+  const supabase = await requireUser();
+  const name = text(formData.get("name"));
+
+  if (!productId || !name) {
+    redirect("/konfigurasi?error=Nama%20produk%20pinjaman%20wajib%20diisi.#pinjaman");
+  }
+
+  const { error } = await supabase
+    .from("loan_products")
+    .update({
+      name,
+      annual_rate: numberValue(formData.get("annual_rate")),
+      max_tenor_months: numberValue(formData.get("max_tenor_months"), 12),
+      admin_fee_percent: numberValue(formData.get("admin_fee_percent")),
+      default_interest_method: text(formData.get("default_interest_method")) ?? "flat",
+      allow_method_override: formData.get("allow_method_override") === "on",
+    })
+    .eq("id", productId);
+
+  if (error) {
+    redirect(`/konfigurasi?error=${encodeURIComponent(error.message)}#pinjaman`);
+  }
+
+  revalidatePath("/konfigurasi");
+  redirect("/konfigurasi?saved=pinjaman_updated#pinjaman");
+}
+
+export async function createAccount(formData: FormData) {
+  const supabase = await requireUser();
+  const code = text(formData.get("code"));
+  const name = text(formData.get("name"));
+  const category = text(formData.get("category")) ?? "asset";
+  const normalBalance = text(formData.get("normal_balance")) ?? (category === "asset" || category === "expense" ? "in" : "out");
+
+  if (!code || !name) {
+    redirect("/konfigurasi?error=Kode%20dan%20nama%20akun%20COA%20wajib%20diisi.#coa");
+  }
+
+  const { error } = await supabase.from("accounts").insert({
+    code,
+    name,
+    category,
+    normal_balance: normalBalance,
+  });
+
+  if (error) {
+    redirect(`/konfigurasi?error=${encodeURIComponent(error.message)}#coa`);
+  }
+
+  revalidatePath("/konfigurasi");
+  revalidatePath("/akuntansi");
+  revalidatePath("/kas");
+  revalidatePath("/kas-jurnal");
+  redirect("/konfigurasi?saved=coa_created#coa");
+}
+
+export async function updateAccount(accountId: string, formData: FormData) {
+  const supabase = await requireUser();
+  const code = text(formData.get("code"));
+  const name = text(formData.get("name"));
+  const category = text(formData.get("category")) ?? "asset";
+  const normalBalance = text(formData.get("normal_balance")) ?? (category === "asset" || category === "expense" ? "in" : "out");
+
+  if (!accountId || !code || !name) {
+    redirect("/konfigurasi?error=Kode%20dan%20nama%20akun%20COA%20wajib%20diisi.#coa");
+  }
+
+  const { error } = await supabase
+    .from("accounts")
+    .update({
+      code,
+      name,
+      category,
+      normal_balance: normalBalance,
+    })
+    .eq("id", accountId);
+
+  if (error) {
+    redirect(`/konfigurasi?error=${encodeURIComponent(error.message)}#coa`);
+  }
+
+  revalidatePath("/konfigurasi");
+  revalidatePath("/akuntansi");
+  revalidatePath("/kas");
+  revalidatePath("/kas-jurnal");
+  redirect("/konfigurasi?saved=coa_updated#coa");
+}

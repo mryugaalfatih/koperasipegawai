@@ -59,6 +59,14 @@ type FiscalPeriod = {
   }[] | null;
 };
 
+type AccountRow = {
+  id: string;
+  code: string;
+  name: string;
+  category: "asset" | "liability" | "equity" | "income" | "expense";
+  normal_balance: "in" | "out";
+};
+
 export default async function KonfigurasiPage({ searchParams }: KonfigurasiPageProps) {
   const supabase = await createClient();
   const params = await searchParams;
@@ -82,12 +90,14 @@ export default async function KonfigurasiPage({ searchParams }: KonfigurasiPageP
     { data: fiscalPeriods },
     { data: savingsProducts },
     { data: loanProducts },
+    { data: accounts },
   ] = await Promise.all([
     supabase.from("cooperative_profiles").select("*").order("created_at").limit(1).maybeSingle(),
     supabase.from("branches").select("id, code, name, address").order("name"),
     supabase.from("fiscal_periods").select("id, year, month, status, branches(name)").order("year", { ascending: false }).limit(12),
     supabase.from("savings_products").select("*").order("code"),
     supabase.from("loan_products").select("*").order("name"),
+    supabase.from("accounts").select("id, code, name, category, normal_balance").order("code"),
   ]);
 
   const koperasi = cooperativeProfile as CooperativeProfile | null;
@@ -95,6 +105,7 @@ export default async function KonfigurasiPage({ searchParams }: KonfigurasiPageP
   const fiscalRows = (fiscalPeriods ?? []) as unknown as FiscalPeriod[];
   const savingsRows = (savingsProducts ?? []) as SavingsProduct[];
   const loanRows = (loanProducts ?? []) as LoanProduct[];
+  const accountRows = (accounts ?? []) as unknown as AccountRow[];
   const defaultBranchId = branchRows[0]?.id ?? "";
 
   return (
@@ -111,6 +122,7 @@ export default async function KonfigurasiPage({ searchParams }: KonfigurasiPageP
           fiscalRows={fiscalRows}
           savingsRows={savingsRows}
           loanRows={loanRows}
+          accountRows={accountRows}
           defaultBranchId={defaultBranchId}
           profileName={profile.full_name ?? "User"}
           profileRole={profile.role ?? "admin"}

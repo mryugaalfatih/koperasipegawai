@@ -12,7 +12,10 @@ function clean(value: FormDataEntryValue | null) {
 }
 
 function numberValue(value: FormDataEntryValue | null, fallback = 0) {
-  const parsed = Number(value ?? fallback);
+  if (value === null || value === undefined) return fallback;
+  const text = String(value).trim();
+  if (text === "") return fallback;
+  const parsed = Number(text);
   return Number.isFinite(parsed) ? parsed : fallback;
 }
 
@@ -114,6 +117,97 @@ export async function createLoan(formData: FormData) {
   redirect("/pinjaman?saved=pengajuan");
 }
 
+export async function updateLoan(loanId: string, formData: FormData) {
+  const { supabase, profileId } = await requireUser();
+  const memberId = clean(formData.get("member_id"));
+  const productId = clean(formData.get("product_id"));
+  const principal = numberValue(formData.get("principal"));
+  const tenorMonths = numberValue(formData.get("tenor_months"));
+
+  if (!memberId || !productId || principal <= 0 || tenorMonths <= 0) {
+    redirect(`/pinjaman?error=Anggota,%20produk,%20plafon,%20dan%20tenor%20wajib%20valid.`);
+  }
+
+  const { data: product } = await supabase
+    .from("loan_products")
+    .select("annual_rate, admin_fee_percent, default_interest_method, allow_method_override")
+    .eq("id", productId)
+    .single();
+
+  if (!product) {
+    redirect(`/pinjaman?error=Produk%20pinjaman%20tidak%20ditemukan.`);
+  }
+
+  const requestedMethod = clean(formData.get("interest_method"));
+  const interestMethod = product.allow_method_override && requestedMethod ? requestedMethod : product.default_interest_method;
+  const annualRate = numberValue(formData.get("annual_rate"), Number(product.annual_rate ?? 0));
+
+  const { error } = await supabase
+    .from("loans")
+    .update({
+      member_id: memberId,
+      product_id: productId,
+      principal,
+      tenor_months: tenorMonths,
+      interest_method: interestMethod,
+      annual_rate_snapshot: annualRate,
+      admin_fee_percent_snapshot: product.admin_fee_percent,
+    })
+    .eq("id", loanId);
+
+  if (error) {
+    redirect(`/pinjaman?error=${encodeURIComponent(error.message)}`);
+  }
+
+  await writeAuditLog(supabase, profileId, "loan.updated", "loans", loanId, {
+    principal,
+    tenor_months: tenorMonths,
+    interest_method: interestMethod,
+  });
+
+  revalidatePath("/pinjaman");
+  revalidatePath(`/pinjaman/${loanId}`);
+  revalidatePath("/audit");
+  redirect("/pinjaman?saved=updated");
+}
+
+export async function deleteLoan(loanId: string) {
+  const { supabase, profileId } = await requireUser();
+
+  // Safety: only allow deletion of non-disbursed loans
+  const { data: loan } = await supabase
+    .from("loans")
+    .select("status")
+    .eq("id", loanId)
+    .single();
+
+  if (!loan) {
+    redirect("/pinjaman?error=Pinjaman%20tidak%20ditemukan.");
+  }
+
+  if (loan.status === "disbursed" || loan.status === "closed") {
+    redirect("/pinjaman?error=Pinjaman%20yang%20sudah%20dicairkan%20tidak%20dapat%20dihapus.");
+  }
+
+  // Delete related installments first (if any draft ones exist)
+  await supabase.from("loan_installments").delete().eq("loan_id", loanId);
+
+  const { error } = await supabase.from("loans").delete().eq("id", loanId);
+
+  if (error) {
+    redirect(`/pinjaman?error=${encodeURIComponent(error.message)}`);
+  }
+
+  await writeAuditLog(supabase, profileId, "loan.deleted", "loans", loanId, {
+    previous_status: loan.status,
+  });
+
+  revalidatePath("/pinjaman");
+  revalidatePath("/kas");
+  revalidatePath("/audit");
+  redirect("/pinjaman?saved=deleted");
+}
+
 export async function approveLoan(loanId: string) {
   const { supabase, profileId } = await requireUser();
 
@@ -139,8 +233,9 @@ export async function approveLoan(loanId: string) {
   redirect("/pinjaman?saved=approved");
 }
 
-export async function disburseLoan(loanId: string) {
+export async function disburseLoan(loanId: string, formData: FormData) {
   const { supabase, profileId } = await requireUser();
+  const fundSource = String(formData.get("fund_source") ?? "kas");
   const { data: loan } = await supabase
     .from("loans")
     .select("id, principal, tenor_months, interest_method, annual_rate_snapshot")
@@ -152,6 +247,39 @@ export async function disburseLoan(loanId: string) {
   }
 
   const principal = Number(loan.principal);
+
+  // Validate fund source balance before disbursement
+  const cashCode = fundSource === "bank" ? "1002" : "1001";
+  const cashLabel = fundSource === "bank" ? "Bank" : "Kas";
+
+  const { data: fundAccount } = await supabase
+    .from("accounts")
+    .select("id")
+    .eq("code", cashCode)
+    .single();
+
+  if (!fundAccount) {
+    redirect(`/pinjaman?error=Akun%20${cashLabel}%20(${cashCode})%20belum%20tersedia%20di%20COA.`);
+  }
+
+  // Calculate current balance: sum(debit) - sum(credit) for asset accounts
+  const { data: balanceData } = await supabase
+    .from("journal_lines")
+    .select("debit, credit")
+    .eq("account_id", fundAccount.id);
+
+  const currentBalance = (balanceData ?? []).reduce(
+    (sum, line) => sum + Number(line.debit ?? 0) - Number(line.credit ?? 0),
+    0
+  );
+
+  if (currentBalance < principal) {
+    const fmt = new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 });
+    redirect(
+      `/pinjaman?error=${encodeURIComponent(`Saldo ${cashLabel} tidak mencukupi. Saldo saat ini: ${fmt.format(currentBalance)}, dibutuhkan: ${fmt.format(principal)}.`)}`
+    );
+  }
+
   const tenor = Number(loan.tenor_months);
   const monthlyRate = Number(loan.annual_rate_snapshot ?? 0) / 100 / 12;
   const startDate = new Date();
@@ -214,12 +342,9 @@ export async function disburseLoan(loanId: string) {
     const branchId = (memberData?.members as unknown as { branch_id: string } | null)?.branch_id;
 
     if (branchId) {
-      const [{ data: cashAccount }, { data: receivableAccount }] = await Promise.all([
-        supabase.from("accounts").select("id").eq("code", "1001").single(),
-        supabase.from("accounts").select("id").eq("code", "1101").single(),
-      ]);
+      const { data: receivableAccount } = await supabase.from("accounts").select("id").eq("code", "1101").single();
 
-      if (cashAccount && receivableAccount) {
+      if (fundAccount && receivableAccount) {
         const entryNo = `KK-PINJ-${Date.now().toString().slice(-8)}`;
         const { data: journal } = await supabase
           .from("journal_entries")
@@ -227,10 +352,11 @@ export async function disburseLoan(loanId: string) {
             branch_id: branchId,
             entry_no: entryNo,
             entry_date: new Date().toISOString().slice(0, 10),
-            memo: `Pencairan Pinjaman (${principal.toLocaleString('id-ID')})`,
+            memo: `Pencairan Pinjaman via ${fundSource === "bank" ? "Transfer Bank" : "Kas Tunai"} (${principal.toLocaleString('id-ID')})`,
             source_type: "loans",
             source_id: loanId,
             created_by: profileId,
+            status: "draft",
           })
           .select("id")
           .single();
@@ -238,9 +364,25 @@ export async function disburseLoan(loanId: string) {
         if (journal) {
           await supabase.from("journal_lines").insert([
             { journal_entry_id: journal.id, account_id: receivableAccount.id, debit: principal, credit: 0 },
-            { journal_entry_id: journal.id, account_id: cashAccount.id, debit: 0, credit: principal },
+            { journal_entry_id: journal.id, account_id: fundAccount.id, debit: 0, credit: principal },
           ]);
         }
+
+        // Record Cash Transaction (Kas Keluar)
+        const ctDescription = fundSource === "bank"
+          ? `Pencairan Pinjaman via Transfer Bank (No. Kontrak: KP-${loanId.slice(0, 8).toUpperCase()})`
+          : `Pencairan Pinjaman via Kas Tunai (No. Kontrak: KP-${loanId.slice(0, 8).toUpperCase()})`;
+
+        await supabase.from("cash_transactions").insert({
+          branch_id: branchId,
+          direction: "out",
+          amount: principal,
+          source_type: fundSource === "bank" ? "kas_bank" : "kas_tunai",
+          source_id: loanId,
+          description: ctDescription,
+          transaction_date: new Date().toISOString().slice(0, 10),
+          created_by: profileId,
+        });
       }
     }
   } catch (err) {
