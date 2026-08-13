@@ -925,25 +925,21 @@ export function KasClientManager({
             <span className="text-xs font-bold uppercase tracking-wider text-[#475569]">
               Unit Usaha Yang Di-Closing * {isUnitLocked ? "(Terkunci sesuai Akun)" : ""}
             </span>
-            <select
-              value={closingUnit}
-              onChange={(e) => setClosingUnit(e.target.value)}
-              disabled={isUnitLocked}
-              className={`mt-1.5 h-10 w-full rounded-xl border border-[#dbe5f1] px-3 text-xs font-bold outline-none focus:border-[#2563eb] ${
-                isUnitLocked ? "bg-[#f1f5f9] text-[#64748b] cursor-not-allowed" : "bg-[#f8fbff] text-[#0b1220]"
-              }`}
-              required
-            >
-              <option value="" disabled>Pilih unit usaha...</option>
-              {unitsList.map((u) => {
-                const alreadyClosed = closedUnitsToday.has(u.code);
-                return (
-                  <option key={u.id} value={u.name}>
-                    {u.code} · {u.name} {alreadyClosed ? "✓ (Sudah Closing)" : ""}
-                  </option>
-                );
-              })}
-            </select>
+            <div className="mt-1.5">
+              <CustomSelect
+                value={closingUnit}
+                onChange={(e) => setClosingUnit(e.target.value)}
+                disabled={isUnitLocked}
+                placeholder="Pilih unit usaha..."
+                options={unitsList.map((u) => {
+                  const alreadyClosed = closedUnitsToday.has(u.code);
+                  return {
+                    value: u.name,
+                    label: `${u.code} · ${u.name}${alreadyClosed ? " ✓ (Sudah Closing)" : ""}`,
+                  };
+                })}
+              />
+            </div>
           </label>
 
           {/* Ringkasan Buku Kas Sistem Hari Ini */}
