@@ -258,7 +258,7 @@ export function AparRefillClientManager({
                 Daftar Tabung APAR Yang Di-Refill ({itemsCart.length} Tabung)
               </span>
 
-              <div className="grid gap-2 sm:grid-cols-4">
+              <div className="grid gap-2 grid-cols-2 sm:grid-cols-4">
                 <input
                   type="text"
                   value={serialNo}

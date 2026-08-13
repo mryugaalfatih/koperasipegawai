@@ -391,12 +391,12 @@ export function DashboardNavigation({ navItems: initialNavItems, mobileNavItems,
       {/* ===== MOBILE BOTTOM BAR ===== */}
       <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-[#dbe5f1] bg-[#f8fbff]/95 px-2 py-2 backdrop-blur lg:hidden print:hidden">
         <div className="grid grid-cols-5 gap-1">
-          {mobileNavItems.slice(0, 4).map((item) => {
+          {currentNavItems.slice(0, 4).map((item) => {
             const active = isActive(item.href);
             const Icon = iconMap[item.icon] ?? Building2;
             return (
               <Link
-                className={`flex h-14 flex-col items-center justify-center gap-1 rounded-2xl text-[11px] font-black transition-colors ${
+                className={`flex h-14 flex-col items-center justify-center gap-1 rounded-2xl text-[10px] font-black transition-colors ${
                   active ? "bg-[#0b1220] text-white" : "text-[#64748b] hover:bg-white"
                 }`}
                 href={item.href}
@@ -406,7 +406,7 @@ export function DashboardNavigation({ navItems: initialNavItems, mobileNavItems,
                 aria-current={active ? "page" : undefined}
               >
                 <Icon className="size-4" />
-                {item.label}
+                <span className="truncate max-w-[56px] text-center leading-tight">{item.label}</span>
               </Link>
             );
           })}
@@ -415,7 +415,7 @@ export function DashboardNavigation({ navItems: initialNavItems, mobileNavItems,
           <button
             type="button"
             onClick={() => setMobileMenuOpen(true)}
-            className={`flex h-14 flex-col items-center justify-center gap-1 rounded-2xl text-[11px] font-black transition-colors cursor-pointer ${
+            className={`flex h-14 flex-col items-center justify-center gap-1 rounded-2xl text-[10px] font-black transition-colors cursor-pointer ${
               mobileMenuOpen ? "bg-[#0b1220] text-white" : "text-[#64748b] hover:bg-white"
             }`}
           >
@@ -456,11 +456,14 @@ export function DashboardNavigation({ navItems: initialNavItems, mobileNavItems,
               </button>
             </div>
 
-            {/* Unit Selector */}
+            {/* Unit Selector - triggers full navigation on change */}
             <div className="mb-4">
               <CustomSelect
                 value={selectedUnit}
-                onChange={(e) => setSelectedUnit(e.target.value)}
+                onChange={(e) => {
+                  handleUnitChange(e.target.value);
+                  setMobileMenuOpen(false);
+                }}
                 options={unitOptions}
                 className="h-9 text-[11px]"
               />
