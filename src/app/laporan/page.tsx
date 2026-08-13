@@ -172,7 +172,7 @@ export default async function LaporanPage({ searchParams }: LaporanPageProps) {
       .order("year", { ascending: false })
       .limit(5),
     supabase.from("members").select("id", { count: "exact", head: true }).eq("status", "active"),
-    supabase.from("business_units").select("id, code, name").order("code"),
+    supabase.from("business_units").select("id, code, name").eq("is_active", true).order("code"),
   ]);
 
   if (!profile) {
@@ -307,15 +307,11 @@ export default async function LaporanPage({ searchParams }: LaporanPageProps) {
             >
               Semua Unit (Konsolidasi/Gabungan)
             </Link>
-            {(unitList.length ? unitList : [
-              { code: "USP", name: "Simpan Pinjam" },
-              { code: "WAS", name: "Toko Waserda" },
-              { code: "KLN", name: "Klinik / Jasa" },
-            ]).map((u) => {
-              const isActive = selectedUnit.toLowerCase() === u.name.toLowerCase();
+            {unitList.map((u) => {
+              const isActive = selectedUnit.toLowerCase() === u.name.toLowerCase() || selectedUnit.toLowerCase() === u.code.toLowerCase();
               return (
                 <Link
-                  key={u.code}
+                  key={u.id}
                   href={`/laporan?unit=${encodeURIComponent(u.name)}`}
                   className={`h-8 rounded-lg px-3.5 text-xs font-bold transition-all inline-flex items-center ${
                     isActive

@@ -16,7 +16,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import Link from "next/link";
-import { postCashTransaction, transferCashBank, postCashClosing, approveManagerStage } from "./actions";
+import { postCashTransaction, transferCashBank, postCashClosing, approveManagerStage, reopenCashClosing } from "./actions";
 import { disburseLoan } from "@/app/pinjaman/actions";
 import { CrudHeader } from "@/components/CrudHeader";
 import { CrudModal } from "@/components/CrudModal";
@@ -163,11 +163,29 @@ export function KasClientManager({
   const todayStr = new Date().toISOString().slice(0, 10);
 
   // Per-unit closing status
-  const unitsList = businessUnits.length ? businessUnits : [
-    { id: "1", code: "USP", name: "Unit Simpan Pinjam (USP)" },
-    { id: "2", code: "WAS", name: "Unit Toko Waserda" },
-    { id: "3", code: "KLN", name: "Unit Klinik / Jasa" },
-  ];
+  const unitsList = businessUnits;
+
+  const [formTxUnit, setFormTxUnit] = useState(userUnit?.name ?? unitsList[0]?.name ?? "");
+  const [formTxDate, setFormTxDate] = useState(todayStr);
+
+  const isFormTxClosed = closingRows.some((log) => {
+    const meta = log.metadata ?? {};
+    const logDate = meta.closing_date ?? log.created_at.slice(0, 10);
+    if (logDate !== formTxDate) return false;
+
+    const logCode = (meta.closing_unit_code ?? "ALL").toLowerCase();
+    const logName = (meta.closing_unit_name ?? "Semua Unit").toLowerCase();
+    const target = (formTxUnit ?? "").toLowerCase();
+
+    return (
+      logCode === "all" ||
+      logName === "semua unit" ||
+      target === logCode ||
+      target === logName ||
+      target.includes(logCode) ||
+      logName.includes(target)
+    );
+  });
 
   const closedUnitsToday = new Set(
     closingRows
@@ -509,11 +527,7 @@ export function KasClientManager({
                         {cashRows.length}
                       </span>
                     </button>
-                    {(businessUnits.length ? businessUnits : [
-                      { id: "1", code: "USP", name: "Unit Simpan Pinjam (USP)" },
-                      { id: "2", code: "WAS", name: "Unit Toko Waserda" },
-                      { id: "3", code: "KLN", name: "Unit Klinik / Jasa" },
-                    ]).map((u) => {
+                    {businessUnits.map((u) => {
                       const isActive = unitFilter.toLowerCase() === u.name.toLowerCase();
                       const unitCount = cashRows.filter(
                         (item) => item.description?.toLowerCase().includes(u.name.toLowerCase())
@@ -583,31 +597,56 @@ export function KasClientManager({
                             </p>
                           </div>
 
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setSelectedHistoricalClosing(log);
-                              setClosingNotes(meta.notes ?? "");
-                              if (meta.denominations) {
-                                setDenominations({
-                                  d100k: meta.denominations.d100k ?? 0,
-                                  d50k: meta.denominations.d50k ?? 0,
-                                  d20k: meta.denominations.d20k ?? 0,
-                                  d10k: meta.denominations.d10k ?? 0,
-                                  d5k: meta.denominations.d5k ?? 0,
-                                  d2k: meta.denominations.d2k ?? 0,
-                                  d1k: meta.denominations.d1k ?? 0,
-                                  dCoin: meta.denominations.dCoin ?? 0,
-                                });
-                              }
-                              setClosingPrintMode(true);
-                              setTimeout(() => window.print(), 150);
-                            }}
-                            className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-[#dbe5f1] bg-white px-3 text-xs font-bold text-[#0b1220] hover:bg-[#2563eb] hover:text-white hover:border-[#2563eb] active:scale-95 transition-all cursor-pointer shadow-sm"
-                          >
-                            <Printer className="size-3.5" />
-                            <span>Cetak Berita Acara (A4)</span>
-                          </button>
+                          <div className="flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setSelectedHistoricalClosing(log);
+                                setClosingNotes(meta.notes ?? "");
+                                if (meta.denominations) {
+                                  setDenominations({
+                                    d100k: meta.denominations.d100k ?? 0,
+                                    d50k: meta.denominations.d50k ?? 0,
+                                    d20k: meta.denominations.d20k ?? 0,
+                                    d10k: meta.denominations.d10k ?? 0,
+                                    d5k: meta.denominations.d5k ?? 0,
+                                    d2k: meta.denominations.d2k ?? 0,
+                                    d1k: meta.denominations.d1k ?? 0,
+                                    dCoin: meta.denominations.dCoin ?? 0,
+                                  });
+                                }
+                                setClosingPrintMode(true);
+                                setTimeout(() => window.print(), 150);
+                              }}
+                              className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-[#dbe5f1] bg-white px-3 text-xs font-bold text-[#0b1220] hover:bg-[#2563eb] hover:text-white hover:border-[#2563eb] active:scale-95 transition-all cursor-pointer shadow-sm"
+                            >
+                              <Printer className="size-3.5" />
+                              <span>Cetak BA (A4)</span>
+                            </button>
+
+                            <form
+                              action={reopenCashClosing}
+                              onSubmit={(e) => {
+                                if (
+                                  !confirm(
+                                    `Buka kembali sesi closing unit ${meta.closing_unit_name ?? "Semua Unit"} tanggal ${closingDate}? Transaksi pada tanggal ini akan dibuka kembali.`,
+                                  )
+                                ) {
+                                  e.preventDefault();
+                                }
+                              }}
+                            >
+                              <input type="hidden" name="log_id" value={log.id} />
+                              <button
+                                type="submit"
+                                className="inline-flex h-8 items-center gap-1 rounded-lg border border-amber-300 bg-amber-50 px-2.5 text-xs font-bold text-amber-900 hover:bg-amber-100 active:scale-95 transition-all cursor-pointer shadow-sm"
+                                title="Buka kembali sesi closing"
+                              >
+                                <RefreshCw className="size-3.5" />
+                                <span>Reopen</span>
+                              </button>
+                            </form>
+                          </div>
                         </div>
 
                         <div className="grid grid-cols-3 gap-2 rounded-lg bg-white p-2.5 text-xs ring-1 ring-[#e2e8f0]">
@@ -747,21 +786,18 @@ export function KasClientManager({
             <form action={postCashTransaction} className="mt-4 space-y-3.5">
               <label className="block">
                 <span className="text-xs font-bold uppercase text-[#475569]">Unit Usaha Koperasi *</span>
-                <CustomSelect name="unit_name" className="mt-1.5 h-10 text-xs font-bold" required>
-                  {businessUnits.length ? (
-                    businessUnits.map((u) => (
-                      <option key={u.id} value={u.name}>
-                        {u.code} · {u.name}
-                      </option>
-                    ))
-                  ) : (
-                    <>
-                      <option value="Unit Simpan Pinjam (USP)">USP · Unit Simpan Pinjam</option>
-                      <option value="Unit Toko Waserda">WAS · Unit Toko Waserda</option>
-                      <option value="Unit Klinik / Jasa">KLN · Unit Klinik / Jasa</option>
-                      <option value="Unit Usaha Lainnya">OTH · Unit Usaha Lainnya</option>
-                    </>
-                  )}
+                <CustomSelect
+                  name="unit_name"
+                  value={formTxUnit}
+                  onChange={(e) => setFormTxUnit(e.target.value)}
+                  className="mt-1.5 h-10 text-xs font-bold"
+                  required
+                >
+                  {businessUnits.map((u) => (
+                    <option key={u.id} value={u.name}>
+                      {u.code} · {u.name}
+                    </option>
+                  ))}
                 </CustomSelect>
               </label>
               <label className="block">
@@ -819,8 +855,8 @@ export function KasClientManager({
                 <span className="text-xs font-bold uppercase text-[#475569]">Tanggal Transaksi</span>
                 <input
                   className="mt-1.5 h-10 w-full rounded-xl border border-[#dbe5f1] bg-[#f8fbff] px-3.5 text-xs font-bold outline-none focus:border-[#2563eb]"
-                  defaultValue={activeOperationalDate}
-                  key={activeOperationalDate}
+                  value={formTxDate}
+                  onChange={(e) => setFormTxDate(e.target.value)}
                   name="transaction_date"
                   type="date"
                 />
@@ -835,8 +871,24 @@ export function KasClientManager({
                 />
               </label>
 
-              <SubmitButton className="h-10 w-full rounded-xl bg-[#2563eb] text-xs font-bold text-white hover:bg-[#1d4ed8]">
-                Posting Transaksi Kas
+              {isFormTxClosed ? (
+                <div className="rounded-xl bg-amber-50 p-3 border border-amber-200 text-[11px] font-bold text-amber-900 flex items-start gap-2">
+                  <Lock className="size-4 text-amber-600 shrink-0 mt-0.5" />
+                  <span>
+                    Unit ini ({formTxUnit}) sudah Closing Kas Sore untuk tanggal {formTxDate}. Transaksi baru pada tanggal tersebut ditolak.
+                  </span>
+                </div>
+              ) : null}
+
+              <SubmitButton
+                disabled={isFormTxClosed}
+                className={`h-10 w-full rounded-xl text-xs font-bold text-white transition-all ${
+                  isFormTxClosed
+                    ? "bg-slate-400 cursor-not-allowed"
+                    : "bg-[#2563eb] hover:bg-[#1d4ed8]"
+                }`}
+              >
+                {isFormTxClosed ? "🔒 Operasional Tanggal Terkunci" : "Posting Transaksi Kas"}
               </SubmitButton>
             </form>
           </aside>
@@ -917,8 +969,16 @@ export function KasClientManager({
           <input type="hidden" name="closing_date" value={new Date().toISOString().slice(0, 10)} />
           <input type="hidden" name="system_balance" value={netCash} />
           <input type="hidden" name="physical_balance" value={physicalTotal} />
-          <input type="hidden" name="closing_unit_code" value={closingUnit ? (unitsList.find((u) => u.name === closingUnit)?.code ?? "ALL") : "ALL"} />
-          <input type="hidden" name="closing_unit_name" value={closingUnit || "Semua Unit"} />
+          {(() => {
+            const currentSelected = closingUnit || userUnit?.name || unitsList[0]?.name || "Semua Unit";
+            const matchedUnit = unitsList.find((u) => u.name === currentSelected || u.code === currentSelected);
+            return (
+              <>
+                <input type="hidden" name="closing_unit_code" value={matchedUnit ? matchedUnit.code : "ALL"} />
+                <input type="hidden" name="closing_unit_name" value={matchedUnit ? matchedUnit.name : "Semua Unit"} />
+              </>
+            );
+          })()}
 
           {/* Unit Usaha Selector */}
           <label className="block">
@@ -927,17 +987,20 @@ export function KasClientManager({
             </span>
             <div className="mt-1.5">
               <CustomSelect
-                value={closingUnit}
+                value={closingUnit || (userUnit?.name ?? unitsList[0]?.name ?? "Semua Unit")}
                 onChange={(e) => setClosingUnit(e.target.value)}
                 disabled={isUnitLocked}
                 placeholder="Pilih unit usaha..."
-                options={unitsList.map((u) => {
-                  const alreadyClosed = closedUnitsToday.has(u.code);
-                  return {
-                    value: u.name,
-                    label: `${u.code} · ${u.name}${alreadyClosed ? " ✓ (Sudah Closing)" : ""}`,
-                  };
-                })}
+                options={[
+                  ...(!isUnitLocked ? [{ value: "Semua Unit", label: "ALL · Semua Unit (Global Closing)" }] : []),
+                  ...unitsList.map((u) => {
+                    const alreadyClosed = closedUnitsToday.has(u.code);
+                    return {
+                      value: u.name,
+                      label: `${u.code} · ${u.name}${alreadyClosed ? " ✓ (Sudah Closing)" : ""}`,
+                    };
+                  }),
+                ]}
               />
             </div>
           </label>

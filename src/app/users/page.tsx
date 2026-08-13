@@ -35,6 +35,7 @@ type ProfileRow = {
   role: string;
   phone: string | null;
   branch_id: string | null;
+  allowed_unit_codes?: string[] | null;
   branches: {
     code: string;
     name: string;
@@ -86,11 +87,7 @@ export default async function UsersPage({ searchParams }: UsersPageProps) {
 
   const profileRows = (profiles ?? []) as unknown as ProfileRow[];
   const branchRows = (branches ?? []) as Branch[];
-  const unitRows = (businessUnits ?? [
-    { id: "1", code: "USP", name: "Unit Simpan Pinjam", is_active: true },
-    { id: "2", code: "TOKO", name: "Unit Toko / Waserda", is_active: false },
-    { id: "3", code: "JASA", name: "Unit Jasa & Penyewaan", is_active: false },
-  ]) as BusinessUnitOption[];
+  const unitRows = (businessUnits ?? []) as BusinessUnitOption[];
   const defaultBranchId = branchRows[0]?.id ?? "";
   const superAdminCount = profileRows.filter((profile) => profile.role === "super_admin").length;
 
@@ -190,9 +187,49 @@ export default async function UsersPage({ searchParams }: UsersPageProps) {
                               </select>
                             </label>
                           </div>
+
+                          {/* Konfigurasi Hak Akses Unit Usaha */}
+                          <div className="mt-3 rounded-2xl bg-[#f8fbff] p-3 border border-[#dbe5f1] space-y-2">
+                            <div className="flex items-center justify-between">
+                              <span className="text-xs font-bold uppercase text-[#475569]">Otorisasi Hak Akses Unit Usaha</span>
+                              <label className="flex items-center gap-2 text-xs font-bold text-[#1d4ed8]">
+                                <input
+                                  type="checkbox"
+                                  name="is_multi_unit"
+                                  value="true"
+                                  defaultChecked={profile.allowed_unit_codes?.includes("*") || profile.role === "super_admin"}
+                                  className="size-4 accent-[#2563eb]"
+                                />
+                                <span>Akses Semua Unit (Multi-Unit)</span>
+                              </label>
+                            </div>
+                            <div className="flex flex-wrap gap-2.5 pt-1">
+                              {unitRows.map((unit) => {
+                                const isChecked =
+                                  profile.allowed_unit_codes?.includes("*") ||
+                                  profile.allowed_unit_codes?.includes(unit.code);
+                                return (
+                                  <label
+                                    className="flex items-center gap-1.5 rounded-lg bg-white px-2.5 py-1 text-xs font-bold border border-[#dbe5f1]"
+                                    key={unit.id || unit.code}
+                                  >
+                                    <input
+                                      className="size-3.5 accent-[#2563eb]"
+                                      defaultChecked={isChecked}
+                                      name="allowed_unit_codes"
+                                      type="checkbox"
+                                      value={unit.code}
+                                    />
+                                    <span>{unit.code} · {unit.name}</span>
+                                  </label>
+                                );
+                              })}
+                            </div>
+                          </div>
+
                           <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
                             <p className="text-xs font-bold text-[#64748b]">Auth user ID: {profile.id}</p>
-                            <button className="h-10 rounded-2xl bg-[#0b1220] px-4 text-sm font-black text-white" type="submit">
+                            <button className="h-10 rounded-2xl bg-[#0b1220] px-4 text-sm font-black text-white cursor-pointer hover:bg-slate-800" type="submit">
                               Simpan perubahan
                             </button>
                           </div>
@@ -256,11 +293,11 @@ export default async function UsersPage({ searchParams }: UsersPageProps) {
                   <span className="text-xs font-bold text-[#1d4ed8]">Akses Semua Unit Usaha (Multi-Unit)</span>
                 </label>
                 <div className="space-y-2 pt-1">
-                  {unitRows.map((unit) => (
-                    <label className="flex items-center gap-2.5" key={unit.code}>
+                  {unitRows.map((unit, index) => (
+                    <label className="flex items-center gap-2.5" key={unit.id || unit.code}>
                       <input
                         className="size-4 accent-[#2563eb]"
-                        defaultChecked={unit.code === "USP"}
+                        defaultChecked={index === 0}
                         name="allowed_unit_codes"
                         type="checkbox"
                         value={unit.code}

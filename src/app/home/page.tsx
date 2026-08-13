@@ -136,6 +136,7 @@ export default async function Home() {
     { data: profitLossRows },
     { data: loanOutstandingRows },
     { data: shuRules },
+    { data: businessUnits },
   ] = await Promise.all([
     supabase.from("profiles").select("role, full_name").eq("id", user.id).single(),
     supabase.from("members").select("id", { count: "exact", head: true }).eq("status", "active"),
@@ -157,7 +158,10 @@ export default async function Home() {
       .limit(12),
     supabase.from("v_loan_outstanding").select("outstanding_amount, status"),
     supabase.from("shu_allocation_rules").select("component, percent").eq("is_active", true).order("component"),
+    supabase.from("business_units").select("id, code, name").eq("is_active", true).order("code"),
   ]);
+
+  const activeUnitLabel = businessUnits?.length ? businessUnits.map((u) => u.code).join(" · ") : "Semua Unit Usaha";
 
   if (!profile) {
     redirect("/login?error=Profil%20user%20belum%20dibuat.%20Jalankan%20helper%20SQL%20super%20admin.");
@@ -270,14 +274,14 @@ export default async function Home() {
                       Data operasional {today.toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })}
                     </div>
                     <span className="rounded-full bg-[#2563eb] px-3 py-0.5 text-xs font-bold text-white shadow-sm">
-                      Unit Usaha: Simpan Pinjam (USP)
+                      Unit Usaha Aktif: {activeUnitLabel}
                     </span>
                   </div>
                   <h1 className="mt-2.5 text-lg font-bold md:text-xl">
-                    Dashboard Operasional Unit Simpan Pinjam
+                    Dashboard Operasional Koperasi
                   </h1>
                   <p className="mt-1 max-w-xl text-xs font-medium text-[#cbd5e1]">
-                    Pantau kas unit, simpanan anggota, tagihan pinjaman, dan performa SHU USP secara real-time.
+                    Pantau kas unit, simpanan anggota, tagihan pinjaman, dan performa SHU secara real-time.
                   </p>
                 </div>
 

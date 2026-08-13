@@ -81,9 +81,11 @@ export function UnitUsahaClientManager({
 
             <div className="grid gap-4 md:grid-cols-2">
               {unitRows.map((unit) => {
-                const isUSP = unit.code === "USP";
-                const isTOKO = unit.code === "TOKO" || unit.code === "WAS";
-                const isJASA = unit.code === "JASA" || unit.code === "KLN";
+                const codeLower = unit.code.toLowerCase();
+                const nameLower = unit.name.toLowerCase();
+                const isUSP = codeLower.includes("usp") || nameLower.includes("simpan") || nameLower.includes("pusat");
+                const isTOKO = codeLower.includes("toko") || codeLower.includes("was") || nameLower.includes("toko") || nameLower.includes("waserda");
+                const isJASA = codeLower.includes("jasa") || codeLower.includes("kln") || nameLower.includes("jasa") || nameLower.includes("klinik");
 
                 const IconComponent = isUSP ? PiggyBank : isTOKO ? ShoppingBag : isJASA ? Truck : Store;
 

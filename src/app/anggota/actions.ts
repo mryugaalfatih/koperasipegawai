@@ -21,12 +21,22 @@ export async function createMember(formData: FormData) {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("branch_id, role")
+    .select("branch_id, role, allowed_unit_codes")
     .eq("id", user.id)
     .single();
 
   if (!profile) {
     redirect("/login?error=Profil%20user%20belum%20dibuat.");
+  }
+
+  const canManage =
+    profile.role === "super_admin" ||
+    profile.role === "admin" ||
+    profile.allowed_unit_codes?.includes("*") ||
+    profile.allowed_unit_codes?.includes("PUSAT");
+
+  if (!canManage) {
+    redirect(`/anggota?error=${encodeURIComponent("Akses ditolak. Penambahan data anggota hanya dapat dilakukan oleh Admin Pusat.")}`);
   }
 
   const requestedBranchId = clean(formData.get("branch_id"));
@@ -108,6 +118,22 @@ export async function updateMember(memberId: string, formData: FormData) {
 
   if (!user) {
     redirect("/login");
+  }
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role, allowed_unit_codes")
+    .eq("id", user.id)
+    .single();
+
+  const canManage =
+    profile?.role === "super_admin" ||
+    profile?.role === "admin" ||
+    profile?.allowed_unit_codes?.includes("*") ||
+    profile?.allowed_unit_codes?.includes("PUSAT");
+
+  if (!canManage) {
+    redirect(`/anggota?error=${encodeURIComponent("Akses ditolak. Pengeditan data anggota hanya dapat dilakukan oleh Admin Pusat.")}`);
   }
 
   const fullName = clean(formData.get("full_name"));

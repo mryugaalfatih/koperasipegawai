@@ -35,14 +35,12 @@ export default async function AnggotaPage({ searchParams }: AnggotaPageProps) {
   }
 
   const [{ data: profile }, { data: members }, { count: activeCount }, { count: totalCount }, { data: branches }] = await Promise.all([
-    supabase.from("profiles").select("branch_id, role, full_name").eq("id", user.id).single(),
+    supabase.from("profiles").select("branch_id, role, full_name, allowed_unit_codes").eq("id", user.id).single(),
     supabase.from("members").select("id, member_no, full_name, nik, phone, address, joined_at, status, photo_url, ktp_url, email, gender, birth_place, birth_date, department, employee_no, bank_name, bank_account_no, bank_account_name, heir_name, heir_relation, heir_phone").order("created_at", { ascending: false }).limit(100),
     supabase.from("members").select("*", { count: "exact", head: true }).eq("status", "active"),
     supabase.from("members").select("*", { count: "exact", head: true }),
     supabase.from("branches").select("id").order("created_at").limit(1).single(),
   ]);
-
-
 
   if (!profile) {
     redirect("/login?error=Profil%20user%20belum%20dibuat.");
@@ -50,6 +48,12 @@ export default async function AnggotaPage({ searchParams }: AnggotaPageProps) {
 
   const memberRows = (members ?? []) as MemberRow[];
   const defaultBranchId = profile.branch_id ?? branches?.id ?? "";
+
+  const canManageMembers =
+    profile.role === "super_admin" ||
+    profile.role === "admin" ||
+    profile.allowed_unit_codes?.includes("*") ||
+    profile.allowed_unit_codes?.includes("PUSAT");
 
   return (
     <main className="min-h-screen bg-[#f4f7fb] text-[#0b1220]">
@@ -63,6 +67,7 @@ export default async function AnggotaPage({ searchParams }: AnggotaPageProps) {
           <div className="mx-auto max-w-[1500px] px-4 py-4 md:px-7 md:py-6">
             <AnggotaClientManager
               activeCount={activeCount ?? 0}
+              canManageMembers={canManageMembers}
               defaultBranchId={defaultBranchId}
               memberRows={memberRows}
               totalCount={totalCount ?? 0}

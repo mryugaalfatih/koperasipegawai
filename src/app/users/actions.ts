@@ -92,7 +92,7 @@ export async function createUserProfile(formData: FormData) {
   const isMultiUnit = clean(formData.get("is_multi_unit")) === "true";
   const unitCodes = formData.getAll("allowed_unit_codes").map(String).filter(Boolean);
 
-  const allowedUnitCodes = isMultiUnit ? ["*"] : unitCodes.length ? unitCodes : ["USP"];
+  const allowedUnitCodes = isMultiUnit ? ["*"] : unitCodes.length ? unitCodes : ["*"];
 
   const { error } = await supabase.from("profiles").insert({
     id: authData.user.id,
@@ -127,7 +127,7 @@ export async function updateUserProfile(userId: string, formData: FormData) {
   const isMultiUnit = clean(formData.get("is_multi_unit")) === "true";
   const unitCodes = formData.getAll("allowed_unit_codes").map(String).filter(Boolean);
 
-  const allowedUnitCodes = isMultiUnit || role === "super_admin" ? ["*"] : unitCodes.length ? unitCodes : ["USP"];
+  const allowedUnitCodes = isMultiUnit || role === "super_admin" ? ["*"] : unitCodes.length ? unitCodes : ["*"];
 
   if (!fullName || !branchId) {
     redirect("/users?error=Nama%20dan%20cabang%20wajib%20diisi.");

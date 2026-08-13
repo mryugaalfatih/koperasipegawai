@@ -95,13 +95,19 @@ export default async function MemberDetailPage({ params, searchParams }: MemberD
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("id")
+    .select("id, role, allowed_unit_codes")
     .eq("id", user.id)
     .single();
 
   if (!profile) {
     redirect("/login?error=Profil%20user%20belum%20dibuat.");
   }
+
+  const canManageMembers =
+    profile.role === "super_admin" ||
+    profile.role === "admin" ||
+    profile.allowed_unit_codes?.includes("*") ||
+    profile.allowed_unit_codes?.includes("PUSAT");
 
   const [{ data: member }, { data: savings }, { data: loanOutstanding }] = await Promise.all([
     supabase
@@ -164,25 +170,37 @@ export default async function MemberDetailPage({ params, searchParams }: MemberD
             </div>
           </section>
 
-          <section className="rounded-[28px] bg-white p-5 shadow-sm ring-1 ring-[#dbe5f1] md:p-6">
-            <h3 className="text-xl font-black">Ubah status</h3>
-            {query.error ? (
-              <div className="mt-4 rounded-2xl bg-[#fff1f2] p-4 text-sm font-bold text-[#be123c]">{query.error}</div>
-            ) : null}
-            {query.updated ? (
-              <div className="mt-4 rounded-2xl bg-[#eff6ff] p-4 text-sm font-bold text-[#1d4ed8]">Status anggota diperbarui.</div>
-            ) : null}
-            <form action={updateStatus} className="mt-4 space-y-3">
-              <select className="h-12 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 text-sm font-bold outline-none" defaultValue={memberDetail.status} name="status">
-                <option value="active">Aktif</option>
-                <option value="inactive">Nonaktif</option>
-                <option value="resigned">Keluar</option>
-              </select>
-              <button className="h-12 w-full rounded-2xl bg-[#2563eb] text-sm font-black text-white" type="submit">
-                Simpan status
-              </button>
-            </form>
-          </section>
+          {canManageMembers ? (
+            <section className="rounded-[28px] bg-white p-5 shadow-sm ring-1 ring-[#dbe5f1] md:p-6">
+              <h3 className="text-xl font-black">Ubah status</h3>
+              {query.error ? (
+                <div className="mt-4 rounded-2xl bg-[#fff1f2] p-4 text-sm font-bold text-[#be123c]">{query.error}</div>
+              ) : null}
+              {query.updated ? (
+                <div className="mt-4 rounded-2xl bg-[#eff6ff] p-4 text-sm font-bold text-[#1d4ed8]">Status anggota diperbarui.</div>
+              ) : null}
+              <form action={updateStatus} className="mt-4 space-y-3">
+                <select className="h-12 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 text-sm font-bold outline-none" defaultValue={memberDetail.status} name="status">
+                  <option value="active">Aktif</option>
+                  <option value="inactive">Nonaktif</option>
+                  <option value="resigned">Keluar</option>
+                </select>
+                <button className="h-12 w-full rounded-2xl bg-[#2563eb] text-sm font-black text-white cursor-pointer hover:bg-[#1d4ed8]" type="submit">
+                  Simpan status
+                </button>
+              </form>
+            </section>
+          ) : (
+            <section className="rounded-[28px] bg-amber-50 border border-amber-200 p-5 text-amber-900">
+              <div className="flex items-center gap-2 font-bold text-sm">
+                <ShieldCheck className="size-5 text-amber-600 shrink-0" />
+                <span>Mode Info Read-Only</span>
+              </div>
+              <p className="mt-1.5 text-xs font-semibold text-amber-800 leading-relaxed">
+                Unit Usaha ini dapat melihat seluruh informasi anggota (Read-Only). Perubahan data atau status anggota hanya dapat dilakukan oleh Admin Pusat.
+              </p>
+            </section>
+          )}
         </aside>
 
         <section className="space-y-5">

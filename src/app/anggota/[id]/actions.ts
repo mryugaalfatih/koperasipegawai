@@ -22,6 +22,22 @@ export async function updateMemberStatus(memberId: string, formData: FormData) {
     redirect("/login");
   }
 
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role, allowed_unit_codes")
+    .eq("id", user.id)
+    .single();
+
+  const canManage =
+    profile?.role === "super_admin" ||
+    profile?.role === "admin" ||
+    profile?.allowed_unit_codes?.includes("*") ||
+    profile?.allowed_unit_codes?.includes("PUSAT");
+
+  if (!canManage) {
+    redirect(`/anggota/${memberId}?error=${encodeURIComponent("Akses ditolak. Perubahan status anggota hanya dapat dilakukan oleh Admin Pusat.")}`);
+  }
+
   const { error } = await supabase
     .from("members")
     .update({ status })

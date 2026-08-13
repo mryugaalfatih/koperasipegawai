@@ -51,6 +51,7 @@ type AnggotaClientManagerProps = {
   totalCount: number;
   activeCount: number;
   defaultBranchId: string;
+  canManageMembers?: boolean;
 };
 
 const statusLabels = {
@@ -64,6 +65,7 @@ export function AnggotaClientManager({
   totalCount,
   activeCount,
   defaultBranchId,
+  canManageMembers = true,
 }: AnggotaClientManagerProps) {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
@@ -90,8 +92,8 @@ export function AnggotaClientManager({
         title="Data Anggota Koperasi"
         subtitle="Kelola identitas, nomor anggota, NIK, pekerjaan, dan rekening bank anggota."
         countBadge={`${totalCount} Total`}
-        addButtonLabel="Tambah Anggota"
-        onAddClick={() => setIsAddModalOpen(true)}
+        addButtonLabel={canManageMembers ? "Tambah Anggota" : undefined}
+        onAddClick={canManageMembers ? () => setIsAddModalOpen(true) : undefined}
         searchValue={search}
         onSearchChange={setSearch}
         statusFilterValue={statusFilter}
@@ -183,21 +185,24 @@ export function AnggotaClientManager({
 
                   {/* Inline Action Buttons */}
                   <div className="flex items-center gap-1.5">
-                    <button
-                      type="button"
-                      onClick={() => setSelectedEditMember(member)}
-                      className="inline-flex h-9 items-center gap-1.5 rounded-xl bg-[#f1f5f9] px-3 text-xs font-bold text-[#0b1220] hover:bg-[#e2e8f0] active:scale-95 transition-all"
-                    >
-                      <Pencil className="size-3.5 text-[#2563eb]" />
-                      <span>Edit</span>
-                    </button>
+                    {canManageMembers ? (
+                      <button
+                        type="button"
+                        onClick={() => setSelectedEditMember(member)}
+                        className="inline-flex h-9 items-center gap-1.5 rounded-xl bg-[#f1f5f9] px-3 text-xs font-bold text-[#0b1220] hover:bg-[#e2e8f0] active:scale-95 transition-all"
+                      >
+                        <Pencil className="size-3.5 text-[#2563eb]" />
+                        <span>Edit</span>
+                      </button>
+                    ) : null}
 
                     <Link
                       href={`/anggota/${member.id}`}
-                      className="grid size-9 place-items-center rounded-xl bg-[#f1f5f9] text-[#64748b] hover:bg-[#e2e8f0] hover:text-[#0b1220] transition-all"
-                      title="Lihat Detail Anggota"
+                      className="inline-flex h-9 items-center gap-1 rounded-xl bg-[#f1f5f9] px-3 text-xs font-bold text-[#64748b] hover:bg-[#e2e8f0] hover:text-[#0b1220] transition-all"
+                      title="Lihat Info Anggota"
                     >
-                      <ChevronRight className="size-4" />
+                      <span>{canManageMembers ? "" : "Info "}Detail</span>
+                      <ChevronRight className="size-3.5" />
                     </Link>
                   </div>
                 </div>

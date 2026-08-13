@@ -6,20 +6,10 @@ export type NavItem = {
 };
 
 export const unitNavItems: Record<string, NavItem[]> = {
-  USP: [
+  PUSAT: [
     { label: "Home", icon: "Home", href: "/home" },
     { label: "Anggota", icon: "Anggota", href: "/anggota" },
-    {
-      label: "Simpanan",
-      icon: "Simpanan",
-      href: "/simpanan/rekening",
-      children: [
-        { label: "Rekening Simpanan", icon: "Simpanan", href: "/simpanan/rekening" },
-        { label: "Transaksi Kasir", icon: "Kas", href: "/simpanan/transaksi" },
-      ],
-    },
-    { label: "Pinjaman", icon: "Pinjaman", href: "/pinjaman" },
-    { label: "Keuangan", icon: "Kas", href: "/kas" },
+    { label: "Keuangan", icon: "Keuangan", href: "/kas" },
     { label: "Akuntansi", icon: "Akuntansi", href: "/akuntansi" },
     {
       label: "Laporan",
@@ -27,11 +17,9 @@ export const unitNavItems: Record<string, NavItem[]> = {
       href: "/laporan",
       children: [
         { label: "Laba Rugi & Neraca", icon: "Laporan", href: "/laporan" },
-        { label: "Laporan Simpanan", icon: "Simpanan", href: "/laporan/simpanan" },
-        { label: "Laporan Pinjaman", icon: "Pinjaman", href: "/laporan/pinjaman" },
+        { label: "Jurnal Kas", icon: "Keuangan", href: "/kas-jurnal" },
       ],
     },
-
     { label: "User", icon: "User", href: "/users" },
     {
       label: "Setup",
@@ -44,31 +32,35 @@ export const unitNavItems: Record<string, NavItem[]> = {
       ],
     },
   ],
+  USP: [
+    { label: "Home", icon: "Home", href: "/home" },
+    { label: "Anggota", icon: "Anggota", href: "/anggota" },
+    {
+      label: "Simpanan",
+      icon: "Simpanan",
+      href: "/simpanan/rekening",
+      children: [
+        { label: "Rekening Simpanan", icon: "Simpanan", href: "/simpanan/rekening" },
+        { label: "Setor / Tarik Simpanan", icon: "Kas", href: "/simpanan/transaksi" },
+      ],
+    },
+    { label: "Pinjaman", icon: "Pinjaman", href: "/pinjaman" },
+  ],
   TOKO: [
-    { label: "Home Toko", icon: "Home", href: "/home" },
-    { label: "Pelanggan & Anggota", icon: "Anggota", href: "/anggota" },
+    { label: "Home", icon: "Home", href: "/home" },
+    { label: "Anggota", icon: "Anggota", href: "/anggota" },
     {
       label: "Waserda / Toko",
       icon: "Unit",
       href: "/toko/produk",
       children: [
         { label: "Katalog & Stok Barang", icon: "Unit", href: "/toko/produk" },
-        { label: "Kasir POS Toko", icon: "Kas", href: "/toko/kasir" },
+        { label: "Kasir POS Toko", icon: "Keuangan", href: "/toko/kasir" },
+        { label: "Order & Pembelian Supplier", icon: "Setup", href: "/toko/pembelian" },
         { label: "Penjualan Toko", icon: "Laporan", href: "/toko/penjualan" },
-      ],
-    },
-    { label: "Keuangan Toko", icon: "Kas", href: "/kas" },
-    { label: "Akuntansi Toko", icon: "Akuntansi", href: "/akuntansi" },
-    { label: "Laporan Toko", icon: "Laporan", href: "/laporan" },
-    { label: "User", icon: "User", href: "/users" },
-    {
-      label: "Setup",
-      icon: "Setup",
-      href: "/konfigurasi",
-      children: [
-        { label: "Konfigurasi", icon: "Setup", href: "/konfigurasi" },
-        { label: "Unit Usaha", icon: "Unit", href: "/unit-usaha" },
-        { label: "Audit Log", icon: "Audit", href: "/audit" },
+        { label: "Laporan & Analisa Toko", icon: "Laporan", href: "/toko/laporan" },
+        { label: "Promo & Paket Sembako", icon: "Setup", href: "/toko/promo" },
+        { label: "Cetak Barcode & Price Tag", icon: "Unit", href: "/toko/label" },
       ],
     },
   ],
@@ -85,7 +77,7 @@ export const unitNavItems: Record<string, NavItem[]> = {
         { label: "Pendapatan Jasa", icon: "Laporan", href: "/jasa/pendapatan" },
       ],
     },
-    { label: "Keuangan Jasa", icon: "Kas", href: "/kas" },
+    { label: "Keuangan Jasa", icon: "Keuangan", href: "/kas" },
     { label: "Akuntansi Jasa", icon: "Akuntansi", href: "/akuntansi" },
     { label: "Laporan Jasa", icon: "Laporan", href: "/laporan" },
     { label: "User", icon: "User", href: "/users" },
@@ -102,7 +94,7 @@ export const unitNavItems: Record<string, NavItem[]> = {
   ],
 };
 
-export const navItems: NavItem[] = unitNavItems.USP;
+export const navItems: NavItem[] = unitNavItems.PUSAT;
 
 export const mobileNavItems = navItems.filter((item) =>
   ["Home", "Anggota", "Simpanan", "Pinjaman", "Setup"].includes(item.label),

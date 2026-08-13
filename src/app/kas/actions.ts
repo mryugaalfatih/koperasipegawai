@@ -95,7 +95,52 @@ export async function postCashTransaction(formData: FormData) {
     redirect(`/kas?error=Akun%20${cashLabel}%20${cashCode}%20belum%20ada.%20Jalankan%20seed%20COA.`);
   }
 
-  const unitName = clean(formData.get("unit_name")) ?? "Unit Simpan Pinjam (USP)";
+  const unitName = clean(formData.get("unit_name")) ?? "Pusat Kopkar Manunggal Perkasa";
+
+  // Check if session for this date & unit is already closed
+  const [{ data: existingClosing }, { data: matchedTargetUnit }] = await Promise.all([
+    supabase.from("audit_logs").select("id, created_at, metadata").eq("action", "cash.closing.posted"),
+    supabase.from("business_units").select("id, code, name").or(`name.ilike.%${unitName}%,code.ilike.%${unitName}%`).limit(1).maybeSingle(),
+  ]);
+
+  const targetUnitId = matchedTargetUnit?.id ?? "";
+  const targetUnitCode = (matchedTargetUnit?.code ?? "").toLowerCase();
+
+  const isClosed = (existingClosing ?? []).some((log) => {
+    const meta = (log.metadata as { closing_date?: string; closing_unit_id?: string; closing_unit_name?: string; closing_unit_code?: string }) ?? {};
+    const logDate = meta.closing_date ?? (log.created_at ? log.created_at.slice(0, 10) : "");
+    if (logDate !== transactionDate) return false;
+
+    const logUnitCode = (meta.closing_unit_code ?? "ALL").toUpperCase();
+    const logUnitName = (meta.closing_unit_name ?? "Semua Unit").toLowerCase();
+
+    // "Semua Unit" / "ALL" closing locks all units on that date
+    if (logUnitCode === "ALL" || logUnitName === "semua unit") {
+      return true;
+    }
+
+    // Match by unit_id first (most reliable even if unit name/code is edited later!)
+    if (targetUnitId && meta.closing_unit_id && meta.closing_unit_id === targetUnitId) {
+      return true;
+    }
+
+    const targetName = unitName.toLowerCase();
+    const logCode = logUnitCode.toLowerCase();
+
+    return (
+      targetName === logUnitName ||
+      (logCode.length > 0 && targetName.includes(logCode)) ||
+      (targetUnitCode.length > 0 && logUnitName.includes(targetUnitCode)) ||
+      logUnitName.includes(targetName) ||
+      targetName.includes(logUnitName) ||
+      ((targetName.includes("pusat") || targetUnitCode === "pusat") && (logCode === "usp" || logUnitName.includes("simpan pinjam")))
+    );
+  });
+
+  if (isClosed) {
+    redirect(`/kas?error=${encodeURIComponent(`Operasional unit ${unitName} sudah Closing Kas Sore untuk tanggal ${transactionDate}. Input transaksi baru pada tanggal tersebut ditolak.`)}`);
+  }
+
   const requiresApproval = direction === "out" && amount > 1000000;
   const finalDescription = requiresApproval
     ? `⏳ [APPROVAL TAHAP 1: MANAGER] [${unitName}] ${fundSource === "bank" ? "[Bank] " : "[Kas] "}${description}`
@@ -217,6 +262,22 @@ export async function transferCashBank(formData: FormData) {
     redirect("/kas?error=Jenis%20transfer%20dan%20nominal%20wajib%20valid.");
   }
 
+  // Check if session for this date is already closed
+  const { data: existingClosing } = await supabase
+    .from("audit_logs")
+    .select("id, created_at, metadata")
+    .eq("action", "cash.closing.posted");
+
+  const isClosed = (existingClosing ?? []).some((log) => {
+    const meta = (log.metadata as { closing_date?: string }) ?? {};
+    const logDate = meta.closing_date ?? (log.created_at ? log.created_at.slice(0, 10) : "");
+    return logDate === transactionDate;
+  });
+
+  if (isClosed) {
+    redirect(`/kas?error=${encodeURIComponent(`Operasional kas sudah Closing Kas Sore untuk tanggal ${transactionDate}. Transfer mutasi kas pada tanggal tersebut ditolak.`)}`);
+  }
+
   const [{ data: kasAccount }, { data: bankAccount }] = await Promise.all([
     supabase.from("accounts").select("id").eq("code", "1001").single(),
     supabase.from("accounts").select("id").eq("code", "1002").single(),
@@ -319,8 +380,25 @@ export async function postCashClosing(formData: FormData) {
   const systemBalance = money(formData.get("system_balance"));
   const physicalBalance = money(formData.get("physical_balance"));
   const notes = clean(formData.get("notes")) ?? "";
-  const closingUnitCode = clean(formData.get("closing_unit_code")) ?? "ALL";
-  const closingUnitName = clean(formData.get("closing_unit_name")) ?? "Semua Unit";
+  let closingUnitId = "";
+  let closingUnitCode = clean(formData.get("closing_unit_code")) ?? "ALL";
+  let closingUnitName = clean(formData.get("closing_unit_name")) ?? "Semua Unit";
+
+  // Server-side lookup from database to ensure unit code and name match exactly
+  if (closingUnitName && closingUnitName !== "Semua Unit") {
+    const { data: matchedUnit } = await supabase
+      .from("business_units")
+      .select("id, code, name")
+      .or(`name.ilike.%${closingUnitName}%,code.ilike.%${closingUnitCode}%`)
+      .limit(1)
+      .maybeSingle();
+
+    if (matchedUnit) {
+      closingUnitId = matchedUnit.id;
+      closingUnitCode = matchedUnit.code;
+      closingUnitName = matchedUnit.name;
+    }
+  }
 
   const d100k = money(formData.get("d_100k"));
   const d50k = money(formData.get("d_50k"));
@@ -339,6 +417,7 @@ export async function postCashClosing(formData: FormData) {
   await writeAuditLog(supabase, profileId, "cash.closing.posted", "cash_transactions", closingRecordId, {
     branch_id: branchId,
     closing_date: closingDate,
+    closing_unit_id: closingUnitId,
     closing_unit_code: closingUnitCode,
     closing_unit_name: closingUnitName,
     system_balance: systemBalance,
@@ -364,3 +443,28 @@ export async function postCashClosing(formData: FormData) {
   revalidatePath("/home");
   redirect("/kas?saved=closing");
 }
+
+export async function reopenCashClosing(formData: FormData) {
+  const { supabase, profileId, branchId } = await requireProfile();
+  const logId = clean(formData.get("log_id"));
+  const reason = clean(formData.get("reason")) ?? "Pembukaan kembali sesi closing oleh Manager";
+
+  if (!logId) {
+    redirect("/kas?error=ID%20Closing%20tidak%20valid.");
+  }
+
+  // Delete closing log entry from audit_logs
+  await supabase.from("audit_logs").delete().eq("id", logId).eq("action", "cash.closing.posted");
+
+  await writeAuditLog(supabase, profileId, "cash.closing.reopened", "cash_transactions", logId, {
+    branch_id: branchId,
+    reason,
+  });
+
+  revalidatePath("/kas");
+  revalidatePath("/kas-jurnal");
+  revalidatePath("/laporan");
+  revalidatePath("/home");
+  redirect("/kas?saved=reopened");
+}
+

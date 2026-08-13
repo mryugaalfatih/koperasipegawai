@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { CustomSelect } from "@/components/CustomSelect";
 
@@ -24,6 +24,8 @@ import {
 import type { LucideIcon } from "lucide-react";
 import { unitNavItems } from "@/lib/dashboardNavigation";
 
+import { createClient } from "@/lib/supabase/client";
+
 type NavSubItem = {
   label: string;
   icon: string;
@@ -40,6 +42,7 @@ type NavItem = {
 type DashboardNavigationProps = {
   navItems: NavItem[];
   mobileNavItems: NavItem[];
+  businessUnits?: { id: string; code: string; name: string; is_active?: boolean }[];
 };
 
 const iconMap: Record<string, LucideIcon> = {
@@ -47,6 +50,7 @@ const iconMap: Record<string, LucideIcon> = {
   Anggota: UsersRound,
   Simpanan: WalletCards,
   Pinjaman: CreditCard,
+  Keuangan: Scale,
   Kas: Scale,
   Akuntansi: BookOpenCheck,
   Laporan: FileBarChart2,
@@ -56,12 +60,151 @@ const iconMap: Record<string, LucideIcon> = {
   Setup: ShieldCheck,
 };
 
-export function DashboardNavigation({ navItems: initialNavItems, mobileNavItems }: DashboardNavigationProps) {
+export function DashboardNavigation({ navItems: initialNavItems, mobileNavItems, businessUnits: businessUnitsProp }: DashboardNavigationProps) {
   const pathname = usePathname();
-  const [selectedUnit, setSelectedUnit] = useState("USP");
+  const router = useRouter();
+  const [selectedUnit, setSelectedUnit] = useState("");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  type UnitProp = { id: string; code: string; name: string; is_active?: boolean };
+  const [units, setUnits] = useState<UnitProp[]>(
+    (businessUnitsProp ?? []).filter((u) => u.is_active !== false)
+  );
 
-  const currentNavItems = unitNavItems[selectedUnit] ?? initialNavItems;
+  const detectUnitFromPath = (path: string, availableUnits: UnitProp[]): string | null => {
+    if (path.startsWith("/toko")) {
+      const tokoUnit = availableUnits.find((u) => {
+        const c = u.code.toUpperCase();
+        const n = u.name.toUpperCase();
+        return c.includes("TOKO") || c.includes("WAS") || c.includes("PERDAGANGAN") || n.includes("TOKO") || n.includes("WAS");
+      });
+      if (tokoUnit) return tokoUnit.code;
+      return "TOKO";
+    }
+
+    if (path.startsWith("/simpanan") || path.startsWith("/pinjaman")) {
+      const uspUnit = availableUnits.find((u) => {
+        const c = u.code.toUpperCase();
+        const n = u.name.toUpperCase();
+        return c.includes("USP") || c.includes("SIMPAN") || c.includes("PINJAM") || n.includes("SIMPAN");
+      });
+      if (uspUnit) return uspUnit.code;
+      return "USP";
+    }
+
+    if (path.startsWith("/jasa")) {
+      const jasaUnit = availableUnits.find((u) => {
+        const c = u.code.toUpperCase();
+        const n = u.name.toUpperCase();
+        return c.includes("JASA") || c.includes("SEWA") || n.includes("JASA");
+      });
+      if (jasaUnit) return jasaUnit.code;
+      return "JASA";
+    }
+
+    return null;
+  };
+
+  useEffect(() => {
+    const initUnits = (availableUnits: UnitProp[]) => {
+      const activeOnly = availableUnits.filter((u) => u.is_active !== false);
+      setUnits(activeOnly);
+
+      if (!activeOnly.length) return;
+
+      // 1. Auto-detect unit from current URL path (/toko -> TOKO, /simpanan -> USP)
+      const pathUnit = detectUnitFromPath(pathname, activeOnly);
+      if (pathUnit) {
+        setSelectedUnit(pathUnit);
+        if (typeof window !== "undefined") {
+          localStorage.setItem("koperasi_selected_unit", pathUnit);
+        }
+        return;
+      }
+
+      // 2. Check saved unit from localStorage
+      const savedUnit = typeof window !== "undefined" ? localStorage.getItem("koperasi_selected_unit") : null;
+      if (savedUnit && activeOnly.some((u) => u.code === savedUnit)) {
+        setSelectedUnit(savedUnit);
+        return;
+      }
+
+      // 3. Fallback to first active unit
+      setSelectedUnit(activeOnly[0].code);
+    };
+
+    if (businessUnitsProp?.length) {
+      initUnits(businessUnitsProp);
+      return;
+    }
+
+    const supabase = createClient();
+    supabase
+      .from("business_units")
+      .select("id, code, name, is_active")
+      .eq("is_active", true)
+      .order("code")
+      .then(({ data }) => {
+        if (data?.length) {
+          initUnits(data);
+        }
+      });
+  }, [businessUnitsProp, pathname]);
+
+  const unitOptions = units.map((u) => ({
+    value: u.code,
+    label: `${u.code} · ${u.name}`,
+  }));
+
+  const currentUnitObj = units.find((u) => u.code === selectedUnit);
+  const contextLabel = currentUnitObj
+    ? `Konteks: ${currentUnitObj.name}`
+    : "Konteks: Semua Unit Usaha";
+
+  const resolveNavItems = (code: string): NavItem[] => {
+    if (unitNavItems[code]) return unitNavItems[code];
+    const upper = (code || "").toUpperCase();
+    if (upper.includes("PUSAT") || upper.includes("HOLDING") || upper.includes("KOPKAR")) {
+      return unitNavItems.PUSAT ?? initialNavItems;
+    }
+    if (upper.includes("USP") || upper.includes("SIMPAN") || upper.includes("PINJAM")) {
+      return unitNavItems.USP ?? initialNavItems;
+    }
+    if (upper.includes("TOKO") || upper.includes("WAS") || upper.includes("PERDAGANGAN")) {
+      return unitNavItems.TOKO ?? initialNavItems;
+    }
+    if (upper.includes("JASA") || upper.includes("KLN") || upper.includes("RESTO") || upper.includes("CAFE")) {
+      return unitNavItems.JASA ?? initialNavItems;
+    }
+    return unitNavItems.PUSAT ?? initialNavItems;
+  };
+
+  const currentNavItems = resolveNavItems(selectedUnit);
+
+  const handleUnitChange = (newCode: string) => {
+    setSelectedUnit(newCode);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("koperasi_selected_unit", newCode);
+    }
+    const matched = units.find((u) => u.code === newCode);
+
+    const upper = (newCode || "").toUpperCase();
+    if (upper.includes("TOKO") || upper.includes("WAS") || upper.includes("PERDAGANGAN")) {
+      router.push("/toko/produk");
+      return;
+    }
+    if (upper.includes("USP") || upper.includes("SIMPAN") || upper.includes("PINJAM")) {
+      router.push("/simpanan/rekening");
+      return;
+    }
+    if (upper.includes("PUSAT") || upper.includes("HOLDING")) {
+      router.push("/home");
+      return;
+    }
+
+    if (matched && ["/kas", "/kas-jurnal", "/laporan"].includes(pathname)) {
+      router.push(`${pathname}?unit=${encodeURIComponent(matched.name)}`);
+    }
+  };
 
   const isActive = (href: string) =>
     pathname === href || (href !== "/" && pathname.startsWith(href));
@@ -211,23 +354,15 @@ export function DashboardNavigation({ navItems: initialNavItems, mobileNavItems 
           <div className="pt-1 space-y-2">
             <CustomSelect
               value={selectedUnit}
-              onChange={(e) => setSelectedUnit(e.target.value)}
-              options={[
-                { value: "USP", label: "USP · Simpan Pinjam" },
-                { value: "TOKO", label: "TOKO · Waserda Ritel" },
-                { value: "JASA", label: "JASA · Sewa & Layanan" },
-              ]}
+              onChange={(e) => handleUnitChange(e.target.value)}
+              options={unitOptions}
               className="h-9 text-[11px]"
             />
 
             <div className="flex items-center gap-1.5 rounded-xl bg-[#eff6ff] px-3 py-1.5 text-[11px] font-bold text-[#2563eb] border border-[#dbeafe]">
               <span className="size-2 rounded-full bg-[#2563eb] animate-pulse" />
-              <span>
-                {selectedUnit === "USP"
-                  ? "Konteks: Unit Simpan Pinjam"
-                  : selectedUnit === "TOKO"
-                  ? "Konteks: Waserda / Pertokoan"
-                  : "Konteks: Jasa & Penyewaan"}
+              <span className="truncate">
+                {contextLabel}
               </span>
             </div>
           </div>
@@ -309,11 +444,7 @@ export function DashboardNavigation({ navItems: initialNavItems, mobileNavItems 
               <CustomSelect
                 value={selectedUnit}
                 onChange={(e) => setSelectedUnit(e.target.value)}
-                options={[
-                  { value: "USP", label: "USP · Simpan Pinjam" },
-                  { value: "TOKO", label: "TOKO · Waserda Ritel" },
-                  { value: "JASA", label: "JASA · Sewa & Layanan" },
-                ]}
+                options={unitOptions}
                 className="h-9 text-[11px]"
               />
             </div>

@@ -98,7 +98,7 @@ export default async function KasPage({ searchParams }: KasPageProps) {
       .select("id, entry_no, entry_date, memo, source_type, status, source_id")
       .order("created_at", { ascending: false })
       .limit(100),
-    supabase.from("business_units").select("id, code, name").order("code"),
+    supabase.from("business_units").select("id, code, name").eq("is_active", true).order("code"),
   ]);
 
   if (!profile) {
