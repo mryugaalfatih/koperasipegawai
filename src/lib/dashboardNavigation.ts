@@ -65,8 +65,7 @@ export const unitNavItems: Record<string, NavItem[]> = {
     },
   ],
   APAR: [
-    { label: "Home Damkar", icon: "Home", href: "/home" },
-    { label: "Anggota & Klien PT", icon: "Anggota", href: "/anggota" },
+    { label: "Home", icon: "Home", href: "/home" },
     {
       label: "Unit Jasa APAR & Damkar",
       icon: "Unit",
@@ -78,9 +77,6 @@ export const unitNavItems: Record<string, NavItem[]> = {
         { label: "Cetak Sertifikat Hydrotest", icon: "Laporan", href: "/apar/sertifikat" },
       ],
     },
-    { label: "Buku Kas APAR", icon: "Keuangan", href: "/kas" },
-    { label: "Akuntansi APAR", icon: "Akuntansi", href: "/akuntansi" },
-    { label: "Laporan APAR", icon: "Laporan", href: "/laporan" },
   ],
   JASA: [
     { label: "Home Jasa", icon: "Home", href: "/home" },

@@ -101,6 +101,16 @@ export function DashboardNavigation({ navItems: initialNavItems, mobileNavItems,
       return "JASA";
     }
 
+    if (path.startsWith("/apar")) {
+      const aparUnit = availableUnits.find((u) => {
+        const c = u.code.toUpperCase();
+        const n = u.name.toUpperCase();
+        return c.includes("APAR") || c.includes("DAMKAR") || n.includes("APAR") || n.includes("DAMKAR");
+      });
+      if (aparUnit) return aparUnit.code;
+      return "APAR";
+    }
+
     return null;
   };
 
@@ -175,6 +185,9 @@ export function DashboardNavigation({ navItems: initialNavItems, mobileNavItems,
     if (upper.includes("JASA") || upper.includes("KLN") || upper.includes("RESTO") || upper.includes("CAFE")) {
       return unitNavItems.JASA ?? initialNavItems;
     }
+    if (upper.includes("APAR") || upper.includes("DAMKAR")) {
+      return unitNavItems.APAR ?? initialNavItems;
+    }
     return unitNavItems.PUSAT ?? initialNavItems;
   };
 
@@ -194,6 +207,10 @@ export function DashboardNavigation({ navItems: initialNavItems, mobileNavItems,
     }
     if (upper.includes("USP") || upper.includes("SIMPAN") || upper.includes("PINJAM")) {
       router.push("/simpanan/rekening");
+      return;
+    }
+    if (upper.includes("APAR") || upper.includes("DAMKAR")) {
+      router.push("/apar/refill");
       return;
     }
     if (upper.includes("PUSAT") || upper.includes("HOLDING")) {
