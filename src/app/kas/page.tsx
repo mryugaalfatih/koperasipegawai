@@ -75,7 +75,7 @@ export default async function KasPage({ searchParams }: KasPageProps) {
   }
 
   const [{ data: profile }, { data: accounts }, { data: cashTransactions }, { data: approvedLoans }, { data: closingLogs }, { data: journalEntries }, { data: businessUnits }] = await Promise.all([
-    supabase.from("profiles").select("id, default_unit_id").eq("id", user.id).single(),
+    supabase.from("profiles").select("id, allowed_unit_codes").eq("id", user.id).single(),
     supabase.from("accounts").select("id, code, name, category").order("code"),
     supabase
       .from("cash_transactions")
@@ -141,10 +141,13 @@ export default async function KasPage({ searchParams }: KasPageProps) {
 
   const businessUnitRows = (businessUnits ?? []) as { id: string; code: string; name: string }[];
 
-  // Resolve user's assigned unit
-  const userDefaultUnitId = (profile as { id: string; default_unit_id?: string | null }).default_unit_id ?? null;
-  const userUnit = userDefaultUnitId
-    ? businessUnitRows.find((u) => u.id === userDefaultUnitId) ?? null
+  // Resolve user's assigned unit safely from allowed_unit_codes array
+  const rawUnitCodes = (profile as { allowed_unit_codes?: string[] | null }).allowed_unit_codes;
+  const userUnitCodes = Array.isArray(rawUnitCodes) ? rawUnitCodes : [];
+  
+  // If user is restricted to exactly 1 unit, lock UI to that unit
+  const userUnit = userUnitCodes.length === 1
+    ? businessUnitRows.find((u) => u.code.toLowerCase() === userUnitCodes[0].toLowerCase() || u.name.toLowerCase().includes(userUnitCodes[0].toLowerCase())) ?? null
     : null;
 
   return (
