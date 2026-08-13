@@ -70,3 +70,43 @@ export async function toggleBusinessUnitStatus(formData: FormData) {
   revalidatePath("/unit-usaha");
   redirect("/unit-usaha?updated=true");
 }
+
+export async function updateBusinessUnit(formData: FormData) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect("/login");
+  }
+
+  const id = text(formData.get("id"));
+  const code = text(formData.get("code")).toUpperCase();
+  const name = text(formData.get("name"));
+  const description = text(formData.get("description"));
+
+  if (!id || !code || !name) {
+    redirect("/unit-usaha?error=ID,%20Kode,%20dan%20Nama%20Unit%20Usaha%20wajib%20diisi.");
+  }
+
+  const { error } = await supabase
+    .from("business_units")
+    .update({
+      code,
+      name,
+      description,
+    })
+    .eq("id", id);
+
+  if (error) {
+    redirect(`/unit-usaha?error=${encodeURIComponent(error.message)}`);
+  }
+
+  revalidatePath("/unit-usaha");
+  revalidatePath("/kas");
+  revalidatePath("/kas-jurnal");
+  revalidatePath("/laporan");
+  redirect("/unit-usaha?updated=true");
+}
+
