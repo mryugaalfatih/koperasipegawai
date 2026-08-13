@@ -159,7 +159,7 @@ export function MutasiClientManager({ account, transactions }: MutasiClientManag
 
       <section className="min-w-0 pb-20 lg:pb-8">
         {/* Header */}
-        <header className="print-hide sticky top-0 z-20 border-b border-[#dbe5f1] bg-[#f8fbff]/95 px-4 py-3 backdrop-blur md:px-7">
+        <header className="print-hide sticky top-0 z-20 border-b border-[#dbe5f1] bg-[#f8fbff]/95 px-3 py-3 backdrop-blur md:px-3">
           <div className="mx-auto flex max-w-[1500px] items-center justify-between gap-3">
             <div className="flex min-w-0 items-center gap-3">
               <Link
@@ -186,7 +186,7 @@ export function MutasiClientManager({ account, transactions }: MutasiClientManag
           </div>
         </header>
 
-        <div className="printable-mutasi-area mx-auto max-w-[1500px] space-y-5 px-4 py-5 md:px-7">
+        <div className="printable-mutasi-area space-y-5 px-4 py-5 md:px-3">
           {/* Print Header */}
           <div className="hidden print:block border-b-2 border-[#0b1220] pb-4 mb-6">
             <h1 className="text-2xl font-black uppercase tracking-wider text-[#0b1220]">KOPERASI SIMPAN PINJAM</h1>

@@ -77,12 +77,12 @@ export default async function AkuntansiPage({ searchParams }: AkuntansiPageProps
     <main className="min-h-screen bg-[#f4f7fb] text-[#0b1220]">
       <ToastNotification error={params.error} saved={params.saved} />
 
-      <div className="lg:grid lg:min-h-screen lg:grid-cols-[280px_1fr]">
+      <div className="lg:grid lg:min-h-screen lg:grid-cols-[auto_1fr]">
         <DashboardNavigation mobileNavItems={mobileNavItems} navItems={navItems} />
 
         <div>
           {/* Header */}
-          <header className="sticky top-0 z-20 border-b border-[#dbe5f1] bg-[#f8fbff]/90 px-4 py-4 backdrop-blur md:px-7">
+          <header className="sticky top-0 z-20 border-b border-[#dbe5f1] bg-[#f8fbff]/90 px-3 py-3 backdrop-blur md:px-3">
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div>
                 <p className="text-xs font-bold uppercase tracking-wider text-[#64748b]">Modul Pembukuan</p>

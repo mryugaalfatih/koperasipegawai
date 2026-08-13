@@ -221,20 +221,20 @@ export function TokoLaporanClientManager({
             <table className="w-full text-left text-xs">
               <thead className="bg-[#f8fbff] text-[#475569] border-b border-[#dbe5f1]">
                 <tr>
-                  <th className="px-4 py-3 font-bold">No. Anggota</th>
-                  <th className="px-4 py-3 font-bold">Nama Anggota Koperasi</th>
-                  <th className="px-4 py-3 font-bold text-center">Jumlah Transaksi</th>
-                  <th className="px-4 py-3 font-bold text-right">Total Belanja Toko</th>
+                  <th className="px-3 py-3 font-bold">No. Anggota</th>
+                  <th className="px-3 py-3 font-bold">Nama Anggota Koperasi</th>
+                  <th className="px-3 py-3 font-bold text-center">Jumlah Transaksi</th>
+                  <th className="px-3 py-3 font-bold text-right">Total Belanja Toko</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#e2e8f0]">
                 {filteredMembers.length ? (
                   filteredMembers.map((m) => (
                     <tr key={m.memberId} className="hover:bg-[#f8fbff]">
-                      <td className="px-4 py-3 font-bold text-[#2563eb]">{m.memberNo}</td>
-                      <td className="px-4 py-3 font-bold text-[#0b1220]">{m.memberName}</td>
-                      <td className="px-4 py-3 text-center font-semibold">{m.totalTransactions} Transaksi</td>
-                      <td className="px-4 py-3 text-right font-black text-emerald-600">
+                      <td className="px-3 py-3 font-bold text-[#2563eb]">{m.memberNo}</td>
+                      <td className="px-3 py-3 font-bold text-[#0b1220]">{m.memberName}</td>
+                      <td className="px-3 py-3 text-center font-semibold">{m.totalTransactions} Transaksi</td>
+                      <td className="px-3 py-3 text-right font-black text-emerald-600">
                         {formatRupiah(m.totalSpent)}
                       </td>
                     </tr>

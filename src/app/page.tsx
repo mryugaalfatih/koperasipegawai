@@ -99,7 +99,7 @@ export default function LandingPage() {
 
       {/* Footer */}
       <footer className="border-t border-[#dbe5f1] bg-white">
-        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-4 py-6 md:px-8 text-xs font-semibold text-[#64748b]">
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-3 py-4 md:px-8 text-xs font-semibold text-[#64748b]">
           <div className="flex items-center gap-2">
             <div className="grid size-7 place-items-center rounded-xl bg-[#2563eb] text-white">
               <Building2 className="size-4" />

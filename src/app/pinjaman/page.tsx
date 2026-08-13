@@ -99,7 +99,7 @@ export default async function PinjamanPage({ searchParams }: PinjamanPageProps) 
     <main className="min-h-screen bg-[#f4f7fb] text-[#0b1220]">
       <ToastNotification error={params.error} saved={params.saved} />
 
-      <div className="lg:grid lg:min-h-screen lg:grid-cols-[280px_1fr]">
+      <div className="lg:grid lg:min-h-screen lg:grid-cols-[auto_1fr]">
         <DashboardNavigation mobileNavItems={mobileNavItems} navItems={navItems} />
 
         <PinjamanClientManager

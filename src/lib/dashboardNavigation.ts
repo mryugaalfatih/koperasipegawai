@@ -33,7 +33,7 @@ export const unitNavItems: Record<string, NavItem[]> = {
     },
   ],
   USP: [
-    { label: "Home", icon: "Home", href: "/home" },
+    { label: "Home", icon: "Home", href: "/usp/home" },
     { label: "Anggota", icon: "Anggota", href: "/anggota" },
     {
       label: "Simpanan",
@@ -47,7 +47,7 @@ export const unitNavItems: Record<string, NavItem[]> = {
     { label: "Pinjaman", icon: "Pinjaman", href: "/pinjaman" },
   ],
   TOKO: [
-    { label: "Home", icon: "Home", href: "/home" },
+    { label: "Home", icon: "Home", href: "/toko/home" },
     { label: "Anggota", icon: "Anggota", href: "/anggota" },
     {
       label: "Waserda / Toko",
@@ -65,7 +65,7 @@ export const unitNavItems: Record<string, NavItem[]> = {
     },
   ],
   APAR: [
-    { label: "Home", icon: "Home", href: "/home" },
+    { label: "Home", icon: "Home", href: "/apar/home" },
     {
       label: "Unit Jasa APAR & Damkar",
       icon: "Unit",

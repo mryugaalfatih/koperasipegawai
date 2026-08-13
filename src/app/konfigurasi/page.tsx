@@ -113,7 +113,7 @@ export default async function KonfigurasiPage({ searchParams }: KonfigurasiPageP
       {params.saved ? <ToastNotification saved={params.saved} /> : null}
       {params.error ? <ToastNotification error={params.error} /> : null}
 
-      <div className="lg:grid lg:min-h-screen lg:grid-cols-[280px_1fr]">
+      <div className="lg:grid lg:min-h-screen lg:grid-cols-[auto_1fr]">
         <DashboardNavigation mobileNavItems={mobileNavItems} navItems={navItems} />
 
         <KonfigurasiClientManager

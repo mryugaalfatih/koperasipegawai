@@ -48,25 +48,25 @@ export function AparPenjualanClientManager({ sales }: AparPenjualanClientManager
           <table className="w-full text-left text-xs">
             <thead className="bg-[#f8fbff] text-[#475569] border-b border-[#dbe5f1]">
               <tr>
-                <th className="px-4 py-3 font-bold">No. Invoice Faktur</th>
-                <th className="px-4 py-3 font-bold">Tanggal</th>
-                <th className="px-4 py-3 font-bold">Nama Gedung / PT Klien</th>
-                <th className="px-4 py-3 font-bold">Rincian Pengadaan</th>
-                <th className="px-4 py-3 font-bold text-right">Total Nilai Tagihan</th>
-                <th className="px-4 py-3 font-bold text-center">Status Pembayaran</th>
+                <th className="px-3 py-3 font-bold">No. Invoice Faktur</th>
+                <th className="px-3 py-3 font-bold">Tanggal</th>
+                <th className="px-3 py-3 font-bold">Nama Gedung / PT Klien</th>
+                <th className="px-3 py-3 font-bold">Rincian Pengadaan</th>
+                <th className="px-3 py-3 font-bold text-right">Total Nilai Tagihan</th>
+                <th className="px-3 py-3 font-bold text-center">Status Pembayaran</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#e2e8f0]">
               {filteredSales.map((s) => (
                 <tr key={s.id} className="hover:bg-[#f8fbff] transition-colors">
-                  <td className="px-4 py-3 font-bold text-[#be123c]">{s.invoice_no}</td>
-                  <td className="px-4 py-3 font-semibold text-[#64748b]">{s.invoice_date}</td>
-                  <td className="px-4 py-3 font-bold text-[#0b1220]">{s.client_name}</td>
-                  <td className="px-4 py-3 font-semibold text-[#475569]">{s.items_summary}</td>
-                  <td className="px-4 py-3 font-black text-right text-[#0b1220]">
+                  <td className="px-3 py-3 font-bold text-[#be123c]">{s.invoice_no}</td>
+                  <td className="px-3 py-3 font-semibold text-[#64748b]">{s.invoice_date}</td>
+                  <td className="px-3 py-3 font-bold text-[#0b1220]">{s.client_name}</td>
+                  <td className="px-3 py-3 font-semibold text-[#475569]">{s.items_summary}</td>
+                  <td className="px-3 py-3 font-black text-right text-[#0b1220]">
                     {formatRupiah(s.total_amount)}
                   </td>
-                  <td className="px-4 py-3 text-center">
+                  <td className="px-3 py-3 text-center">
                     <span
                       className={`rounded-full px-2.5 py-1 text-[11px] font-bold ${
                         s.payment_status === "LUNAS"

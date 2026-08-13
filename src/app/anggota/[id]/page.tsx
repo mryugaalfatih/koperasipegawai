@@ -140,7 +140,7 @@ export default async function MemberDetailPage({ params, searchParams }: MemberD
 
   return (
     <main className="min-h-screen bg-[#f4f7fb] text-[#0b1220]">
-      <header className="sticky top-0 z-20 border-b border-[#dbe5f1] bg-[#f8fbff]/95 px-4 py-3 backdrop-blur md:px-7">
+      <header className="sticky top-0 z-20 border-b border-[#dbe5f1] bg-[#f8fbff]/95 px-3 py-3 backdrop-blur md:px-3">
         <div className="mx-auto flex max-w-[1500px] items-center justify-between gap-3">
           <div className="flex min-w-0 items-center gap-3">
             <Link className="grid size-10 place-items-center rounded-2xl border border-[#dbe5f1] bg-white" href="/anggota">
@@ -157,7 +157,7 @@ export default async function MemberDetailPage({ params, searchParams }: MemberD
         </div>
       </header>
 
-      <div className="mx-auto grid max-w-[1500px] gap-5 px-4 py-5 md:px-7 xl:grid-cols-[0.85fr_1.15fr]">
+      <div className="mx-auto grid max-w-[1500px] gap-5 px-4 py-5 md:px-3 xl:grid-cols-[0.85fr_1.15fr]">
         <aside className="space-y-5">
           <section className="rounded-[28px] bg-[#07152f] p-5 text-white shadow-sm md:p-6">
             <div className="grid size-14 place-items-center rounded-3xl bg-white/10">

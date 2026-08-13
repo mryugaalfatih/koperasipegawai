@@ -107,7 +107,7 @@ export function RekeningClientManager({
 
   return (
     <section className="min-w-0 pb-20 lg:pb-8">
-      <div className="mx-auto max-w-[1500px] px-4 py-4 md:px-6 md:py-5 space-y-4">
+      <div className="px-3 py-3 md:px-6 md:py-5 space-y-4">
         {/* CrudHeader */}
         <CrudHeader
           title="Rekening Simpanan Anggota"

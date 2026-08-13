@@ -88,11 +88,11 @@ export default async function TokoPenjualanPage({ searchParams }: TokoPenjualanP
     <main className="min-h-screen bg-[#f4f7fb] text-[#0b1220]">
       {params.error ? <ToastNotification error={params.error} /> : null}
 
-      <div className="lg:grid lg:min-h-screen lg:grid-cols-[280px_1fr]">
+      <div className="lg:grid lg:min-h-screen lg:grid-cols-[auto_1fr]">
         <DashboardNavigation mobileNavItems={mobileNavItems} navItems={navItems} />
 
         <section className="min-w-0 pb-20 lg:pb-8">
-          <div className="mx-auto max-w-[1500px] px-4 py-4 md:px-7 md:py-6">
+          <div className="px-3 py-3 md:px-3 md:py-4">
             <TokoPenjualanClientManager
               salesRows={salesRows}
               totalOmset={totalOmset}

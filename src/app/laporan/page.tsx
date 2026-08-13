@@ -258,10 +258,10 @@ export default async function LaporanPage({ searchParams }: LaporanPageProps) {
 
   return (
     <main className="min-h-screen bg-[#f4f7fb] text-[#0b1220]">
-      <div className="lg:grid lg:min-h-screen lg:grid-cols-[280px_1fr]">
+      <div className="lg:grid lg:min-h-screen lg:grid-cols-[auto_1fr]">
         <DashboardNavigation navItems={navItems} mobileNavItems={mobileNavItems} />
         <section className="min-w-0 pb-24 lg:pb-0">
-          <header className="sticky top-0 z-20 border-b border-[#dbe5f1] bg-[#f8fbff]/95 px-4 py-3 backdrop-blur md:px-7">
+          <header className="sticky top-0 z-20 border-b border-[#dbe5f1] bg-[#f8fbff]/95 px-3 py-3 backdrop-blur md:px-3">
         <div className="mx-auto flex max-w-[1500px] items-center justify-between gap-3">
           <div className="flex min-w-0 items-center gap-3">
             <Link className="grid size-10 place-items-center rounded-2xl border border-[#dbe5f1] bg-white" href="/home">
@@ -292,7 +292,7 @@ export default async function LaporanPage({ searchParams }: LaporanPageProps) {
         </div>
       </header>
 
-      <div className="mx-auto grid max-w-[1500px] gap-4 px-4 py-4 md:px-6 xl:grid-cols-[1fr_420px]">
+      <div className="mx-auto grid max-w-[1500px] gap-4 px-3 py-3 md:px-6 xl:grid-cols-[1fr_420px]">
         <section className="space-y-4">
           {/* Laba Rugi Unit Usaha Selector Toolbar */}
           <div className="flex flex-wrap items-center gap-2 rounded-xl bg-white p-3 shadow-sm ring-1 ring-[#dbe5f1]">

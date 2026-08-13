@@ -102,7 +102,7 @@ export default async function PinjamanDetailPage({ params, searchParams }: Pinja
 
   return (
     <main className="min-h-screen bg-[#f4f7fb] text-[#0b1220]">
-      <div className="lg:grid lg:min-h-screen lg:grid-cols-[280px_1fr]">
+      <div className="lg:grid lg:min-h-screen lg:grid-cols-[auto_1fr]">
         <DashboardNavigation mobileNavItems={mobileNavItems} navItems={navItems} />
 
         <PinjamanDetailClientManager

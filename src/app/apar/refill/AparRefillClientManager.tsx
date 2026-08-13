@@ -159,27 +159,27 @@ export function AparRefillClientManager({
           <table className="w-full text-left text-xs">
             <thead className="bg-[#f8fbff] text-[#475569] border-b border-[#dbe5f1]">
               <tr>
-                <th className="px-4 py-3 font-bold">No. Refill Order</th>
-                <th className="px-4 py-3 font-bold">Tanggal Terima</th>
-                <th className="px-4 py-3 font-bold">Nama Klien Gedung / PT</th>
-                <th className="px-4 py-3 font-bold text-center">Jumlah Tabung</th>
-                <th className="px-4 py-3 font-bold text-right">Total Biaya Refill</th>
-                <th className="px-4 py-3 font-bold text-center">Status Pengecekan</th>
-                <th className="px-4 py-3 font-bold text-center">Aksi</th>
+                <th className="px-3 py-3 font-bold">No. Refill Order</th>
+                <th className="px-3 py-3 font-bold">Tanggal Terima</th>
+                <th className="px-3 py-3 font-bold">Nama Klien Gedung / PT</th>
+                <th className="px-3 py-3 font-bold text-center">Jumlah Tabung</th>
+                <th className="px-3 py-3 font-bold text-right">Total Biaya Refill</th>
+                <th className="px-3 py-3 font-bold text-center">Status Pengecekan</th>
+                <th className="px-3 py-3 font-bold text-center">Aksi</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#e2e8f0]">
               {filteredOrders.length ? (
                 filteredOrders.map((o) => (
                   <tr key={o.id} className="hover:bg-[#f8fbff] transition-colors">
-                    <td className="px-4 py-3 font-bold text-[#be123c]">{o.order_no}</td>
-                    <td className="px-4 py-3 font-semibold text-[#64748b]">{o.order_date}</td>
-                    <td className="px-4 py-3 font-bold text-[#0b1220]">{o.client_name}</td>
-                    <td className="px-4 py-3 text-center font-bold">{o.total_cylinders} Tabung</td>
-                    <td className="px-4 py-3 font-black text-right text-[#0b1220]">
+                    <td className="px-3 py-3 font-bold text-[#be123c]">{o.order_no}</td>
+                    <td className="px-3 py-3 font-semibold text-[#64748b]">{o.order_date}</td>
+                    <td className="px-3 py-3 font-bold text-[#0b1220]">{o.client_name}</td>
+                    <td className="px-3 py-3 text-center font-bold">{o.total_cylinders} Tabung</td>
+                    <td className="px-3 py-3 font-black text-right text-[#0b1220]">
                       {formatRupiah(o.total_amount)}
                     </td>
-                    <td className="px-4 py-3 text-center">
+                    <td className="px-3 py-3 text-center">
                       <span
                         className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-bold ${
                           o.status === "completed"
@@ -191,7 +191,7 @@ export function AparRefillClientManager({
                         {o.status === "completed" ? "Selesai & Teruji" : "Dalam Pengisian"}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-center">
+                    <td className="px-3 py-3 text-center">
                       <button
                         type="button"
                         onClick={() => setSelectedOrder(o)}

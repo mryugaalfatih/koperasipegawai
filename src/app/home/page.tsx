@@ -221,11 +221,11 @@ export default async function Home() {
 
   return (
     <main className="min-h-screen bg-[#f4f7fb] text-[#0b1220]">
-      <div className="lg:grid lg:min-h-screen lg:grid-cols-[280px_1fr]">
+      <div className="lg:grid lg:min-h-screen lg:grid-cols-[auto_1fr]">
         <DashboardNavigation navItems={navItems} mobileNavItems={mobileNavItems} />
 
         <section className="min-w-0 pb-24 lg:pb-0">
-          <header className="sticky top-0 z-20 border-b border-[#dbe5f1] bg-[#f8fbff]/95 px-4 py-3 backdrop-blur md:px-7">
+          <header className="sticky top-0 z-20 border-b border-[#dbe5f1] bg-[#f8fbff]/95 px-3 py-3 backdrop-blur md:px-3">
             <div className="flex items-center justify-between gap-3">
               <div className="flex min-w-0 items-center gap-3">
                 <button className="grid size-10 place-items-center rounded-2xl border border-[#dbe5f1] bg-white lg:hidden">
@@ -263,7 +263,7 @@ export default async function Home() {
             </div>
           </header>
 
-          <div className="mx-auto max-w-[1500px] space-y-4 px-4 py-4 md:px-6 md:py-5">
+          <div className="space-y-4 px-3 py-3 md:px-6 md:py-5">
             {/* Hero Section */}
             <section className="rounded-xl bg-[#07152f] p-4 text-white shadow-sm md:p-5">
               <div className="flex flex-wrap items-center justify-between gap-4">

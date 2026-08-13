@@ -325,7 +325,7 @@ export function PinjamanDetailClientManager({
     <section className="min-w-0 pb-20 lg:pb-8 print:p-0 print:bg-white">
       <div className="print:hidden">
       {/* Header */}
-      <header className="print:hidden sticky top-0 z-20 border-b border-[#dbe5f1] bg-[#f8fbff]/95 px-4 py-3 backdrop-blur md:px-7">
+      <header className="print:hidden sticky top-0 z-20 border-b border-[#dbe5f1] bg-[#f8fbff]/95 px-3 py-3 backdrop-blur md:px-3">
         <div className="mx-auto flex max-w-[1500px] items-center justify-between gap-3">
           <div className="flex min-w-0 items-center gap-3">
             <Link className="grid size-10 place-items-center rounded-2xl border border-[#dbe5f1] bg-white hover:bg-slate-50 transition-all" href="/pinjaman">
@@ -388,7 +388,7 @@ export function PinjamanDetailClientManager({
         </div>
       </header>
 
-      <div className="mx-auto max-w-[1500px] px-4 py-4 md:px-6 space-y-4">
+      <div className="px-3 py-3 md:px-6 space-y-4">
         {/* Notifications */}
         {error && <div className="rounded-xl bg-[#fff1f2] p-3.5 text-sm font-bold text-[#be123c]">{error}</div>}
         {paid && (

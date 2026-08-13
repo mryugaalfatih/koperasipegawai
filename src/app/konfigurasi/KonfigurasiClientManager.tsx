@@ -163,7 +163,7 @@ export function KonfigurasiClientManager({
   return (
     <section className="min-w-0 pb-20 lg:pb-8">
       {/* Header Standardized CrudHeader */}
-      <div className="sticky top-0 z-20 bg-[#f8fbff]/95 px-4 py-3 backdrop-blur md:px-7 border-b border-[#dbe5f1]">
+      <div className="sticky top-0 z-20 bg-[#f8fbff]/95 px-3 py-3 backdrop-blur md:px-3 border-b border-[#dbe5f1]">
         <CrudHeader
           title="Konfigurasi & Setup Koperasi"
           subtitle="Pengaturan profil legal, produk simpanan, produk pinjaman, & periode buku."
@@ -172,7 +172,7 @@ export function KonfigurasiClientManager({
 
       </div>
 
-      <div className="mx-auto max-w-[1500px] space-y-4 px-4 py-4 md:px-6 md:py-5">
+      <div className="space-y-4 px-3 py-3 md:px-6 md:py-5">
         {/* Navigation Tabs */}
         <div className="flex flex-wrap items-center gap-2 border-b border-[#dbe5f1] pb-3">
           <button
@@ -781,22 +781,22 @@ export function KonfigurasiClientManager({
                   <table className="w-full text-left text-xs border-collapse">
                     <thead>
                       <tr className="bg-[#f8fbff] text-[#475569] border-b border-[#e2e8f0]">
-                        <th className="px-4 py-3 font-bold uppercase">Kode</th>
-                        <th className="px-4 py-3 font-bold uppercase">Nama Akun</th>
-                        <th className="px-4 py-3 font-bold uppercase">Kategori</th>
-                        <th className="px-4 py-3 font-bold uppercase">Saldo Normal</th>
-                        <th className="px-4 py-3 font-bold uppercase text-right">Aksi</th>
+                        <th className="px-3 py-3 font-bold uppercase">Kode</th>
+                        <th className="px-3 py-3 font-bold uppercase">Nama Akun</th>
+                        <th className="px-3 py-3 font-bold uppercase">Kategori</th>
+                        <th className="px-3 py-3 font-bold uppercase">Saldo Normal</th>
+                        <th className="px-3 py-3 font-bold uppercase text-right">Aksi</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-[#f1f5f9]">
                       {accountRows.map((acc) => (
                         <tr key={acc.id} className="hover:bg-[#f8fbff]/60">
-                          <td className="px-4 py-3 font-mono font-bold text-[#2563eb]">{acc.code}</td>
-                          <td className="px-4 py-3 font-bold text-[#0b1220]">{acc.name}</td>
-                          <td className="px-4 py-3 font-semibold text-[#64748b]">
+                          <td className="px-3 py-3 font-mono font-bold text-[#2563eb]">{acc.code}</td>
+                          <td className="px-3 py-3 font-bold text-[#0b1220]">{acc.name}</td>
+                          <td className="px-3 py-3 font-semibold text-[#64748b]">
                             {categoryLabels[acc.category] ?? acc.category}
                           </td>
-                          <td className="px-4 py-3">
+                          <td className="px-3 py-3">
                             <span
                               className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase ${
                                 acc.normal_balance === "in"
@@ -807,7 +807,7 @@ export function KonfigurasiClientManager({
                               {acc.normal_balance === "in" ? "Debit" : "Kredit"}
                             </span>
                           </td>
-                          <td className="px-4 py-3 text-right">
+                          <td className="px-3 py-3 text-right">
                             <button
                               type="button"
                               onClick={() => setEditingAccount(acc)}

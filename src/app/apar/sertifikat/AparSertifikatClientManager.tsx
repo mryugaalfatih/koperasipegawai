@@ -49,27 +49,27 @@ export function AparSertifikatClientManager({ certificates }: AparSertifikatClie
           <table className="w-full text-left text-xs">
             <thead className="bg-[#f8fbff] text-[#475569] border-b border-[#dbe5f1]">
               <tr>
-                <th className="px-4 py-3 font-bold">No. Sertifikat Damkar</th>
-                <th className="px-4 py-3 font-bold">Gedung / Klien PT</th>
-                <th className="px-4 py-3 font-bold">No. Seri Tabung APAR</th>
-                <th className="px-4 py-3 font-bold">Media & Ukuran</th>
-                <th className="px-4 py-3 font-bold text-center">Tanggal Hydrotest</th>
-                <th className="px-4 py-3 font-bold text-center">Berlaku s/d</th>
-                <th className="px-4 py-3 font-bold text-center">Aksi Cetak</th>
+                <th className="px-3 py-3 font-bold">No. Sertifikat Damkar</th>
+                <th className="px-3 py-3 font-bold">Gedung / Klien PT</th>
+                <th className="px-3 py-3 font-bold">No. Seri Tabung APAR</th>
+                <th className="px-3 py-3 font-bold">Media & Ukuran</th>
+                <th className="px-3 py-3 font-bold text-center">Tanggal Hydrotest</th>
+                <th className="px-3 py-3 font-bold text-center">Berlaku s/d</th>
+                <th className="px-3 py-3 font-bold text-center">Aksi Cetak</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#e2e8f0]">
               {filteredCerts.map((c) => (
                 <tr key={c.id} className="hover:bg-[#f8fbff] transition-colors">
-                  <td className="px-4 py-3 font-bold text-[#be123c]">{c.cert_no}</td>
-                  <td className="px-4 py-3 font-bold text-[#0b1220]">{c.client_name}</td>
-                  <td className="px-4 py-3 font-mono text-[#64748b]">{c.serial_no}</td>
-                  <td className="px-4 py-3 font-semibold">
+                  <td className="px-3 py-3 font-bold text-[#be123c]">{c.cert_no}</td>
+                  <td className="px-3 py-3 font-bold text-[#0b1220]">{c.client_name}</td>
+                  <td className="px-3 py-3 font-mono text-[#64748b]">{c.serial_no}</td>
+                  <td className="px-3 py-3 font-semibold">
                     {c.media_type} {c.capacity_kg} Kg
                   </td>
-                  <td className="px-4 py-3 text-center text-[#64748b]">{c.test_date}</td>
-                  <td className="px-4 py-3 text-center font-bold text-emerald-600">{c.expired_date}</td>
-                  <td className="px-4 py-3 text-center">
+                  <td className="px-3 py-3 text-center text-[#64748b]">{c.test_date}</td>
+                  <td className="px-3 py-3 text-center font-bold text-emerald-600">{c.expired_date}</td>
+                  <td className="px-3 py-3 text-center">
                     <button
                       type="button"
                       onClick={() => setSelectedCert(c)}

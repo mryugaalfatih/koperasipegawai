@@ -42,7 +42,7 @@ export function UnitUsahaClientManager({
   return (
     <section className="min-w-0 pb-20 lg:pb-8">
       {/* Header */}
-      <header className="sticky top-0 z-20 border-b border-[#dbe5f1] bg-[#f8fbff]/90 px-4 py-4 backdrop-blur md:px-7">
+      <header className="sticky top-0 z-20 border-b border-[#dbe5f1] bg-[#f8fbff]/90 px-3 py-3 backdrop-blur md:px-3">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <p className="text-xs font-bold uppercase tracking-wider text-[#64748b]">Manajemen Devisi</p>
@@ -55,7 +55,7 @@ export function UnitUsahaClientManager({
         </div>
       </header>
 
-      <div className="mx-auto max-w-[1500px] space-y-6 px-4 py-4 md:px-7 md:py-6">
+      <div className="space-y-6 px-3 py-3 md:px-3 md:py-4">
         {/* Hero Card */}
         <section className="rounded-[28px] bg-[#07152f] p-5 text-white shadow-sm md:p-6">
           <div className="flex flex-wrap items-center justify-between gap-5">
@@ -223,7 +223,7 @@ export function UnitUsahaClientManager({
               <label className="block">
                 <span className="text-xs font-bold uppercase text-[#475569]">Deskripsi Operasional</span>
                 <textarea
-                  className="mt-1.5 min-h-24 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 py-3 text-xs font-semibold outline-none focus:border-[#2563eb]"
+                  className="mt-1.5 min-h-24 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-3 py-3 text-xs font-semibold outline-none focus:border-[#2563eb]"
                   name="description"
                   placeholder="Jelaskan bidang usaha dan operasional singkat unit ini..."
                 />
@@ -275,7 +275,7 @@ export function UnitUsahaClientManager({
               <textarea
                 key={editingUnit.id + "-desc"}
                 defaultValue={editingUnit.description ?? ""}
-                className="mt-1.5 min-h-24 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 py-3 text-xs font-semibold outline-none focus:border-[#2563eb]"
+                className="mt-1.5 min-h-24 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-3 py-3 text-xs font-semibold outline-none focus:border-[#2563eb]"
                 name="description"
               />
             </label>

@@ -189,31 +189,31 @@ export function TokoPembelianClientManager({
           <table className="w-full text-left text-xs">
             <thead className="bg-[#f8fbff] text-[#475569] border-b border-[#dbe5f1]">
               <tr>
-                <th className="px-4 py-3 font-bold">No. Surat PO</th>
-                <th className="px-4 py-3 font-bold">Tanggal Pesan</th>
-                <th className="px-4 py-3 font-bold">Distributor / Supplier</th>
-                <th className="px-4 py-3 font-bold">Jenis Pembayaran</th>
-                <th className="px-4 py-3 font-bold text-right">Total Nilai PO</th>
-                <th className="px-4 py-3 font-bold text-center">Status PO</th>
-                <th className="px-4 py-3 font-bold text-center">Aksi</th>
+                <th className="px-3 py-3 font-bold">No. Surat PO</th>
+                <th className="px-3 py-3 font-bold">Tanggal Pesan</th>
+                <th className="px-3 py-3 font-bold">Distributor / Supplier</th>
+                <th className="px-3 py-3 font-bold">Jenis Pembayaran</th>
+                <th className="px-3 py-3 font-bold text-right">Total Nilai PO</th>
+                <th className="px-3 py-3 font-bold text-center">Status PO</th>
+                <th className="px-3 py-3 font-bold text-center">Aksi</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#e2e8f0]">
               {filteredPo.length ? (
                 filteredPo.map((po) => (
                   <tr key={po.id} className="hover:bg-[#f8fbff] transition-colors">
-                    <td className="px-4 py-3 font-bold text-[#2563eb]">{po.po_no}</td>
-                    <td className="px-4 py-3 font-semibold text-[#64748b]">{po.order_date}</td>
-                    <td className="px-4 py-3 font-bold text-[#0b1220]">{po.supplier_name}</td>
-                    <td className="px-4 py-3">
+                    <td className="px-3 py-3 font-bold text-[#2563eb]">{po.po_no}</td>
+                    <td className="px-3 py-3 font-semibold text-[#64748b]">{po.order_date}</td>
+                    <td className="px-3 py-3 font-bold text-[#0b1220]">{po.supplier_name}</td>
+                    <td className="px-3 py-3">
                       <span className="rounded-full bg-[#f1f5f9] px-2.5 py-1 text-[11px] font-bold text-[#475569]">
                         {po.payment_type === "tempo" ? "Tempo (Kredit Supplier)" : "Tunai / Cash"}
                       </span>
                     </td>
-                    <td className="px-4 py-3 font-black text-right text-[#0b1220]">
+                    <td className="px-3 py-3 font-black text-right text-[#0b1220]">
                       {formatRupiah(po.total_amount)}
                     </td>
-                    <td className="px-4 py-3 text-center">
+                    <td className="px-3 py-3 text-center">
                       <span
                         className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-bold ${
                           po.status === "received"
@@ -225,7 +225,7 @@ export function TokoPembelianClientManager({
                         {po.status === "received" ? "Sudah Diterima" : "Pesanan Dikirim"}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-center">
+                    <td className="px-3 py-3 text-center">
                       <button
                         type="button"
                         onClick={() => setSelectedPo(po)}

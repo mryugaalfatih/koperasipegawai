@@ -227,7 +227,7 @@ export function KasClientManager({
 
   return (
     <section className="min-w-0 pb-20 lg:pb-8">
-      <div className="mx-auto max-w-[1500px] space-y-4 px-4 py-4 md:px-6 md:py-5">
+      <div className="space-y-4 px-3 py-3 md:px-6 md:py-5">
         {/* CrudHeader Standard */}
         <CrudHeader
           title="Keuangan & Operasional Kas"

@@ -83,10 +83,10 @@ export default async function AuditPage({ searchParams }: AuditPageProps) {
 
   return (
     <main className="min-h-screen bg-[#f4f7fb] text-[#0b1220]">
-      <div className="lg:grid lg:min-h-screen lg:grid-cols-[280px_1fr]">
+      <div className="lg:grid lg:min-h-screen lg:grid-cols-[auto_1fr]">
         <DashboardNavigation navItems={navItems} mobileNavItems={mobileNavItems} />
         <section className="min-w-0 pb-24 lg:pb-0">
-          <header className="sticky top-0 z-20 border-b border-[#dbe5f1] bg-[#f8fbff]/95 px-4 py-3 backdrop-blur md:px-7">
+          <header className="sticky top-0 z-20 border-b border-[#dbe5f1] bg-[#f8fbff]/95 px-3 py-3 backdrop-blur md:px-3">
         <div className="mx-auto flex max-w-[1500px] items-center justify-between gap-3">
           <div className="flex min-w-0 items-center gap-3">
             <Link className="grid size-10 place-items-center rounded-2xl border border-[#dbe5f1] bg-white" href="/home">
@@ -103,7 +103,7 @@ export default async function AuditPage({ searchParams }: AuditPageProps) {
         </div>
       </header>
 
-      <div className="mx-auto grid max-w-[1500px] gap-5 px-4 py-5 md:px-7 xl:grid-cols-[1fr_420px]">
+      <div className="mx-auto grid max-w-[1500px] gap-5 px-4 py-5 md:px-3 xl:grid-cols-[1fr_420px]">
         <section className="space-y-5">
           <section className="rounded-[28px] bg-[#07152f] p-5 text-white shadow-sm md:p-6">
             <div className="flex flex-wrap items-start justify-between gap-4">
@@ -209,7 +209,7 @@ export default async function AuditPage({ searchParams }: AuditPageProps) {
               </label>
               <label className="block">
                 <span className="text-sm font-black">Catatan</span>
-                <textarea className="mt-2 min-h-20 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 py-3 text-sm font-bold outline-none" name="note" placeholder="Catatan pemeriksaan" />
+                <textarea className="mt-2 min-h-20 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-3 py-3 text-sm font-bold outline-none" name="note" placeholder="Catatan pemeriksaan" />
               </label>
               <button className="h-12 w-full rounded-2xl bg-[#2563eb] text-sm font-black text-white" type="submit">
                 Simpan log demo

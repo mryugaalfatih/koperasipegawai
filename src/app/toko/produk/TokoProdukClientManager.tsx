@@ -158,20 +158,20 @@ export function TokoProdukClientManager({
             <table className="w-full text-left text-xs">
               <thead className="bg-[#f8fbff] text-[#475569] border-b border-[#dbe5f1]">
                 <tr>
-                  <th className="px-4 py-3 font-bold">Produk Sembako</th>
-                  <th className="px-4 py-3 font-bold">Kategori</th>
-                  <th className="px-4 py-3 font-bold text-right">HPP (Modal)</th>
-                  <th className="px-4 py-3 font-bold text-right">Harga Umum</th>
-                  <th className="px-4 py-3 font-bold text-right">Harga Anggota</th>
-                  <th className="px-4 py-3 font-bold text-center">Status</th>
-                  <th className="px-4 py-3 font-bold text-center">Aksi Master</th>
+                  <th className="px-3 py-3 font-bold">Produk Sembako</th>
+                  <th className="px-3 py-3 font-bold">Kategori</th>
+                  <th className="px-3 py-3 font-bold text-right">HPP (Modal)</th>
+                  <th className="px-3 py-3 font-bold text-right">Harga Umum</th>
+                  <th className="px-3 py-3 font-bold text-right">Harga Anggota</th>
+                  <th className="px-3 py-3 font-bold text-center">Status</th>
+                  <th className="px-3 py-3 font-bold text-center">Aksi Master</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#e2e8f0]">
                 {filteredProducts.length ? (
                   filteredProducts.map((product) => (
                     <tr key={product.id} className="hover:bg-[#f8fbff] transition-colors">
-                      <td className="px-4 py-3 font-bold text-[#0b1220]">
+                      <td className="px-3 py-3 font-bold text-[#0b1220]">
                         <div className="flex items-center gap-2.5">
                           <div className="grid size-9 shrink-0 place-items-center rounded-xl bg-[#eaf2ff] text-[#2563eb]">
                             <Store className="size-4" />
@@ -184,21 +184,21 @@ export function TokoProdukClientManager({
                           </div>
                         </div>
                       </td>
-                      <td className="px-4 py-3">
+                      <td className="px-3 py-3">
                         <span className="rounded-full bg-[#f1f5f9] px-2.5 py-1 text-[11px] font-bold text-[#475569]">
                           {product.category ?? "Sembako"}
                         </span>
                       </td>
-                      <td className="px-4 py-3 font-semibold text-right text-[#64748b]">
+                      <td className="px-3 py-3 font-semibold text-right text-[#64748b]">
                         {formatRupiah(product.buy_price)}
                       </td>
-                      <td className="px-4 py-3 font-bold text-right text-[#0b1220]">
+                      <td className="px-3 py-3 font-bold text-right text-[#0b1220]">
                         {formatRupiah(product.sell_price_general)}
                       </td>
-                      <td className="px-4 py-3 font-bold text-right text-[#2563eb]">
+                      <td className="px-3 py-3 font-bold text-right text-[#2563eb]">
                         {formatRupiah(product.sell_price_member)}
                       </td>
-                      <td className="px-4 py-3 text-center">
+                      <td className="px-3 py-3 text-center">
                         <span
                           className={`rounded-full px-2.5 py-0.5 text-[11px] font-bold ${
                             product.is_active
@@ -209,7 +209,7 @@ export function TokoProdukClientManager({
                           {product.is_active ? "Aktif" : "Nonaktif"}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-center">
+                      <td className="px-3 py-3 text-center">
                         <button
                           type="button"
                           onClick={() => setSelectedEditProduct(product)}
@@ -246,12 +246,12 @@ export function TokoProdukClientManager({
             <table className="w-full text-left text-xs">
               <thead className="bg-[#f8fbff] text-[#475569] border-b border-[#dbe5f1]">
                 <tr>
-                  <th className="px-4 py-3 font-bold">Produk Sembako</th>
-                  <th className="px-4 py-3 font-bold text-center">Satuan</th>
-                  <th className="px-4 py-3 font-bold text-center">Batas Min. Stok</th>
-                  <th className="px-4 py-3 font-bold text-center">Sisa Stok Fisik</th>
-                  <th className="px-4 py-3 font-bold text-center">Status Reorder</th>
-                  <th className="px-4 py-3 font-bold text-center">Input Pasokan / Opname</th>
+                  <th className="px-3 py-3 font-bold">Produk Sembako</th>
+                  <th className="px-3 py-3 font-bold text-center">Satuan</th>
+                  <th className="px-3 py-3 font-bold text-center">Batas Min. Stok</th>
+                  <th className="px-3 py-3 font-bold text-center">Sisa Stok Fisik</th>
+                  <th className="px-3 py-3 font-bold text-center">Status Reorder</th>
+                  <th className="px-3 py-3 font-bold text-center">Input Pasokan / Opname</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#e2e8f0]">
@@ -260,19 +260,19 @@ export function TokoProdukClientManager({
                     const isLow = product.stock_qty <= product.min_stock;
                     return (
                       <tr key={product.id} className="hover:bg-[#f8fbff] transition-colors">
-                        <td className="px-4 py-3 font-bold text-[#0b1220]">
+                        <td className="px-3 py-3 font-bold text-[#0b1220]">
                           <p className="font-bold text-sm text-[#0b1220]">{product.name}</p>
                           <p className="text-[11px] font-semibold text-[#64748b]">
                             BC: {product.barcode ?? "-"} · Kategori: {product.category ?? "Sembako"}
                           </p>
                         </td>
-                        <td className="px-4 py-3 text-center font-bold text-[#64748b]">
+                        <td className="px-3 py-3 text-center font-bold text-[#64748b]">
                           {product.unit_name ?? "Pcs"}
                         </td>
-                        <td className="px-4 py-3 text-center font-bold text-[#64748b]">
+                        <td className="px-3 py-3 text-center font-bold text-[#64748b]">
                           {product.min_stock} {product.unit_name ?? "Pcs"}
                         </td>
-                        <td className="px-4 py-3 text-center">
+                        <td className="px-3 py-3 text-center">
                           <span
                             className={`inline-flex items-center gap-1 font-black text-sm ${
                               isLow ? "text-amber-600" : "text-[#0b1220]"
@@ -281,7 +281,7 @@ export function TokoProdukClientManager({
                             {product.stock_qty} {product.unit_name ?? "Pcs"}
                           </span>
                         </td>
-                        <td className="px-4 py-3 text-center">
+                        <td className="px-3 py-3 text-center">
                           <span
                             className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-bold ${
                               isLow
@@ -293,7 +293,7 @@ export function TokoProdukClientManager({
                             {isLow ? "Perlu Reorder (Menipis)" : "Stok Aman"}
                           </span>
                         </td>
-                        <td className="px-4 py-3 text-center">
+                        <td className="px-3 py-3 text-center">
                           <div className="flex items-center justify-center gap-1.5">
                             <button
                               type="button"
