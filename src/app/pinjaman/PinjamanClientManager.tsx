@@ -263,7 +263,7 @@ export function PinjamanClientManager({
 
   return (
     <section className="min-w-0 pb-20 lg:pb-8">
-      <div className="mx-auto max-w-[1500px] px-4 py-4 md:px-7 md:py-6 space-y-6">
+      <div className="mx-auto max-w-[1500px] px-4 py-4 md:px-6 md:py-5 space-y-4">
 
         {/* CrudHeader */}
         <CrudHeader
@@ -287,34 +287,34 @@ export function PinjamanClientManager({
 
         {/* KPI Cards */}
         <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          <article className="rounded-3xl bg-[#07152f] p-5 text-white shadow-sm">
-            <Landmark className="size-6 text-[#93c5fd]" />
-            <p className="mt-4 text-xs font-bold text-[#bfdbfe]">Portofolio Cair</p>
-            <p className="mt-1 text-2xl font-bold text-white">{currency.format(totalPortfolio)}</p>
+          <article className="rounded-xl bg-[#07152f] p-4 text-white shadow-sm">
+            <Landmark className="size-5 text-[#93c5fd]" />
+            <p className="mt-3 text-xs font-bold text-[#bfdbfe]">Portofolio Cair</p>
+            <p className="mt-0.5 text-xl font-bold text-white">{currency.format(totalPortfolio)}</p>
           </article>
 
-          <article className="rounded-3xl bg-white p-5 shadow-sm ring-1 ring-[#dbe5f1]">
-            <FileCheck2 className="size-6 text-[#2563eb]" />
-            <p className="mt-4 text-xs font-bold text-[#64748b]">Total Pengajuan</p>
-            <p className="mt-1 text-xl font-bold text-[#0b1220]">{loanRows.length}</p>
+          <article className="rounded-xl bg-white p-4 shadow-sm ring-1 ring-[#dbe5f1]">
+            <FileCheck2 className="size-5 text-[#2563eb]" />
+            <p className="mt-3 text-xs font-bold text-[#64748b]">Total Pengajuan</p>
+            <p className="mt-0.5 text-lg font-bold text-[#0b1220]">{loanRows.length}</p>
           </article>
 
-          <article className="rounded-3xl bg-white p-5 shadow-sm ring-1 ring-[#dbe5f1]">
-            <CalendarClock className="size-6 text-[#f59e0b]" />
-            <p className="mt-4 text-xs font-bold text-[#64748b]">Menunggu Approval</p>
-            <p className="mt-1 text-xl font-bold text-[#0b1220]">{waitingApproval}</p>
+          <article className="rounded-xl bg-white p-4 shadow-sm ring-1 ring-[#dbe5f1]">
+            <CalendarClock className="size-5 text-[#f59e0b]" />
+            <p className="mt-3 text-xs font-bold text-[#64748b]">Menunggu Approval</p>
+            <p className="mt-0.5 text-lg font-bold text-[#0b1220]">{waitingApproval}</p>
           </article>
 
-          <article className="rounded-3xl bg-white p-5 shadow-sm ring-1 ring-[#dbe5f1]">
-            <BadgeCheck className="size-6 text-[#16a34a]" />
-            <p className="mt-4 text-xs font-bold text-[#64748b]">Dicairkan</p>
-            <p className="mt-1 text-xl font-bold text-[#0b1220]">{disbursedCount}</p>
+          <article className="rounded-xl bg-white p-4 shadow-sm ring-1 ring-[#dbe5f1]">
+            <BadgeCheck className="size-5 text-[#16a34a]" />
+            <p className="mt-3 text-xs font-bold text-[#64748b]">Dicairkan</p>
+            <p className="mt-0.5 text-lg font-bold text-[#0b1220]">{disbursedCount}</p>
           </article>
         </section>
 
         {/* Loan List */}
-        <section className="rounded-[28px] bg-white p-5 shadow-sm ring-1 ring-[#dbe5f1]">
-          <div className="overflow-hidden rounded-2xl border border-[#dbe5f1]">
+        <section className="rounded-xl bg-white p-4 shadow-sm ring-1 ring-[#dbe5f1]">
+          <div className="overflow-hidden rounded-xl border border-[#dbe5f1]">
             {filteredLoans.length ? (
               filteredLoans.map((loan) => {
                 const memberObj = Array.isArray(loan.members)

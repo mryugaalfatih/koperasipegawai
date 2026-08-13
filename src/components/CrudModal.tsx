@@ -48,7 +48,7 @@ export function CrudModal({
 
       {/* Modal / Mobile Bottom Sheet Card */}
       <div
-        className={`relative z-[101] w-full ${maxWidth} max-h-[92vh] sm:max-h-[90vh] overflow-y-auto rounded-t-[32px] sm:rounded-[28px] bg-white p-5 sm:p-6 shadow-2xl ring-1 ring-[#dbe5f1] transition-all animate-in slide-in-from-bottom-10 sm:zoom-in-95`}
+        className={`relative z-[101] w-full ${maxWidth} max-h-[92vh] sm:max-h-[90vh] overflow-y-auto rounded-t-2xl sm:rounded-2xl bg-white p-5 shadow-2xl ring-1 ring-[#dbe5f1] transition-all animate-in slide-in-from-bottom-10 sm:zoom-in-95`}
       >
         {/* Touch Handle indicator for Mobile */}
         <div className="mx-auto mb-3 h-1.5 w-12 rounded-full bg-[#cbd5e1] sm:hidden" />

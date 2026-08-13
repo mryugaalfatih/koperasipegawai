@@ -106,55 +106,56 @@ export function RekeningClientManager({
 
 
   return (
-    <div className="space-y-6">
-      {/* Standar CrudHeader */}
-      <CrudHeader
-        title="Master Rekening Simpanan"
-        subtitle="Kelola pembukaan rekening simpanan pokok, wajib, & sukarela anggota."
-        countBadge={`${accountRows.length} Rekening`}
-        addButtonLabel="Buat Rekening Baru"
-        onAddClick={() => setIsAccountModalOpen(true)}
-        searchValue={search}
-        onSearchChange={setSearch}
-        statusFilterValue={typeFilter}
-        onStatusFilterChange={setTypeFilter}
-        statusOptions={[
-          { value: "pokok", label: "Simpanan Pokok" },
-          { value: "wajib", label: "Simpanan Wajib" },
-          { value: "sukarela", label: "Simpanan Sukarela" },
-        ]}
-      />
+    <section className="min-w-0 pb-20 lg:pb-8">
+      <div className="mx-auto max-w-[1500px] px-4 py-4 md:px-6 md:py-5 space-y-4">
+        {/* CrudHeader */}
+        <CrudHeader
+          title="Rekening Simpanan Anggota"
+          subtitle="Kelola pembukaan rekening simpanan pokok, wajib, dan sukarela."
+          countBadge={`${accountRows.length} Rekening`}
+          addButtonLabel="Buka Rekening Baru"
+          onAddClick={() => setIsAccountModalOpen(true)}
+          searchValue={search}
+          onSearchChange={setSearch}
+          statusFilterValue={typeFilter}
+          onStatusFilterChange={setTypeFilter}
+          statusOptions={[
+            { value: "pokok", label: "Simpanan Pokok" },
+            { value: "wajib", label: "Simpanan Wajib" },
+            { value: "sukarela", label: "Simpanan Sukarela" },
+          ]}
+        />
 
-      {/* KPI Summary Cards */}
-      <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <article className="rounded-3xl bg-[#07152f] p-5 text-white shadow-sm">
-          <WalletCards className="size-6 text-[#93c5fd]" />
-          <p className="mt-4 text-xs font-bold text-[#bfdbfe]">Total Saldo Simpanan</p>
-          <p className="mt-1 text-2xl font-bold text-white">{currency.format(totals.total)}</p>
-        </article>
+        {/* KPI Summary Cards */}
+        <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <article className="rounded-xl bg-[#07152f] p-4 text-white shadow-sm">
+            <WalletCards className="size-5 text-[#93c5fd]" />
+            <p className="mt-3 text-xs font-bold text-[#bfdbfe]">Total Saldo Simpanan</p>
+            <p className="mt-0.5 text-xl font-bold text-white">{currency.format(totals.total)}</p>
+          </article>
 
-        <article className="rounded-3xl bg-white p-5 shadow-sm ring-1 ring-[#dbe5f1]">
-          <Landmark className="size-6 text-[#2563eb]" />
-          <p className="mt-4 text-xs font-bold text-[#64748b]">Simpanan Pokok</p>
-          <p className="mt-1 text-xl font-bold text-[#0b1220]">{currency.format(totals.pokok)}</p>
-        </article>
+          <article className="rounded-xl bg-white p-4 shadow-sm ring-1 ring-[#dbe5f1]">
+            <Landmark className="size-5 text-[#2563eb]" />
+            <p className="mt-3 text-xs font-bold text-[#64748b]">Simpanan Pokok</p>
+            <p className="mt-0.5 text-lg font-bold text-[#0b1220]">{currency.format(totals.pokok)}</p>
+          </article>
 
-        <article className="rounded-3xl bg-white p-5 shadow-sm ring-1 ring-[#dbe5f1]">
-          <ReceiptText className="size-6 text-[#2563eb]" />
-          <p className="mt-4 text-xs font-bold text-[#64748b]">Simpanan Wajib</p>
-          <p className="mt-1 text-xl font-bold text-[#0b1220]">{currency.format(totals.wajib)}</p>
-        </article>
+          <article className="rounded-xl bg-white p-4 shadow-sm ring-1 ring-[#dbe5f1]">
+            <ReceiptText className="size-5 text-[#2563eb]" />
+            <p className="mt-3 text-xs font-bold text-[#64748b]">Simpanan Wajib</p>
+            <p className="mt-0.5 text-lg font-bold text-[#0b1220]">{currency.format(totals.wajib)}</p>
+          </article>
 
-        <article className="rounded-3xl bg-white p-5 shadow-sm ring-1 ring-[#dbe5f1]">
-          <Banknote className="size-6 text-[#16a34a]" />
-          <p className="mt-4 text-xs font-bold text-[#64748b]">Simpanan Sukarela</p>
-          <p className="mt-1 text-xl font-bold text-[#0b1220]">{currency.format(totals.sukarela)}</p>
-        </article>
-      </section>
+          <article className="rounded-xl bg-white p-4 shadow-sm ring-1 ring-[#dbe5f1]">
+            <Banknote className="size-5 text-[#16a34a]" />
+            <p className="mt-3 text-xs font-bold text-[#64748b]">Simpanan Sukarela</p>
+            <p className="mt-0.5 text-lg font-bold text-[#0b1220]">{currency.format(totals.sukarela)}</p>
+          </article>
+        </section>
 
-      {/* Daftar Rekening Simpanan */}
-      <section className="rounded-[28px] bg-white p-5 shadow-sm ring-1 ring-[#dbe5f1]">
-        <div className="overflow-hidden rounded-2xl border border-[#dbe5f1]">
+        {/* Daftar Rekening Simpanan */}
+        <section className="rounded-xl bg-white p-4 shadow-sm ring-1 ring-[#dbe5f1]">
+          <div className="overflow-hidden rounded-xl border border-[#dbe5f1]">
           {filteredAccounts.length ? (
             filteredAccounts.map((account) => {
               const memberObj = Array.isArray(account.members)
@@ -333,7 +334,8 @@ export function RekeningClientManager({
           </form>
         ) : null}
       </CrudModal>
-    </div>
+      </div>
+    </section>
   );
 }
 

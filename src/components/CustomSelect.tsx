@@ -85,7 +85,7 @@ export function CustomSelect({
         type="button"
         disabled={disabled}
         onClick={() => setIsOpen((prev) => !prev)}
-        className={`flex h-11 w-full items-center justify-between rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 text-xs font-bold text-[#0b1220] outline-none transition-all hover:border-[#2563eb] hover:bg-white focus:border-[#2563eb] focus:bg-white focus:ring-2 focus:ring-[#2563eb]/20 disabled:cursor-not-allowed disabled:bg-[#f1f5f9] ${
+        className={`flex h-11 w-full items-center justify-between rounded-xl border border-[#dbe5f1] bg-[#f8fbff] px-3.5 text-xs font-bold text-[#0b1220] outline-none transition-all hover:border-[#2563eb] hover:bg-white focus:border-[#2563eb] focus:bg-white focus:ring-2 focus:ring-[#2563eb]/20 disabled:cursor-not-allowed disabled:bg-[#f1f5f9] ${
           isOpen ? "border-[#2563eb] bg-white ring-2 ring-[#2563eb]/20" : ""
         } ${className}`}
       >
@@ -101,7 +101,7 @@ export function CustomSelect({
 
       {/* Floating Custom Popup Options Menu */}
       {isOpen ? (
-        <div className="absolute left-0 top-[calc(100%+6px)] z-[150] max-h-60 w-full overflow-y-auto rounded-2xl border border-[#dbe5f1] bg-white p-1.5 shadow-2xl ring-1 ring-black/5 animate-in fade-in zoom-in-95">
+        <div className="absolute left-0 top-[calc(100%+6px)] z-[150] max-h-60 w-full overflow-y-auto rounded-xl border border-[#dbe5f1] bg-white p-1.5 shadow-2xl ring-1 ring-black/5 animate-in fade-in zoom-in-95">
           {parsedOptions.map((option) => {
             const isSelected = option.value === selectedValue;
             return (
@@ -109,10 +109,10 @@ export function CustomSelect({
                 key={option.value}
                 type="button"
                 onClick={() => handleSelect(option)}
-                className={`flex w-full items-center justify-between rounded-xl px-3.5 py-2.5 text-xs font-bold transition-all ${
+                className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-xs font-bold transition-colors ${
                   isSelected
                     ? "bg-[#eaf2ff] text-[#2563eb]"
-                    : "text-[#0b1220] hover:bg-[#f4f7fb] hover:text-[#2563eb]"
+                    : "text-[#0b1220] hover:bg-[#f8fbff]"
                 }`}
               >
                 <span className="truncate">{option.label}</span>

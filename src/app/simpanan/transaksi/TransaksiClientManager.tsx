@@ -162,7 +162,7 @@ export function TransaksiClientManager({
                           {transaction.direction === "in" ? "Setoran Kas Masuk" : "Penarikan Kas Keluar"}
                         </span>
                       </div>
-                      <p className="text-xs font-semibold text-[#64748b]">
+                      <p className="text-xs font-semibold text-[#64748b] leading-normal break-words">
                         No Anggota: <span className="font-bold text-[#0b1220]">{memberNo}</span> · No Rek: {accountNo} ({typeLabels[accountType]}) · {transaction.description ?? "Transaksi Simpanan"}
                       </p>
                     </div>

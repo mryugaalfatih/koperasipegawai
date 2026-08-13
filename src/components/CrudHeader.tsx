@@ -50,7 +50,7 @@ export function CrudHeader({
           <button
             type="button"
             onClick={onAddClick}
-            className="inline-flex h-11 items-center gap-2 rounded-2xl bg-[#2563eb] px-5 text-xs font-bold text-white shadow-sm hover:bg-[#1d4ed8] active:scale-[0.96] transition-all cursor-pointer"
+            className="inline-flex h-10 items-center gap-2 rounded-xl bg-[#2563eb] px-4 text-xs font-bold text-white shadow-sm hover:bg-[#1d4ed8] active:scale-[0.96] transition-all cursor-pointer"
           >
             <Plus className="size-4" />
             <span>{addButtonLabel}</span>
@@ -61,7 +61,7 @@ export function CrudHeader({
 
       {/* Toolbar Search & Filter */}
       {(onSearchChange || onStatusFilterChange) ? (
-        <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-white p-3 shadow-sm ring-1 ring-[#dbe5f1]">
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-white p-2.5 shadow-sm ring-1 ring-[#dbe5f1]">
           {onSearchChange ? (
             <div className="relative flex-1 min-w-[220px]">
               <Search className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-[#94a3b8]" />

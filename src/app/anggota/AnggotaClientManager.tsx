@@ -105,28 +105,28 @@ export function AnggotaClientManager({
 
       {/* KPI Cards */}
       <section className="grid gap-3 sm:grid-cols-3">
-        <article className="rounded-3xl bg-white p-5 shadow-sm ring-1 ring-[#dbe5f1]">
-          <UsersRound className="size-6 text-[#2563eb]" />
-          <p className="mt-4 text-xs font-bold text-[#64748b]">Total Anggota</p>
-          <p className="mt-1 text-2xl font-bold text-[#0b1220]">{totalCount}</p>
+        <article className="rounded-xl bg-white p-4 shadow-sm ring-1 ring-[#dbe5f1]">
+          <UsersRound className="size-5 text-[#2563eb]" />
+          <p className="mt-3 text-xs font-bold text-[#64748b]">Total Anggota</p>
+          <p className="mt-0.5 text-xl font-bold text-[#0b1220]">{totalCount}</p>
         </article>
 
-        <article className="rounded-3xl bg-white p-5 shadow-sm ring-1 ring-[#dbe5f1]">
-          <CheckCircle2 className="size-6 text-[#16a34a]" />
-          <p className="mt-4 text-xs font-bold text-[#64748b]">Anggota Aktif</p>
-          <p className="mt-1 text-2xl font-bold text-[#0b1220]">{activeCount}</p>
+        <article className="rounded-xl bg-white p-4 shadow-sm ring-1 ring-[#dbe5f1]">
+          <CheckCircle2 className="size-5 text-[#16a34a]" />
+          <p className="mt-3 text-xs font-bold text-[#64748b]">Anggota Aktif</p>
+          <p className="mt-0.5 text-xl font-bold text-[#0b1220]">{activeCount}</p>
         </article>
 
-        <article className="rounded-3xl bg-white p-5 shadow-sm ring-1 ring-[#dbe5f1]">
-          <ShieldCheck className="size-6 text-[#2563eb]" />
-          <p className="mt-4 text-xs font-bold text-[#64748b]">Data Ditampilkan</p>
-          <p className="mt-1 text-2xl font-bold text-[#0b1220]">{filteredMembers.length} Orang</p>
+        <article className="rounded-xl bg-white p-4 shadow-sm ring-1 ring-[#dbe5f1]">
+          <ShieldCheck className="size-5 text-[#2563eb]" />
+          <p className="mt-3 text-xs font-bold text-[#64748b]">Data Ditampilkan</p>
+          <p className="mt-0.5 text-xl font-bold text-[#0b1220]">{filteredMembers.length} Orang</p>
         </article>
       </section>
 
       {/* Member List Table / Cards */}
-      <section className="rounded-[28px] bg-white p-5 shadow-sm ring-1 ring-[#dbe5f1]">
-        <div className="overflow-hidden rounded-2xl border border-[#dbe5f1]">
+      <section className="rounded-xl bg-white p-4 shadow-sm ring-1 ring-[#dbe5f1]">
+        <div className="overflow-hidden rounded-xl border border-[#dbe5f1]">
           {filteredMembers.length ? (
             filteredMembers.map((member) => (
               <div

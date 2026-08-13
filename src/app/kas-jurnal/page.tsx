@@ -25,6 +25,7 @@ type KasJurnalPageProps = {
   searchParams: Promise<{
     error?: string;
     saved?: string;
+    unit?: string;
   }>;
 };
 
@@ -82,6 +83,8 @@ const categoryLabels: Record<string, string> = {
 export default async function KasJurnalPage({ searchParams }: KasJurnalPageProps) {
   const supabase = await createClient();
   const params = await searchParams;
+  const selectedUnit = params.unit ?? "";
+
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -90,29 +93,39 @@ export default async function KasJurnalPage({ searchParams }: KasJurnalPageProps
     redirect("/login");
   }
 
-  const [{ data: profile }, { data: accounts }, { data: cashTransactions }, { data: journalEntries }] = await Promise.all([
+  const [{ data: profile }, { data: accounts }, { data: cashTransactions }, { data: journalEntries }, { data: businessUnits }] = await Promise.all([
     supabase.from("profiles").select("id").eq("id", user.id).single(),
     supabase.from("accounts").select("id, code, name, category").order("code"),
     supabase
       .from("cash_transactions")
       .select("id, direction, amount, source_type, description, transaction_date")
       .order("created_at", { ascending: false })
-      .limit(20),
+      .limit(50),
     supabase
       .from("journal_entries")
       .select("id, entry_no, entry_date, memo, source_type, journal_lines(debit, credit, accounts(code, name))")
       .order("created_at", { ascending: false })
-      .limit(20),
+      .limit(50),
+    supabase.from("business_units").select("id, code, name").order("code"),
   ]);
 
   if (!profile) {
     redirect("/login?error=Profil%20user%20belum%20dibuat.");
   }
 
-
   const accountRows = (accounts ?? []) as AccountRow[];
-  const cashRows = (cashTransactions ?? []) as CashTransactionRow[];
-  const journalRows = (journalEntries ?? []) as unknown as JournalRow[];
+  const rawCashRows = (cashTransactions ?? []) as CashTransactionRow[];
+  const rawJournalRows = (journalEntries ?? []) as unknown as JournalRow[];
+  const unitList = (businessUnits ?? []) as { id: string; code: string; name: string }[];
+
+  const cashRows = selectedUnit
+    ? rawCashRows.filter((item) => item.description?.toLowerCase().includes(selectedUnit.toLowerCase()))
+    : rawCashRows;
+
+  const journalRows = selectedUnit
+    ? rawJournalRows.filter((item) => item.memo?.toLowerCase().includes(selectedUnit.toLowerCase()))
+    : rawJournalRows;
+
   const cashIn = cashRows.filter((row) => row.direction === "in").reduce((sum, row) => sum + Number(row.amount ?? 0), 0);
   const cashOut = cashRows.filter((row) => row.direction === "out").reduce((sum, row) => sum + Number(row.amount ?? 0), 0);
   const cashBalance = cashIn - cashOut;
@@ -163,6 +176,41 @@ export default async function KasJurnalPage({ searchParams }: KasJurnalPageProps
               <BookOpenCheck className="size-8 text-[#93c5fd]" />
             </div>
           </section>
+
+          {/* Unit Usaha Filter Toolbar */}
+          <div className="flex flex-wrap items-center gap-2 rounded-2xl bg-white p-3 shadow-sm ring-1 ring-[#dbe5f1]">
+            <span className="text-xs font-bold text-[#64748b] mr-1">Laporan Kas Per Unit:</span>
+            <Link
+              href="/kas-jurnal"
+              className={`h-8 rounded-xl px-3.5 text-xs font-bold transition-all inline-flex items-center ${
+                !selectedUnit
+                  ? "bg-[#0b1220] text-white shadow-sm"
+                  : "bg-[#f8fbff] text-[#64748b] ring-1 ring-[#dbe5f1] hover:bg-slate-100"
+              }`}
+            >
+              Semua Unit ({rawJournalRows.length})
+            </Link>
+            {(unitList.length ? unitList : [
+              { code: "USP", name: "Simpan Pinjam" },
+              { code: "WAS", name: "Toko Waserda" },
+              { code: "KLN", name: "Klinik / Jasa" },
+            ]).map((u) => {
+              const isActive = selectedUnit.toLowerCase() === u.name.toLowerCase();
+              return (
+                <Link
+                  key={u.code}
+                  href={`/kas-jurnal?unit=${encodeURIComponent(u.name)}`}
+                  className={`h-8 rounded-xl px-3.5 text-xs font-bold transition-all inline-flex items-center ${
+                    isActive
+                      ? "bg-[#2563eb] text-white shadow-sm"
+                      : "bg-[#f8fbff] text-[#64748b] ring-1 ring-[#dbe5f1] hover:bg-slate-100"
+                  }`}
+                >
+                  {u.code} · {u.name}
+                </Link>
+              );
+            })}
+          </div>
 
           <div className="grid gap-3 md:grid-cols-4">
             {[
@@ -249,9 +297,9 @@ export default async function KasJurnalPage({ searchParams }: KasJurnalPageProps
                       <div className={`grid size-10 shrink-0 place-items-center rounded-2xl ${transaction.direction === "in" ? "bg-[#dbeafe] text-[#1d4ed8]" : "bg-[#fff1f2] text-[#be123c]"}`}>
                         {transaction.direction === "in" ? <ArrowDownLeft className="size-5" /> : <ArrowUpRight className="size-5" />}
                       </div>
-                      <div className="min-w-0">
-                        <p className="truncate font-black">{transaction.description ?? transaction.source_type}</p>
-                        <p className="text-sm font-semibold text-[#64748b]">{transaction.transaction_date}</p>
+                      <div className="min-w-0 flex-1">
+                        <p className="font-bold text-sm text-[#0b1220] leading-snug break-words">{transaction.description ?? transaction.source_type}</p>
+                        <p className="mt-0.5 text-xs font-semibold text-[#64748b]">{transaction.transaction_date}</p>
                       </div>
                     </div>
                     <p className="font-black">{currency.format(Number(transaction.amount ?? 0))}</p>

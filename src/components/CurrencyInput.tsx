@@ -28,7 +28,7 @@ export function CurrencyInput({
   placeholder = "0",
   defaultValue = "",
   required = false,
-  className = "mt-2 h-12 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 text-sm font-bold outline-none focus:border-[#2563eb] focus:bg-white transition-all",
+  className = "mt-1.5 h-11 w-full rounded-xl border border-[#dbe5f1] bg-[#f8fbff] px-3.5 text-xs font-bold outline-none focus:border-[#2563eb] focus:bg-white transition-all",
   onValueChange,
   onChange,
 }: CurrencyInputProps) {

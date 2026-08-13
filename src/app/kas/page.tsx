@@ -38,6 +38,31 @@ type ApprovedLoanRow = {
   loan_products: { name: string }[] | null;
 };
 
+type ClosingLogRow = {
+  id: string;
+  created_at: string;
+  actor_id: string;
+  metadata: {
+    closing_date?: string;
+    system_balance?: number;
+    physical_balance?: number;
+    variance?: number;
+    status?: string;
+    notes?: string;
+    denominations?: {
+      d100k?: number;
+      d50k?: number;
+      d20k?: number;
+      d10k?: number;
+      d5k?: number;
+      d2k?: number;
+      d1k?: number;
+      dCoin?: number;
+    };
+  };
+  profiles?: { full_name: string } | { full_name: string }[] | null;
+};
+
 export default async function KasPage({ searchParams }: KasPageProps) {
   const supabase = await createClient();
   const params = await searchParams;
@@ -49,19 +74,31 @@ export default async function KasPage({ searchParams }: KasPageProps) {
     redirect("/login");
   }
 
-  const [{ data: profile }, { data: accounts }, { data: cashTransactions }, { data: approvedLoans }] = await Promise.all([
-    supabase.from("profiles").select("id").eq("id", user.id).single(),
+  const [{ data: profile }, { data: accounts }, { data: cashTransactions }, { data: approvedLoans }, { data: closingLogs }, { data: journalEntries }, { data: businessUnits }] = await Promise.all([
+    supabase.from("profiles").select("id, default_unit_id").eq("id", user.id).single(),
     supabase.from("accounts").select("id, code, name, category").order("code"),
     supabase
       .from("cash_transactions")
       .select("id, direction, amount, source_type, description, transaction_date")
       .order("created_at", { ascending: false })
-      .limit(30),
+      .limit(50),
     supabase
       .from("loans")
       .select("id, principal, tenor_months, interest_method, annual_rate_snapshot, members(full_name, member_no), loan_products(name)")
       .eq("status", "approved")
       .order("created_at", { ascending: false }),
+    supabase
+      .from("audit_logs")
+      .select("id, created_at, actor_id, metadata")
+      .eq("action", "cash.closing.posted")
+      .order("created_at", { ascending: false })
+      .limit(30),
+    supabase
+      .from("journal_entries")
+      .select("id, entry_no, entry_date, memo, source_type, status, source_id")
+      .order("created_at", { ascending: false })
+      .limit(100),
+    supabase.from("business_units").select("id, code, name").order("code"),
   ]);
 
   if (!profile) {
@@ -69,8 +106,28 @@ export default async function KasPage({ searchParams }: KasPageProps) {
   }
 
   const accountRows = (accounts ?? []) as AccountRow[];
-  const cashRows = (cashTransactions ?? []) as CashTransactionRow[];
+  const rawCashTransactions = cashTransactions ?? [];
+  const allJournals = journalEntries ?? [];
   const approvedLoanRows = (approvedLoans ?? []) as unknown as ApprovedLoanRow[];
+  const closingRows = (closingLogs ?? []) as unknown as ClosingLogRow[];
+
+  const journalStatusMap = new Map(
+    allJournals.map((j) => [j.source_id, j.status])
+  );
+
+  const cashRows = rawCashTransactions.map((ct) => ({
+    ...ct,
+    journal_status: journalStatusMap.get(ct.id) ?? "approved",
+  }));
+
+  const pendingManagerRows = allJournals
+    .filter((j) => ["pending_manager", "draft"].includes(j.status ?? ""))
+    .map((j) => ({
+      id: j.id,
+      entry_no: j.entry_no,
+      entry_date: j.entry_date,
+      memo: j.memo,
+    }));
 
   const totalIn = cashRows
     .filter((item) => item.direction === "in")
@@ -81,6 +138,14 @@ export default async function KasPage({ searchParams }: KasPageProps) {
     .reduce((sum, item) => sum + Number(item.amount ?? 0), 0);
 
   const netCash = totalIn - totalOut;
+
+  const businessUnitRows = (businessUnits ?? []) as { id: string; code: string; name: string }[];
+
+  // Resolve user's assigned unit
+  const userDefaultUnitId = (profile as { id: string; default_unit_id?: string | null }).default_unit_id ?? null;
+  const userUnit = userDefaultUnitId
+    ? businessUnitRows.find((u) => u.id === userDefaultUnitId) ?? null
+    : null;
 
   return (
     <main className="min-h-screen bg-[#f4f7fb] text-[#0b1220]">
@@ -97,6 +162,10 @@ export default async function KasPage({ searchParams }: KasPageProps) {
           totalOut={totalOut}
           netCash={netCash}
           approvedLoans={approvedLoanRows}
+          closingRows={closingRows}
+          pendingManagerRows={pendingManagerRows}
+          businessUnits={businessUnitRows}
+          userUnit={userUnit}
         />
       </div>
     </main>

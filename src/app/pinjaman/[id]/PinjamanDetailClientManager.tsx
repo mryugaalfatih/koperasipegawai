@@ -368,7 +368,7 @@ export function PinjamanDetailClientManager({
                   setPrintMode("settlement");
                   setTimeout(() => window.print(), 100);
                 }}
-                className="h-10 inline-flex items-center gap-2 rounded-2xl bg-emerald-600 px-4 text-xs font-bold text-white hover:bg-emerald-700 active:scale-95 transition-all cursor-pointer shadow-sm"
+                className="h-9 inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-3.5 text-xs font-bold text-white hover:bg-emerald-700 active:scale-95 transition-all cursor-pointer shadow-sm"
               >
                 <CheckCircle2 className="size-4" />
                 <span>Cetak Surat Ket. Lunas</span>
@@ -378,7 +378,7 @@ export function PinjamanDetailClientManager({
             {loanDetail.status === "disbursed" && (
               <Link
                 href="/pinjaman"
-                className="h-10 inline-flex items-center gap-2 rounded-2xl bg-amber-500 px-4 text-xs font-bold text-white hover:bg-amber-600 active:scale-95 transition-all cursor-pointer shadow-sm"
+                className="h-9 inline-flex items-center gap-2 rounded-xl bg-amber-500 px-3.5 text-xs font-bold text-white hover:bg-amber-600 active:scale-95 transition-all cursor-pointer shadow-sm"
               >
                 <RefreshCcw className="size-4" />
                 <span>Ajukan Top-Up</span>
@@ -388,19 +388,19 @@ export function PinjamanDetailClientManager({
         </div>
       </header>
 
-      <div className="mx-auto max-w-[1500px] px-4 py-5 md:px-7 space-y-5">
+      <div className="mx-auto max-w-[1500px] px-4 py-4 md:px-6 space-y-4">
         {/* Notifications */}
-        {error && <div className="rounded-2xl bg-[#fff1f2] p-4 text-sm font-bold text-[#be123c]">{error}</div>}
+        {error && <div className="rounded-xl bg-[#fff1f2] p-3.5 text-sm font-bold text-[#be123c]">{error}</div>}
         {paid && (
-          <div className="rounded-2xl bg-[#eff6ff] p-4 text-sm font-bold text-[#1d4ed8] flex items-center justify-between gap-3">
+          <div className="rounded-xl bg-[#eff6ff] p-3.5 text-sm font-bold text-[#1d4ed8] flex items-center justify-between gap-3">
             <span>Pembayaran angsuran berhasil diposting.</span>
             {paymentRows.length > 0 && (
               <button
                 type="button"
                 onClick={() => handlePrintReceipt(paymentRows[0])}
-                className="h-9 px-4 inline-flex items-center gap-2 rounded-xl bg-[#2563eb] text-xs font-bold text-white hover:bg-[#1d4ed8] active:scale-95 transition-all cursor-pointer shadow-sm shrink-0"
+                className="h-8 px-3 inline-flex items-center gap-1.5 rounded-lg bg-[#2563eb] text-xs font-bold text-white hover:bg-[#1d4ed8] active:scale-95 transition-all cursor-pointer shadow-sm shrink-0"
               >
-                <Printer className="size-4" />
+                <Printer className="size-3.5" />
                 <span>Cetak Kuitansi Terbaru</span>
               </button>
             )}
@@ -408,7 +408,7 @@ export function PinjamanDetailClientManager({
         )}
 
         {/* Loan Info Card */}
-        <section className="rounded-[28px] bg-[#07152f] p-5 text-white shadow-sm md:p-6">
+        <section className="rounded-xl bg-[#07152f] p-4 text-white shadow-sm md:p-5">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
               <p className="text-sm font-bold text-[#bfdbfe]">{productName}</p>
@@ -438,26 +438,26 @@ export function PinjamanDetailClientManager({
             <p className="mt-4 text-xs font-bold text-[#64748b]">Plafond</p>
             <p className="mt-1 text-xl font-bold text-[#0b1220]">{currency.format(Number(loanDetail.principal ?? 0))}</p>
           </article>
-          <article className="rounded-3xl bg-white p-5 shadow-sm ring-1 ring-[#dbe5f1]">
-            <FileText className="size-6 text-[#2563eb]" />
-            <p className="mt-4 text-xs font-bold text-[#64748b]">Total Tagihan</p>
-            <p className="mt-1 text-xl font-bold text-[#0b1220]">{currency.format(totalDue)}</p>
+          <article className="rounded-xl bg-white p-4 shadow-sm ring-1 ring-[#dbe5f1]">
+            <FileText className="size-5 text-[#2563eb]" />
+            <p className="mt-3 text-xs font-bold text-[#64748b]">Total Tagihan</p>
+            <p className="mt-0.5 text-lg font-bold text-[#0b1220]">{currency.format(totalDue)}</p>
           </article>
-          <article className="rounded-3xl bg-white p-5 shadow-sm ring-1 ring-[#dbe5f1]">
-            <CheckCircle2 className="size-6 text-[#16a34a]" />
-            <p className="mt-4 text-xs font-bold text-[#64748b]">Terbayar</p>
-            <p className="mt-1 text-xl font-bold text-[#0b1220]">{currency.format(totalPaid)}</p>
+          <article className="rounded-xl bg-white p-4 shadow-sm ring-1 ring-[#dbe5f1]">
+            <CheckCircle2 className="size-5 text-[#16a34a]" />
+            <p className="mt-3 text-xs font-bold text-[#64748b]">Terbayar</p>
+            <p className="mt-0.5 text-lg font-bold text-[#0b1220]">{currency.format(totalPaid)}</p>
           </article>
-          <article className="rounded-3xl bg-[#07152f] p-5 text-white shadow-sm">
-            <Banknote className="size-6 text-[#93c5fd]" />
-            <p className="mt-4 text-xs font-bold text-[#bfdbfe]">Sisa Outstanding</p>
-            <p className="mt-1 text-xl font-bold text-white">{currency.format(outstanding)}</p>
+          <article className="rounded-xl bg-[#07152f] p-4 text-white shadow-sm">
+            <Banknote className="size-5 text-[#93c5fd]" />
+            <p className="mt-3 text-xs font-bold text-[#bfdbfe]">Sisa Outstanding</p>
+            <p className="mt-0.5 text-lg font-bold text-white">{currency.format(outstanding)}</p>
           </article>
         </section>
 
-        <div className="grid gap-5 xl:grid-cols-[1fr_420px]">
+        <div className="grid gap-4 xl:grid-cols-[1fr_420px]">
           {/* Installment Table */}
-          <section className="rounded-[28px] bg-white p-5 shadow-sm ring-1 ring-[#dbe5f1]">
+          <section className="rounded-xl bg-white p-4 shadow-sm ring-1 ring-[#dbe5f1]">
             <div className="mb-4 flex items-center justify-between">
               <div>
                 <p className="text-xs font-bold uppercase tracking-wider text-[#64748b]">Jadwal Angsuran</p>
@@ -564,12 +564,12 @@ export function PinjamanDetailClientManager({
           </section>
 
           {/* Payment Sidebar */}
-          <aside className="space-y-5 xl:sticky xl:top-24 xl:self-start">
+          <aside className="space-y-4 xl:sticky xl:top-24 xl:self-start">
             {/* Payment Form */}
             {loanDetail.status === "disbursed" ? (
-              <section className="rounded-[28px] bg-white p-5 shadow-sm ring-1 ring-[#dbe5f1] md:p-6">
+              <section className="rounded-xl bg-white p-4 shadow-sm ring-1 ring-[#dbe5f1] md:p-5">
                 <div className="flex items-center gap-3">
-                  <div className="grid size-11 place-items-center rounded-2xl bg-[#2563eb] text-white">
+                  <div className="grid size-10 place-items-center rounded-xl bg-[#2563eb] text-white">
                     <ReceiptText className="size-5" />
                   </div>
                   <div>
@@ -578,11 +578,11 @@ export function PinjamanDetailClientManager({
                   </div>
                 </div>
 
-                <form action={postPayment} className="mt-5 space-y-4">
+                <form action={postPayment} className="mt-4 space-y-3.5">
                   <label className="block">
                     <span className="text-sm font-bold text-[#0b1220]">Pilih Angsuran / Paket Bulan</span>
                     <select
-                      className="mt-2 h-12 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 text-sm font-bold outline-none focus:border-[#2563eb]"
+                      className="mt-1.5 h-11 w-full rounded-xl border border-[#dbe5f1] bg-[#f8fbff] px-3.5 text-xs font-bold outline-none focus:border-[#2563eb]"
                       name="installment_id"
                       required
                       value={selectedInstallmentId}

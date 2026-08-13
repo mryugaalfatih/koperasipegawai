@@ -59,7 +59,9 @@ const currency = new Intl.NumberFormat("id-ID", {
 
 const statusConfig: Record<string, { label: string; color: string }> = {
   draft: { label: "Menunggu Review", color: "bg-amber-50 text-amber-700 border-amber-200" },
-  approved: { label: "Disetujui", color: "bg-emerald-50 text-emerald-700 border-emerald-200" },
+  pending_manager: { label: "Menunggu Manager (Tahap 1)", color: "bg-amber-50 text-amber-800 border-amber-300 font-bold" },
+  pending_accountant: { label: "Menunggu Akuntan (Tahap 2)", color: "bg-blue-50 text-blue-800 border-blue-300 font-bold" },
+  approved: { label: "Disetujui (Approved)", color: "bg-emerald-50 text-emerald-700 border-emerald-200" },
   rejected: { label: "Ditolak", color: "bg-rose-50 text-rose-700 border-rose-200" },
 };
 
@@ -68,6 +70,7 @@ const sourceLabels: Record<string, string> = {
   loans: "Pinjaman",
   loan_payments: "Angsuran",
   savings: "Simpanan",
+  cash_transactions: "Kasir",
 };
 
 export function AkuntansiClientManager({ accountRows, journalRows }: AkuntansiClientManagerProps) {
@@ -76,7 +79,9 @@ export function AkuntansiClientManager({ accountRows, journalRows }: AkuntansiCl
   const [editMemo, setEditMemo] = useState("");
   const [editLines, setEditLines] = useState<{ account_id: string; debit: string; credit: string }[]>([]);
 
-  const draftJournals = journalRows.filter((j) => (j.status ?? "draft") === "draft");
+  const draftJournals = journalRows.filter((j) =>
+    ["draft", "pending_manager", "pending_accountant"].includes(j.status ?? "draft"),
+  );
   const displayedJournals = tab === "draft" ? draftJournals : journalRows;
 
   const openEdit = (journal: JournalRow) => {
@@ -174,8 +179,8 @@ export function AkuntansiClientManager({ accountRows, journalRows }: AkuntansiCl
           })}
         </div>
 
-        {/* Action buttons for draft journals */}
-        {(entry.status ?? "draft") === "draft" && (
+        {/* Action buttons for draft & pending approval journals */}
+        {["draft", "pending_manager", "pending_accountant"].includes(entry.status ?? "draft") && (
           <div className="mt-3 flex items-center gap-2">
             <form action={approve}>
               <button
@@ -211,15 +216,15 @@ export function AkuntansiClientManager({ accountRows, journalRows }: AkuntansiCl
 
   return (
     <section className="min-w-0 pb-20 lg:pb-8">
-      <div className="mx-auto max-w-[1500px] space-y-6 px-4 py-4 md:px-7 md:py-6">
-        <div className="grid gap-6 xl:grid-cols-[1fr_380px]">
-          <div className="space-y-6">
+      <div className="mx-auto max-w-[1500px] space-y-4 px-4 py-4 md:px-6 md:py-5">
+        <div className="grid gap-4 xl:grid-cols-[1fr_380px]">
+          <div className="space-y-4">
             {/* Tab selector */}
             <div className="flex items-center gap-2">
               <button
                 type="button"
                 onClick={() => setTab("draft")}
-                className={`h-10 rounded-2xl px-5 text-xs font-bold transition-all cursor-pointer ${
+                className={`h-9 rounded-xl px-4 text-xs font-bold transition-all cursor-pointer ${
                   tab === "draft"
                     ? "bg-[#0b1220] text-white"
                     : "bg-white text-[#64748b] ring-1 ring-[#dbe5f1] hover:bg-slate-50"
@@ -230,7 +235,7 @@ export function AkuntansiClientManager({ accountRows, journalRows }: AkuntansiCl
               <button
                 type="button"
                 onClick={() => setTab("all")}
-                className={`h-10 rounded-2xl px-5 text-xs font-bold transition-all cursor-pointer ${
+                className={`h-9 rounded-xl px-4 text-xs font-bold transition-all cursor-pointer ${
                   tab === "all"
                     ? "bg-[#0b1220] text-white"
                     : "bg-white text-[#64748b] ring-1 ring-[#dbe5f1] hover:bg-slate-50"
@@ -245,8 +250,8 @@ export function AkuntansiClientManager({ accountRows, journalRows }: AkuntansiCl
               {displayedJournals.length ? (
                 displayedJournals.map(renderJournalCard)
               ) : (
-                <div className="rounded-[28px] bg-white p-10 text-center shadow-sm ring-1 ring-[#dbe5f1]">
-                  <BookOpenCheck className="mx-auto size-10 text-[#94a3b8]" />
+                <div className="rounded-xl bg-white p-8 text-center shadow-sm ring-1 ring-[#dbe5f1]">
+                  <BookOpenCheck className="mx-auto size-9 text-[#94a3b8]" />
                   <p className="mt-3 font-bold text-[#0b1220]">
                     {tab === "draft" ? "Tidak ada jurnal menunggu review" : "Belum ada riwayat jurnal"}
                   </p>
@@ -255,7 +260,7 @@ export function AkuntansiClientManager({ accountRows, journalRows }: AkuntansiCl
             </section>
 
             {/* Chart of Accounts */}
-            <section className="rounded-[28px] bg-white p-5 shadow-sm ring-1 ring-[#dbe5f1] md:p-6">
+            <section className="rounded-xl bg-white p-4 shadow-sm ring-1 ring-[#dbe5f1] md:p-5">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-xs font-bold uppercase tracking-wider text-[#64748b]">Master Akun</p>

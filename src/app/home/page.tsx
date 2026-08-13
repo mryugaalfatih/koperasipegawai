@@ -259,10 +259,10 @@ export default async function Home() {
             </div>
           </header>
 
-          <div className="mx-auto max-w-[1500px] space-y-5 px-4 py-4 md:px-7 md:py-6">
+          <div className="mx-auto max-w-[1500px] space-y-4 px-4 py-4 md:px-6 md:py-5">
             {/* Hero Section */}
-            <section className="rounded-[28px] bg-[#07152f] p-5 text-white shadow-sm md:p-6">
-              <div className="flex flex-wrap items-center justify-between gap-5">
+            <section className="rounded-xl bg-[#07152f] p-4 text-white shadow-sm md:p-5">
+              <div className="flex flex-wrap items-center justify-between gap-4">
                 <div>
                   <div className="flex flex-wrap items-center gap-2">
                     <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs font-bold text-[#bfdbfe]">
@@ -273,7 +273,7 @@ export default async function Home() {
                       Unit Usaha: Simpan Pinjam (USP)
                     </span>
                   </div>
-                  <h1 className="mt-3 text-xl font-bold md:text-2xl">
+                  <h1 className="mt-2.5 text-lg font-bold md:text-xl">
                     Dashboard Operasional Unit Simpan Pinjam
                   </h1>
                   <p className="mt-1 max-w-xl text-xs font-medium text-[#cbd5e1]">
@@ -284,7 +284,7 @@ export default async function Home() {
                 <div className="grid w-full grid-cols-2 gap-2 sm:w-auto sm:grid-cols-4">
                   {quickActions.map((item) => (
                     <a
-                      className="inline-flex h-10 items-center justify-center gap-2 rounded-2xl bg-white px-4 text-xs font-bold text-[#07152f] shadow-sm hover:bg-slate-100 transition-all"
+                      className="inline-flex h-9 items-center justify-center gap-2 rounded-xl bg-white px-3.5 text-xs font-bold text-[#07152f] shadow-sm hover:bg-slate-100 transition-all"
                       href={item.href}
                       key={item.label}
                     >
@@ -298,45 +298,45 @@ export default async function Home() {
 
             {/* Core KPI Cards */}
             <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-              <article className="rounded-3xl bg-white p-5 shadow-sm ring-1 ring-[#dbe5f1]">
+              <article className="rounded-xl bg-white p-4 shadow-sm ring-1 ring-[#dbe5f1]">
                 <div className="flex items-center justify-between">
-                  <div className="grid size-10 place-items-center rounded-2xl bg-[#dbeafe] text-[#1d4ed8]">
-                    <PiggyBank className="size-5" />
+                  <div className="grid size-9 place-items-center rounded-lg bg-[#dbeafe] text-[#1d4ed8]">
+                    <PiggyBank className="size-4" />
                   </div>
                   <span className="text-xs font-bold text-[#2563eb]">+{newMemberCount ?? 0} bulan ini</span>
                 </div>
-                <p className="mt-4 text-xs font-bold text-[#64748b]">Total Simpanan ({activeMemberCount ?? 0} Anggota)</p>
-                <p className="mt-1 text-xl font-bold text-[#0b1220]">{currency.format(totalSavings)}</p>
+                <p className="mt-3 text-xs font-bold text-[#64748b]">Total Simpanan ({activeMemberCount ?? 0} Anggota)</p>
+                <p className="mt-0.5 text-lg font-bold text-[#0b1220]">{currency.format(totalSavings)}</p>
               </article>
 
-              <article className="rounded-3xl bg-white p-5 shadow-sm ring-1 ring-[#dbe5f1]">
-                <div className="grid size-10 place-items-center rounded-2xl bg-[#eef4ff] text-[#1d4ed8]">
-                  <Landmark className="size-5" />
+              <article className="rounded-xl bg-white p-4 shadow-sm ring-1 ring-[#dbe5f1]">
+                <div className="grid size-9 place-items-center rounded-lg bg-[#eef4ff] text-[#1d4ed8]">
+                  <Landmark className="size-4" />
                 </div>
-                <p className="mt-4 text-xs font-bold text-[#64748b]">Outstanding Pinjaman</p>
-                <p className="mt-1 text-xl font-bold text-[#0b1220]">{currency.format(totalOutstanding)}</p>
+                <p className="mt-3 text-xs font-bold text-[#64748b]">Outstanding Pinjaman</p>
+                <p className="mt-0.5 text-lg font-bold text-[#0b1220]">{currency.format(totalOutstanding)}</p>
               </article>
 
-              <article className="rounded-3xl bg-white p-5 shadow-sm ring-1 ring-[#dbe5f1]">
-                <div className="grid size-10 place-items-center rounded-2xl bg-[#eaf2ff] text-[#2563eb]">
-                  <ChartNoAxesCombined className="size-5" />
+              <article className="rounded-xl bg-white p-4 shadow-sm ring-1 ring-[#dbe5f1]">
+                <div className="grid size-9 place-items-center rounded-lg bg-[#eaf2ff] text-[#2563eb]">
+                  <ChartNoAxesCombined className="size-4" />
                 </div>
-                <p className="mt-4 text-xs font-bold text-[#64748b]">Kas Tersedia</p>
-                <p className="mt-1 text-xl font-bold text-[#0b1220]">{currency.format(cashBalance)}</p>
+                <p className="mt-3 text-xs font-bold text-[#64748b]">Kas Tersedia</p>
+                <p className="mt-0.5 text-lg font-bold text-[#0b1220]">{currency.format(cashBalance)}</p>
               </article>
 
-              <article className="rounded-3xl bg-white p-5 shadow-sm ring-1 ring-[#dbe5f1]">
-                <div className="grid size-10 place-items-center rounded-2xl bg-[#e0f2fe] text-[#0369a1]">
-                  <CircleDollarSign className="size-5" />
+              <article className="rounded-xl bg-white p-4 shadow-sm ring-1 ring-[#dbe5f1]">
+                <div className="grid size-9 place-items-center rounded-lg bg-[#e0f2fe] text-[#0369a1]">
+                  <CircleDollarSign className="size-4" />
                 </div>
-                <p className="mt-4 text-xs font-bold text-[#64748b]">SHU Berjalan</p>
-                <p className="mt-1 text-xl font-bold text-[#0b1220]">{currency.format(runningShu)}</p>
+                <p className="mt-3 text-xs font-bold text-[#64748b]">SHU Berjalan</p>
+                <p className="mt-0.5 text-lg font-bold text-[#0b1220]">{currency.format(runningShu)}</p>
               </article>
             </section>
 
             {/* Loan Workflow & Submissions */}
-            <section className="grid gap-5 xl:grid-cols-[1fr_0.9fr]" id="pinjaman">
-              <div className="rounded-[28px] bg-white p-5 shadow-sm ring-1 ring-[#dbe5f1] md:p-6">
+            <section className="grid gap-4 xl:grid-cols-[1fr_0.9fr]" id="pinjaman">
+              <div className="rounded-xl bg-white p-4 shadow-sm ring-1 ring-[#dbe5f1] md:p-5">
                 <div className="flex items-center justify-between gap-4">
                   <div>
                     <p className="text-xs font-bold uppercase tracking-wider text-[#64748b]">Workflow pinjaman</p>

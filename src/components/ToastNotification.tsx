@@ -26,6 +26,8 @@ export function ToastNotification({ error, saved }: ToastProps) {
       if (saved === "approved") text = "Pengajuan pinjaman telah disetujui.";
       if (saved === "disbursed") text = "Pinjaman berhasil dicairkan.";
       if (saved === "kas") text = "Transaksi kas berhasil diposting.";
+      if (saved === "approval_required") text = "Pengeluaran > Rp 1.000.000 berhasil dicatat & memerlukan persetujuan Manager Keuangan.";
+      if (saved === "closing") text = "Closing Kas Sore & Cash Opname berhasil diposting.";
       if (saved === "jurnal") text = "Jurnal umum berhasil disimpan.";
 
       setMessage(text);

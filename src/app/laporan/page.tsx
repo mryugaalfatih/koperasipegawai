@@ -26,6 +26,7 @@ type LaporanPageProps = {
   searchParams: Promise<{
     error?: string;
     saved?: string;
+    unit?: string;
   }>;
 };
 
@@ -48,13 +49,16 @@ type CashTransaction = {
   source_type: string;
   description: string | null;
   transaction_date: string;
+  unit_id: string | null;
 };
 
 type JournalEntry = {
   id: string;
   transaction_date: string;
+  memo?: string | null;
   debit: number;
   credit: number;
+  unit_id: string | null;
   accounts: {
     code: string;
     name: string;
@@ -116,6 +120,7 @@ const basisLabels: Record<string, string> = {
 export default async function LaporanPage({ searchParams }: LaporanPageProps) {
   const supabase = await createClient();
   const params = await searchParams;
+  const selectedUnit = params.unit ?? "";
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -136,6 +141,7 @@ export default async function LaporanPage({ searchParams }: LaporanPageProps) {
     { data: shuRules },
     { data: shuPeriods },
     { count: memberCount },
+    { data: businessUnits },
   ] = await Promise.all([
     supabase.from("profiles").select("id").eq("id", user.id).single(),
 
@@ -148,14 +154,14 @@ export default async function LaporanPage({ searchParams }: LaporanPageProps) {
     // Same table as /kas
     supabase
       .from("cash_transactions")
-      .select("id, direction, amount, source_type, description, transaction_date")
+      .select("id, direction, amount, source_type, description, transaction_date, unit_id")
       .order("transaction_date", { ascending: false })
       .limit(200),
 
     // Journal entries for income/expense calculation
     supabase
       .from("journal_entries")
-      .select("id, transaction_date, debit, credit, accounts(code, name, category)")
+      .select("id, transaction_date, debit, credit, unit_id, accounts(code, name, category)")
       .order("transaction_date", { ascending: false })
       .limit(500),
 
@@ -166,6 +172,7 @@ export default async function LaporanPage({ searchParams }: LaporanPageProps) {
       .order("year", { ascending: false })
       .limit(5),
     supabase.from("members").select("id", { count: "exact", head: true }).eq("status", "active"),
+    supabase.from("business_units").select("id, code, name").order("code"),
   ]);
 
   if (!profile) {
@@ -197,9 +204,16 @@ export default async function LaporanPage({ searchParams }: LaporanPageProps) {
   const activeLoans = loanRows.filter((l) => l.status === "disbursed").length;
 
   // ======================================================================
-  // COMPUTE CASH TOTALS (same logic as /kas)
+  // COMPUTE CASH & JOURNAL TOTALS BY SELECTED UNIT
   // ======================================================================
-  const cashRows = (cashTransactions ?? []) as CashTransaction[];
+  const rawCashRows = (cashTransactions ?? []) as CashTransaction[];
+  const rawJournals = (journalEntries ?? []) as unknown as JournalEntry[];
+  const unitList = (businessUnits ?? []) as { id: string; code: string; name: string }[];
+
+  const cashRows = selectedUnit
+    ? rawCashRows.filter((c) => c.description?.toLowerCase().includes(selectedUnit.toLowerCase()))
+    : rawCashRows;
+
   const totalCashIn = cashRows
     .filter((c) => c.direction === "in")
     .reduce((s, c) => s + Number(c.amount ?? 0), 0);
@@ -211,19 +225,29 @@ export default async function LaporanPage({ searchParams }: LaporanPageProps) {
   // ======================================================================
   // COMPUTE INCOME / EXPENSE FROM JOURNAL ENTRIES
   // ======================================================================
-  const journals = (journalEntries ?? []) as unknown as JournalEntry[];
+  const journals = selectedUnit
+    ? rawJournals.filter((j) => j.memo?.toLowerCase().includes(selectedUnit.toLowerCase()))
+    : rawJournals;
+
   let totalIncome = 0;
   let totalExpense = 0;
-  journals.forEach((je) => {
-    const accountObj = Array.isArray(je.accounts) ? je.accounts[0] : je.accounts;
-    const category = accountObj?.category ?? "";
-    if (category === "pendapatan" || category === "income" || category === "revenue") {
-      totalIncome += Number(je.credit ?? 0) - Number(je.debit ?? 0);
-    } else if (category === "beban" || category === "expense") {
-      totalExpense += Number(je.debit ?? 0) - Number(je.credit ?? 0);
+
+  for (const journal of journals) {
+    const act = Array.isArray(journal.accounts)
+      ? journal.accounts[0]
+      : (journal.accounts as unknown as { category?: string } | null);
+
+    const cat = act?.category;
+    if (cat === "income") {
+      totalIncome += Number(journal.credit ?? 0) - Number(journal.debit ?? 0);
+    } else if (cat === "expense") {
+      totalExpense += Number(journal.debit ?? 0) - Number(journal.credit ?? 0);
     }
-  });
-  const totalSurplus = totalIncome - totalExpense;
+  }
+
+  const netSurplus = totalIncome - totalExpense;
+  const totalAset = Math.max(netCash, 0) + totalOutstanding;
+  const totalPasiva = totalSavings + netSurplus;
 
   // ======================================================================
   // SHU DATA
@@ -264,26 +288,58 @@ export default async function LaporanPage({ searchParams }: LaporanPageProps) {
               <span>Laporan Pinjaman</span>
             </Link>
             <PrintReportButton />
-            <Link className="hidden h-10 items-center rounded-2xl bg-[#0b1220] px-4 text-sm font-black text-white md:inline-flex" href="/kas-jurnal">
-              Buka jurnal
-            </Link>
           </div>
         </div>
       </header>
 
-      <div className="mx-auto grid max-w-[1500px] gap-5 px-4 py-5 md:px-7 xl:grid-cols-[1fr_420px]">
-        <section className="space-y-5">
+      <div className="mx-auto grid max-w-[1500px] gap-4 px-4 py-4 md:px-6 xl:grid-cols-[1fr_420px]">
+        <section className="space-y-4">
+          {/* Laba Rugi Unit Usaha Selector Toolbar */}
+          <div className="flex flex-wrap items-center gap-2 rounded-xl bg-white p-3 shadow-sm ring-1 ring-[#dbe5f1]">
+            <span className="text-xs font-bold text-[#64748b] mr-1">Laporan Laba Rugi:</span>
+            <Link
+              href="/laporan"
+              className={`h-8 rounded-lg px-3.5 text-xs font-bold transition-all inline-flex items-center ${
+                !selectedUnit
+                  ? "bg-[#0b1220] text-white shadow-sm"
+                  : "bg-[#f8fbff] text-[#64748b] ring-1 ring-[#dbe5f1] hover:bg-slate-100"
+              }`}
+            >
+              Semua Unit (Konsolidasi/Gabungan)
+            </Link>
+            {(unitList.length ? unitList : [
+              { code: "USP", name: "Simpan Pinjam" },
+              { code: "WAS", name: "Toko Waserda" },
+              { code: "KLN", name: "Klinik / Jasa" },
+            ]).map((u) => {
+              const isActive = selectedUnit.toLowerCase() === u.name.toLowerCase();
+              return (
+                <Link
+                  key={u.code}
+                  href={`/laporan?unit=${encodeURIComponent(u.name)}`}
+                  className={`h-8 rounded-lg px-3.5 text-xs font-bold transition-all inline-flex items-center ${
+                    isActive
+                      ? "bg-[#2563eb] text-white shadow-sm"
+                      : "bg-[#f8fbff] text-[#64748b] ring-1 ring-[#dbe5f1] hover:bg-slate-100"
+                  }`}
+                >
+                  {u.code} · {u.name}
+                </Link>
+              );
+            })}
+          </div>
+
           {/* Hero Banner */}
-          <section className="rounded-[28px] bg-[#07152f] p-5 text-white shadow-sm md:p-6">
-            <div className="flex flex-wrap items-start justify-between gap-4">
+          <section className="rounded-xl bg-[#07152f] p-4 text-white shadow-sm md:p-5">
+            <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
                 <p className="text-xs font-bold uppercase tracking-wider text-[#bfdbfe]">Laporan manajemen</p>
-                <h2 className="mt-1.5 text-xl font-bold md:text-2xl">Kinerja koperasi siap dipresentasikan</h2>
-                <p className="mt-2 max-w-3xl text-sm font-medium leading-relaxed text-[#cbd5e1]">
+                <h2 className="mt-1 text-lg font-bold md:text-xl">Kinerja koperasi siap dipresentasikan</h2>
+                <p className="mt-1.5 max-w-3xl text-xs font-medium leading-relaxed text-[#cbd5e1]">
                   Data laporan dibaca langsung dari tabel simpanan, pinjaman, kas, dan jurnal akuntansi. SHU bisa disimulasikan dari laba bersih berjalan.
                 </p>
               </div>
-              <FileBarChart2 className="size-8 text-[#93c5fd]" />
+              <FileBarChart2 className="size-7 text-[#93c5fd]" />
             </div>
           </section>
 
@@ -295,16 +351,16 @@ export default async function LaporanPage({ searchParams }: LaporanPageProps) {
               { label: "Pendapatan (Jurnal)", value: currency.format(totalIncome), icon: TrendingUp },
               { label: "Anggota Aktif", value: String(memberCount ?? 0), icon: UsersRound },
             ].map((item) => (
-              <article className="rounded-3xl bg-white p-5 shadow-sm ring-1 ring-[#dbe5f1]" key={item.label}>
-                <item.icon className="size-5 text-[#2563eb]" />
-                <p className="mt-3 text-xs font-bold text-[#64748b]">{item.label}</p>
-                <p className="mt-1 text-lg font-bold text-[#0b1220]">{item.value}</p>
+              <article className="rounded-xl bg-white p-4 shadow-sm ring-1 ring-[#dbe5f1]" key={item.label}>
+                <item.icon className="size-4 text-[#2563eb]" />
+                <p className="mt-2.5 text-xs font-bold text-[#64748b]">{item.label}</p>
+                <p className="mt-0.5 text-base font-bold text-[#0b1220]">{item.value}</p>
               </article>
             ))}
           </div>
 
           {/* Detail Portfolio & P/L section */}
-          <section className="grid gap-5 xl:grid-cols-[1fr_0.82fr]">
+          <section className="grid gap-4 xl:grid-cols-[1fr_0.82fr]">
             {/* Cash & P/L Card */}
             <div className="rounded-[28px] bg-white p-4 shadow-sm ring-1 ring-[#dbe5f1] md:p-5">
               <div>
@@ -320,7 +376,7 @@ export default async function LaporanPage({ searchParams }: LaporanPageProps) {
                     { label: "Saldo Kas Bersih", value: currency.format(netCash), color: "text-[#2563eb]" },
                     { label: "Pendapatan (Jurnal)", value: currency.format(totalIncome), color: "text-emerald-600" },
                     { label: "Beban (Jurnal)", value: currency.format(totalExpense), color: "text-rose-600" },
-                    { label: "Surplus / SHU Berjalan", value: currency.format(totalSurplus), color: "text-[#2563eb]" },
+                    { label: "Surplus / SHU Berjalan", value: currency.format(netSurplus), color: "text-[#2563eb]" },
                   ].map((item) => (
                     <div className="flex items-center justify-between gap-3 p-4" key={item.label}>
                       <p className="text-sm font-black text-[#0b1220]">{item.label}</p>
@@ -352,6 +408,74 @@ export default async function LaporanPage({ searchParams }: LaporanPageProps) {
                     <p className="text-sm font-black text-[#2563eb]">{item.value}</p>
                   </div>
                 ))}
+              </div>
+            </div>
+          </section>
+
+          {/* Laporan Neraca Keuangan (Balance Sheet: Aktiva vs Pasiva) */}
+          <section className="rounded-[28px] bg-white p-5 shadow-sm ring-1 ring-[#dbe5f1] md:p-6" id="neraca">
+            <div className="flex flex-wrap items-center justify-between gap-3 mb-5">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-wider text-[#64748b]">Laporan Akuntansi Standar</p>
+                <h2 className="text-xl font-bold text-[#0b1220]">Neraca Keuangan Koperasi</h2>
+              </div>
+              <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold ${
+                totalAset === totalPasiva ? "bg-emerald-50 text-emerald-700 border border-emerald-200" : "bg-amber-50 text-amber-700 border border-amber-200"
+              }`}>
+                {totalAset === totalPasiva ? "✓ Balance (Aset = Kewajiban + Ekuitas)" : "⚠️ Saldo Neraca"}
+              </span>
+            </div>
+
+            <div className="grid gap-5 md:grid-cols-2">
+              {/* AKTIVA / ASET */}
+              <div className="rounded-3xl border border-[#dbe5f1] p-4 bg-[#f8fbff]">
+                <div className="flex items-center justify-between border-b border-[#dbe5f1] pb-3 mb-3">
+                  <h3 className="font-bold text-[#0b1220] uppercase text-sm">Aset (Aktiva)</h3>
+                  <span className="font-bold text-[#2563eb]">{currency.format(totalAset)}</span>
+                </div>
+                <div className="space-y-2.5 text-xs font-semibold">
+                  <div className="flex justify-between">
+                    <span className="text-[#64748b]">Kas Tunai & Bank</span>
+                    <span className="font-bold text-[#0b1220]">{currency.format(Math.max(netCash, 0))}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-[#64748b]">Piutang Pinjaman Anggota</span>
+                    <span className="font-bold text-[#0b1220]">{currency.format(totalOutstanding)}</span>
+                  </div>
+                </div>
+                <div className="mt-4 pt-3 border-t border-[#dbe5f1] flex justify-between font-bold text-sm text-[#2563eb]">
+                  <span>TOTAL ASET</span>
+                  <span>{currency.format(totalAset)}</span>
+                </div>
+              </div>
+
+              {/* PASIVA / KEWAJIBAN & EKUITAS */}
+              <div className="rounded-3xl border border-[#dbe5f1] p-4 bg-[#f8fbff]">
+                <div className="flex items-center justify-between border-b border-[#dbe5f1] pb-3 mb-3">
+                  <h3 className="font-bold text-[#0b1220] uppercase text-sm">Kewajiban & Ekuitas (Pasiva)</h3>
+                  <span className="font-bold text-[#2563eb]">{currency.format(totalPasiva)}</span>
+                </div>
+                <div className="space-y-2.5 text-xs font-semibold">
+                  <p className="font-bold text-[#2563eb] text-[11px] uppercase">1. Kewajiban (Simpanan Anggota)</p>
+                  <div className="flex justify-between pl-2">
+                    <span className="text-[#64748b]">Simpanan Pokok & Wajib</span>
+                    <span className="font-bold text-[#0b1220]">{currency.format(totalSimpananPokok + totalSimpananWajib)}</span>
+                  </div>
+                  <div className="flex justify-between pl-2">
+                    <span className="text-[#64748b]">Simpanan Sukarela</span>
+                    <span className="font-bold text-[#0b1220]">{currency.format(totalSimpananSukarela)}</span>
+                  </div>
+
+                  <p className="font-bold text-[#2563eb] text-[11px] uppercase pt-2">2. Ekuitas (Modal & SHU)</p>
+                  <div className="flex justify-between pl-2">
+                    <span className="text-[#64748b]">SHU / Surplus Berjalan</span>
+                    <span className="font-bold text-emerald-600">{currency.format(netSurplus)}</span>
+                  </div>
+                </div>
+                <div className="mt-4 pt-3 border-t border-[#dbe5f1] flex justify-between font-bold text-sm text-[#2563eb]">
+                  <span>TOTAL PASIVA</span>
+                  <span>{currency.format(totalPasiva)}</span>
+                </div>
               </div>
             </div>
           </section>
@@ -419,7 +543,7 @@ export default async function LaporanPage({ searchParams }: LaporanPageProps) {
               </label>
               <label className="block">
                 <span className="text-sm font-black">SHU bersih</span>
-                <input className="mt-2 h-12 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 text-sm font-bold outline-none" name="net_surplus" placeholder={String(Math.max(totalSurplus, 0))} type="number" />
+                <input className="mt-2 h-12 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 text-sm font-bold outline-none" name="net_surplus" placeholder={String(Math.max(netSurplus, 0))} type="number" />
               </label>
               <button className="h-12 w-full rounded-2xl bg-[#2563eb] text-sm font-black text-white" type="submit">
                 Buat simulasi
