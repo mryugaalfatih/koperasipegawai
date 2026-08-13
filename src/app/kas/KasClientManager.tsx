@@ -227,7 +227,7 @@ export function KasClientManager({
 
   return (
     <section className="min-w-0 pb-20 lg:pb-8">
-      <div className="space-y-4 px-3 py-3 md:px-6 md:py-5">
+      <div className="space-y-4 px-2 py-2 md:px-2 md:py-2">
         {/* CrudHeader Standard */}
         <CrudHeader
           title="Keuangan & Operasional Kas"
@@ -304,7 +304,7 @@ export function KasClientManager({
           <button
             type="button"
             onClick={() => setIsClosingModalOpen(true)}
-            className={`inline-flex h-9 items-center gap-2 rounded-xl px-3.5 text-xs font-bold text-white shadow-sm active:scale-95 transition-all cursor-pointer ${
+            className={`inline-flex h-9 items-center gap-2 rounded-xl px-2.5 text-xs font-bold text-white shadow-sm active:scale-95 transition-all cursor-pointer ${
               allUnitsClosed
                 ? "bg-emerald-800 hover:bg-emerald-900"
                 : "bg-[#07152f] hover:bg-slate-800"
@@ -393,7 +393,7 @@ export function KasClientManager({
                       <form action={approve} className="flex items-center gap-2 shrink-0">
                         <button
                           type="submit"
-                          className="h-9 inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 px-3.5 text-xs font-bold text-white hover:bg-emerald-700 active:scale-95 transition-all cursor-pointer shadow-sm"
+                          className="h-9 inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 px-2.5 text-xs font-bold text-white hover:bg-emerald-700 active:scale-95 transition-all cursor-pointer shadow-sm"
                         >
                           <Check className="size-4" />
                           <span>Setujui Manager (Tahap 1)</span>
@@ -443,7 +443,7 @@ export function KasClientManager({
                           <option value="kas">Via Kas</option>
                           <option value="bank">Via Bank</option>
                         </select>
-                        <button type="submit" className="h-9 rounded-lg bg-[#0b1220] px-3.5 text-xs font-bold text-white hover:bg-[#1e293b] active:scale-95 transition-all cursor-pointer">
+                        <button type="submit" className="h-9 rounded-lg bg-[#0b1220] px-2.5 text-xs font-bold text-white hover:bg-[#1e293b] active:scale-95 transition-all cursor-pointer">
                           Cairkan
                         </button>
                       </form>
@@ -464,7 +464,7 @@ export function KasClientManager({
                   <button
                     type="button"
                     onClick={() => setActiveTab("kas")}
-                    className={`h-8.5 rounded-lg px-3.5 text-xs font-bold transition-all cursor-pointer ${
+                    className={`h-8.5 rounded-lg px-2.5 text-xs font-bold transition-all cursor-pointer ${
                       activeTab === "kas"
                         ? "bg-[#0b1220] text-white shadow-sm"
                         : "bg-[#f8fbff] text-[#64748b] ring-1 ring-[#dbe5f1] hover:bg-slate-100"
@@ -475,7 +475,7 @@ export function KasClientManager({
                   <button
                     type="button"
                     onClick={() => setActiveTab("closing")}
-                    className={`h-8.5 rounded-lg px-3.5 text-xs font-bold transition-all cursor-pointer ${
+                    className={`h-8.5 rounded-lg px-2.5 text-xs font-bold transition-all cursor-pointer ${
                       activeTab === "closing"
                         ? "bg-[#0b1220] text-white shadow-sm"
                         : "bg-[#f8fbff] text-[#64748b] ring-1 ring-[#dbe5f1] hover:bg-slate-100"
@@ -491,7 +491,7 @@ export function KasClientManager({
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                     placeholder="🔍 Cari transaksi..."
-                    className="h-8.5 w-full sm:w-52 rounded-lg border border-[#dbe5f1] bg-[#f8fbff] px-3 text-xs font-bold outline-none focus:border-[#2563eb]"
+                    className="h-8.5 w-full sm:w-52 rounded-lg border border-[#dbe5f1] bg-[#f8fbff] px-2 text-xs font-bold outline-none focus:border-[#2563eb]"
                   />
                 )}
               </div>
@@ -500,7 +500,7 @@ export function KasClientManager({
               {activeTab === "kas" && (
                 isUnitLocked ? (
                   /* Locked to user's assigned unit */
-                  <div className="flex items-center gap-2 rounded-lg bg-[#eff6ff] p-1.5 px-3">
+                  <div className="flex items-center gap-2 rounded-lg bg-[#eff6ff] p-1.5 px-2">
                     <Lock className="size-3.5 text-[#2563eb]" />
                     <span className="text-[11px] font-bold text-[#1d4ed8]">
                       Unit Anda: {userUnit?.code} · {userUnit?.name}
@@ -514,7 +514,7 @@ export function KasClientManager({
                     <button
                       type="button"
                       onClick={() => setUnitFilter("")}
-                      className={`h-7 rounded-md px-3 text-[11px] font-bold transition-all cursor-pointer ${
+                      className={`h-7 rounded-md px-2 text-[11px] font-bold transition-all cursor-pointer ${
                         !unitFilter
                           ? "bg-white text-[#0b1220] shadow-sm ring-1 ring-black/5"
                           : "text-[#64748b] hover:text-[#0b1220]"
@@ -618,7 +618,7 @@ export function KasClientManager({
                                 setClosingPrintMode(true);
                                 setTimeout(() => window.print(), 150);
                               }}
-                              className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-[#dbe5f1] bg-white px-3 text-xs font-bold text-[#0b1220] hover:bg-[#2563eb] hover:text-white hover:border-[#2563eb] active:scale-95 transition-all cursor-pointer shadow-sm"
+                              className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-[#dbe5f1] bg-white px-2 text-xs font-bold text-[#0b1220] hover:bg-[#2563eb] hover:text-white hover:border-[#2563eb] active:scale-95 transition-all cursor-pointer shadow-sm"
                             >
                               <Printer className="size-3.5" />
                               <span>Cetak BA (A4)</span>
@@ -691,7 +691,7 @@ export function KasClientManager({
                     const isPendingApproval = isOutflowOver1M && jStatus !== "approved";
 
                     return (
-                      <div className="flex flex-col gap-3 py-3.5 sm:flex-row sm:items-start sm:justify-between" key={item.id}>
+                      <div className="flex flex-col gap-3 py-2.5 sm:flex-row sm:items-start sm:justify-between" key={item.id}>
                         <div className="flex items-start gap-3 min-w-0 flex-1">
                           <div
                             className={`grid size-9 shrink-0 place-items-center rounded-xl mt-0.5 ${
@@ -845,7 +845,7 @@ export function KasClientManager({
               <label className="block">
                 <span className="text-xs font-bold uppercase text-[#475569]">Nominal Kas (Rp)</span>
                 <CurrencyInput
-                  className="mt-1.5 h-10 w-full rounded-xl border border-[#dbe5f1] bg-[#f8fbff] px-3.5 text-xs font-bold outline-none focus:border-[#2563eb]"
+                  className="mt-1.5 h-10 w-full rounded-xl border border-[#dbe5f1] bg-[#f8fbff] px-2.5 text-xs font-bold outline-none focus:border-[#2563eb]"
                   name="amount"
                   placeholder="0"
                 />
@@ -854,7 +854,7 @@ export function KasClientManager({
               <label className="block">
                 <span className="text-xs font-bold uppercase text-[#475569]">Tanggal Transaksi</span>
                 <input
-                  className="mt-1.5 h-10 w-full rounded-xl border border-[#dbe5f1] bg-[#f8fbff] px-3.5 text-xs font-bold outline-none focus:border-[#2563eb]"
+                  className="mt-1.5 h-10 w-full rounded-xl border border-[#dbe5f1] bg-[#f8fbff] px-2.5 text-xs font-bold outline-none focus:border-[#2563eb]"
                   value={formTxDate}
                   onChange={(e) => setFormTxDate(e.target.value)}
                   name="transaction_date"
@@ -865,7 +865,7 @@ export function KasClientManager({
               <label className="block">
                 <span className="text-xs font-bold uppercase text-[#475569]">Keterangan</span>
                 <textarea
-                  className="mt-1.5 min-h-16 w-full rounded-xl border border-[#dbe5f1] bg-[#f8fbff] px-3.5 py-2 text-xs font-semibold outline-none focus:border-[#2563eb]"
+                  className="mt-1.5 min-h-16 w-full rounded-xl border border-[#dbe5f1] bg-[#f8fbff] px-2.5 py-2 text-xs font-semibold outline-none focus:border-[#2563eb]"
                   name="description"
                   placeholder="Contoh: Pembayaran rekening listrik & air kantor..."
                 />
@@ -937,7 +937,7 @@ export function KasClientManager({
               type="date"
               name="transaction_date"
               defaultValue={new Date().toISOString().slice(0, 10)}
-              className="mt-2 h-12 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 text-sm font-bold outline-none focus:border-[#2563eb]"
+              className="mt-2 h-12 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-2 text-sm font-bold outline-none focus:border-[#2563eb]"
               required
             />
           </label>
@@ -948,7 +948,7 @@ export function KasClientManager({
               type="text"
               name="note"
               placeholder="Contoh: Setor tunai harian ke Rekening Bank Mandiri Koperasi"
-              className="mt-2 h-12 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 text-sm font-bold outline-none focus:border-[#2563eb]"
+              className="mt-2 h-12 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-2 text-sm font-bold outline-none focus:border-[#2563eb]"
             />
           </label>
 
@@ -1190,7 +1190,7 @@ export function KasClientManager({
                 setClosingPrintMode(true);
                 setTimeout(() => window.print(), 150);
               }}
-              className="h-10 inline-flex items-center justify-center gap-1.5 rounded-xl border border-[#dbe5f1] bg-white px-3 text-xs font-bold text-[#0b1220] hover:bg-slate-100 cursor-pointer transition-all shadow-sm"
+              className="h-10 inline-flex items-center justify-center gap-1.5 rounded-xl border border-[#dbe5f1] bg-white px-2 text-xs font-bold text-[#0b1220] hover:bg-slate-100 cursor-pointer transition-all shadow-sm"
             >
               <Printer className="size-4 text-[#2563eb]" />
               <span>Cetak Berita Acara (A4)</span>

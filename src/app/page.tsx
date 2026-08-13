@@ -24,7 +24,7 @@ export default function LandingPage() {
   return (
     <main className="min-h-screen bg-[#f4f7fb] text-[#0b1220]">
       {/* Header */}
-      <header className="mx-auto flex max-w-7xl items-center justify-between px-4 py-5 md:px-8">
+      <header className="mx-auto flex max-w-7xl items-center justify-between px-2 py-5 md:px-8">
         <Link className="flex items-center gap-3" href="/">
           <div className="grid size-10 place-items-center rounded-2xl bg-[#2563eb] text-white shadow-sm">
             <Building2 className="size-5" />
@@ -43,9 +43,9 @@ export default function LandingPage() {
       </header>
 
       {/* Hero Section */}
-      <section className="mx-auto grid max-w-7xl gap-8 px-4 pb-10 pt-4 md:px-8 lg:grid-cols-[1.02fr_0.98fr] lg:items-center lg:py-12">
+      <section className="mx-auto grid max-w-7xl gap-8 px-2 pb-10 pt-4 md:px-8 lg:grid-cols-[1.02fr_0.98fr] lg:items-center lg:py-12">
         <div>
-          <div className="inline-flex items-center gap-2 rounded-full bg-[#dbeafe] px-3.5 py-1 text-xs font-bold text-[#1d4ed8]">
+          <div className="inline-flex items-center gap-2 rounded-full bg-[#dbeafe] px-2.5 py-1 text-xs font-bold text-[#1d4ed8]">
             <CheckCircle2 className="size-4" />
             Platform Koperasi Simpan Pinjam Digital
           </div>
@@ -99,7 +99,7 @@ export default function LandingPage() {
 
       {/* Footer */}
       <footer className="border-t border-[#dbe5f1] bg-white">
-        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-3 py-4 md:px-8 text-xs font-semibold text-[#64748b]">
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-2 py-4 md:px-8 text-xs font-semibold text-[#64748b]">
           <div className="flex items-center gap-2">
             <div className="grid size-7 place-items-center rounded-xl bg-[#2563eb] text-white">
               <Building2 className="size-4" />

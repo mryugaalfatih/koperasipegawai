@@ -42,25 +42,25 @@ export function UnitUsahaClientManager({
   return (
     <section className="min-w-0 pb-20 lg:pb-8">
       {/* Header */}
-      <header className="sticky top-0 z-20 border-b border-[#dbe5f1] bg-[#f8fbff]/90 px-3 py-3 backdrop-blur md:px-3">
+      <header className="sticky top-0 z-20 border-b border-[#dbe5f1] bg-[#f8fbff]/90 px-2 py-2 backdrop-blur md:px-2">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <p className="text-xs font-bold uppercase tracking-wider text-[#64748b]">Manajemen Devisi</p>
             <h1 className="text-xl font-bold text-[#0b1220]">Unit Usaha Koperasi</h1>
           </div>
-          <div className="flex items-center gap-2 rounded-2xl bg-white px-3.5 py-1.5 shadow-sm ring-1 ring-[#dbe5f1]">
+          <div className="flex items-center gap-2 rounded-2xl bg-white px-2.5 py-1.5 shadow-sm ring-1 ring-[#dbe5f1]">
             <Store className="size-4 text-[#2563eb]" />
             <span className="text-xs font-bold text-[#0b1220]">{activeUnitsCount} Unit Usaha Aktif</span>
           </div>
         </div>
       </header>
 
-      <div className="space-y-6 px-3 py-3 md:px-3 md:py-4">
+      <div className="space-y-6 px-2 py-2 md:px-2 md:py-2">
         {/* Hero Card */}
         <section className="rounded-[28px] bg-[#07152f] p-5 text-white shadow-sm md:p-6">
           <div className="flex flex-wrap items-center justify-between gap-5">
             <div>
-              <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs font-bold text-[#bfdbfe]">
+              <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-2 py-1 text-xs font-bold text-[#bfdbfe]">
                 <Building2 className="size-4" />
                 Multi-Unit Usaha Architecture
               </div>
@@ -120,7 +120,7 @@ export function UnitUsahaClientManager({
                           </button>
 
                           <span
-                            className={`rounded-full px-3 py-1 text-xs font-bold ${
+                            className={`rounded-full px-2 py-1 text-xs font-bold ${
                               unit.is_active
                                 ? "bg-[#eff6ff] text-[#2563eb] ring-1 ring-[#bfdbfe]"
                                 : "bg-[#f1f5f9] text-[#64748b]"
@@ -203,7 +203,7 @@ export function UnitUsahaClientManager({
               <label className="block">
                 <span className="text-xs font-bold uppercase text-[#475569]">Kode Unit</span>
                 <input
-                  className="mt-1.5 h-11 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 text-xs font-bold uppercase outline-none focus:border-[#2563eb]"
+                  className="mt-1.5 h-11 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-2 text-xs font-bold uppercase outline-none focus:border-[#2563eb]"
                   name="code"
                   placeholder="Contoh: KULINER / SEWA"
                   required
@@ -213,7 +213,7 @@ export function UnitUsahaClientManager({
               <label className="block">
                 <span className="text-xs font-bold uppercase text-[#475569]">Nama Unit Usaha</span>
                 <input
-                  className="mt-1.5 h-11 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 text-xs font-bold outline-none focus:border-[#2563eb]"
+                  className="mt-1.5 h-11 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-2 text-xs font-bold outline-none focus:border-[#2563eb]"
                   name="name"
                   placeholder="Nama unit usaha"
                   required
@@ -223,7 +223,7 @@ export function UnitUsahaClientManager({
               <label className="block">
                 <span className="text-xs font-bold uppercase text-[#475569]">Deskripsi Operasional</span>
                 <textarea
-                  className="mt-1.5 min-h-24 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-3 py-3 text-xs font-semibold outline-none focus:border-[#2563eb]"
+                  className="mt-1.5 min-h-24 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-2 py-2 text-xs font-semibold outline-none focus:border-[#2563eb]"
                   name="description"
                   placeholder="Jelaskan bidang usaha dan operasional singkat unit ini..."
                 />
@@ -253,7 +253,7 @@ export function UnitUsahaClientManager({
               <input
                 key={editingUnit.id + "-code"}
                 defaultValue={editingUnit.code}
-                className="mt-1.5 h-11 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 text-xs font-bold uppercase outline-none focus:border-[#2563eb]"
+                className="mt-1.5 h-11 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-2 text-xs font-bold uppercase outline-none focus:border-[#2563eb]"
                 name="code"
                 required
               />
@@ -264,7 +264,7 @@ export function UnitUsahaClientManager({
               <input
                 key={editingUnit.id + "-name"}
                 defaultValue={editingUnit.name}
-                className="mt-1.5 h-11 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 text-xs font-bold outline-none focus:border-[#2563eb]"
+                className="mt-1.5 h-11 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-2 text-xs font-bold outline-none focus:border-[#2563eb]"
                 name="name"
                 required
               />
@@ -275,7 +275,7 @@ export function UnitUsahaClientManager({
               <textarea
                 key={editingUnit.id + "-desc"}
                 defaultValue={editingUnit.description ?? ""}
-                className="mt-1.5 min-h-24 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-3 py-3 text-xs font-semibold outline-none focus:border-[#2563eb]"
+                className="mt-1.5 min-h-24 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-2 py-2 text-xs font-semibold outline-none focus:border-[#2563eb]"
                 name="description"
               />
             </label>

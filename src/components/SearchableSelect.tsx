@@ -92,7 +92,7 @@ export function SearchableSelect({
         type="button"
         disabled={disabled}
         onClick={() => setIsOpen((prev) => !prev)}
-        className={`flex h-11 w-full items-center justify-between rounded-xl border border-[#dbe5f1] bg-[#f8fbff] px-3.5 text-xs font-bold text-[#0b1220] outline-none transition-all hover:border-[#2563eb] hover:bg-white focus:border-[#2563eb] focus:bg-white focus:ring-2 focus:ring-[#2563eb]/20 disabled:cursor-not-allowed disabled:bg-[#f1f5f9] ${
+        className={`flex h-11 w-full items-center justify-between rounded-xl border border-[#dbe5f1] bg-[#f8fbff] px-2.5 text-xs font-bold text-[#0b1220] outline-none transition-all hover:border-[#2563eb] hover:bg-white focus:border-[#2563eb] focus:bg-white focus:ring-2 focus:ring-[#2563eb]/20 disabled:cursor-not-allowed disabled:bg-[#f1f5f9] ${
           isOpen ? "border-[#2563eb] bg-white ring-2 ring-[#2563eb]/20" : ""
         } ${className}`}
       >
@@ -150,7 +150,7 @@ export function SearchableSelect({
                     key={option.value}
                     type="button"
                     onClick={() => handleSelect(option)}
-                    className={`flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-xs font-bold transition-all ${
+                    className={`flex w-full items-center justify-between rounded-xl px-2 py-2 text-left text-xs font-bold transition-all ${
                       isSelected
                         ? "bg-[#eaf2ff] text-[#2563eb]"
                         : "text-[#0b1220] hover:bg-[#f4f7fb] hover:text-[#2563eb]"

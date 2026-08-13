@@ -185,7 +185,7 @@ export function AkuntansiClientManager({ accountRows, journalRows }: AkuntansiCl
             <form action={approve}>
               <button
                 type="submit"
-                className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-emerald-600 px-3 text-[11px] font-bold text-white hover:bg-emerald-700 active:scale-95 transition-all cursor-pointer"
+                className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-emerald-600 px-2 text-[11px] font-bold text-white hover:bg-emerald-700 active:scale-95 transition-all cursor-pointer"
               >
                 <Check className="size-3.5" />
                 Approve
@@ -194,7 +194,7 @@ export function AkuntansiClientManager({ accountRows, journalRows }: AkuntansiCl
             <button
               type="button"
               onClick={() => openEdit(entry)}
-              className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-[#dbe5f1] bg-white px-3 text-[11px] font-bold text-[#0b1220] hover:bg-slate-50 active:scale-95 transition-all cursor-pointer"
+              className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-[#dbe5f1] bg-white px-2 text-[11px] font-bold text-[#0b1220] hover:bg-slate-50 active:scale-95 transition-all cursor-pointer"
             >
               <Pencil className="size-3.5" />
               Edit
@@ -202,7 +202,7 @@ export function AkuntansiClientManager({ accountRows, journalRows }: AkuntansiCl
             <form action={reject}>
               <button
                 type="submit"
-                className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-rose-50 border border-rose-200 px-3 text-[11px] font-bold text-rose-700 hover:bg-rose-100 active:scale-95 transition-all cursor-pointer"
+                className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-rose-50 border border-rose-200 px-2 text-[11px] font-bold text-rose-700 hover:bg-rose-100 active:scale-95 transition-all cursor-pointer"
               >
                 <X className="size-3.5" />
                 Tolak
@@ -216,7 +216,7 @@ export function AkuntansiClientManager({ accountRows, journalRows }: AkuntansiCl
 
   return (
     <section className="min-w-0 pb-20 lg:pb-8">
-      <div className="space-y-4 px-3 py-3 md:px-6 md:py-5">
+      <div className="space-y-4 px-2 py-2 md:px-2 md:py-2">
         <div className="grid gap-4 xl:grid-cols-[1fr_380px]">
           <div className="space-y-4">
             {/* Tab selector */}
@@ -224,7 +224,7 @@ export function AkuntansiClientManager({ accountRows, journalRows }: AkuntansiCl
               <button
                 type="button"
                 onClick={() => setTab("draft")}
-                className={`h-9 rounded-xl px-4 text-xs font-bold transition-all cursor-pointer ${
+                className={`h-9 rounded-xl px-2 text-xs font-bold transition-all cursor-pointer ${
                   tab === "draft"
                     ? "bg-[#0b1220] text-white"
                     : "bg-white text-[#64748b] ring-1 ring-[#dbe5f1] hover:bg-slate-50"
@@ -235,7 +235,7 @@ export function AkuntansiClientManager({ accountRows, journalRows }: AkuntansiCl
               <button
                 type="button"
                 onClick={() => setTab("all")}
-                className={`h-9 rounded-xl px-4 text-xs font-bold transition-all cursor-pointer ${
+                className={`h-9 rounded-xl px-2 text-xs font-bold transition-all cursor-pointer ${
                   tab === "all"
                     ? "bg-[#0b1220] text-white"
                     : "bg-white text-[#64748b] ring-1 ring-[#dbe5f1] hover:bg-slate-50"
@@ -321,7 +321,7 @@ export function AkuntansiClientManager({ accountRows, journalRows }: AkuntansiCl
               <label className="block">
                 <span className="text-xs font-bold uppercase text-[#475569]">Nominal Jurnal (Rp)</span>
                 <CurrencyInput
-                  className="mt-1.5 h-11 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 text-xs font-bold outline-none focus:border-[#2563eb]"
+                  className="mt-1.5 h-11 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-2 text-xs font-bold outline-none focus:border-[#2563eb]"
                   name="amount"
                   placeholder="0"
                 />
@@ -330,7 +330,7 @@ export function AkuntansiClientManager({ accountRows, journalRows }: AkuntansiCl
               <label className="block">
                 <span className="text-xs font-bold uppercase text-[#475569]">Tanggal Jurnal</span>
                 <input
-                  className="mt-1.5 h-11 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 text-xs font-bold outline-none focus:border-[#2563eb]"
+                  className="mt-1.5 h-11 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-2 text-xs font-bold outline-none focus:border-[#2563eb]"
                   defaultValue={new Date().toISOString().slice(0, 10)}
                   name="entry_date"
                   type="date"
@@ -340,7 +340,7 @@ export function AkuntansiClientManager({ accountRows, journalRows }: AkuntansiCl
               <label className="block">
                 <span className="text-xs font-bold uppercase text-[#475569]">Keterangan Jurnal</span>
                 <textarea
-                  className="mt-1.5 min-h-20 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 py-2.5 text-xs font-semibold outline-none focus:border-[#2563eb]"
+                  className="mt-1.5 min-h-20 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-2 py-2.5 text-xs font-semibold outline-none focus:border-[#2563eb]"
                   name="memo"
                   placeholder="Contoh: Penyesuaian akhir bulan / depresiasi aset..."
                 />
@@ -364,7 +364,7 @@ export function AkuntansiClientManager({ accountRows, journalRows }: AkuntansiCl
           <label className="block">
             <span className="text-sm font-bold text-[#0b1220]">Keterangan / Memo</span>
             <textarea
-              className="mt-2 min-h-16 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 py-2.5 text-sm font-semibold outline-none focus:border-[#2563eb]"
+              className="mt-2 min-h-16 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-2 py-2.5 text-sm font-semibold outline-none focus:border-[#2563eb]"
               value={editMemo}
               onChange={(e) => setEditMemo(e.target.value)}
             />
@@ -376,7 +376,7 @@ export function AkuntansiClientManager({ accountRows, journalRows }: AkuntansiCl
               <button
                 type="button"
                 onClick={addEditLine}
-                className="h-7 rounded-lg bg-[#eaf2ff] px-3 text-[11px] font-bold text-[#2563eb] hover:bg-[#dbeafe] cursor-pointer"
+                className="h-7 rounded-lg bg-[#eaf2ff] px-2 text-[11px] font-bold text-[#2563eb] hover:bg-[#dbeafe] cursor-pointer"
               >
                 + Tambah Baris
               </button>

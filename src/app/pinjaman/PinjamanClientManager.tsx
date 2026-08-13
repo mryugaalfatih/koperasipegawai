@@ -263,7 +263,7 @@ export function PinjamanClientManager({
 
   return (
     <section className="min-w-0 pb-20 lg:pb-8">
-      <div className="px-3 py-3 md:px-6 md:py-5 space-y-4">
+      <div className="px-2 py-2 md:px-2 md:py-2 space-y-4">
 
         {/* CrudHeader */}
         <CrudHeader
@@ -372,7 +372,7 @@ export function PinjamanClientManager({
 
                       <Link
                         href={`/pinjaman/${loan.id}`}
-                        className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-[#2563eb] bg-[#eaf2ff] px-3 text-xs font-bold text-[#2563eb] hover:bg-[#dbeafe] active:scale-95 transition-all"
+                        className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-[#2563eb] bg-[#eaf2ff] px-2 text-xs font-bold text-[#2563eb] hover:bg-[#dbeafe] active:scale-95 transition-all"
                       >
                         Detail
                       </Link>
@@ -381,7 +381,7 @@ export function PinjamanClientManager({
                         <button
                           type="button"
                           onClick={() => openTopUpModal(loan)}
-                          className="h-9 px-3 inline-flex items-center gap-1.5 rounded-xl border border-[#2563eb] bg-[#2563eb] text-xs font-bold text-white hover:bg-[#1d4ed8] active:scale-95 transition-all cursor-pointer shadow-sm"
+                          className="h-9 px-2 inline-flex items-center gap-1.5 rounded-xl border border-[#2563eb] bg-[#2563eb] text-xs font-bold text-white hover:bg-[#1d4ed8] active:scale-95 transition-all cursor-pointer shadow-sm"
                         >
                           <RefreshCcw className="size-3.5" />
                           <span>Top-Up</span>
@@ -392,7 +392,7 @@ export function PinjamanClientManager({
                         <button
                           type="button"
                           onClick={() => openEdit(loan)}
-                          className="h-9 rounded-xl border border-[#dbe5f1] bg-white px-3 text-xs font-bold text-[#0b1220] hover:bg-slate-50 active:scale-95 transition-all cursor-pointer"
+                          className="h-9 rounded-xl border border-[#dbe5f1] bg-white px-2 text-xs font-bold text-[#0b1220] hover:bg-slate-50 active:scale-95 transition-all cursor-pointer"
                         >
                           Edit
                         </button>
@@ -402,7 +402,7 @@ export function PinjamanClientManager({
                         <form action={removeLoan} onSubmit={(e) => { if (!confirm(`Hapus pengajuan pinjaman ${memberName}?`)) e.preventDefault(); }}>
                           <button
                             type="submit"
-                            className="h-9 rounded-xl border border-rose-200 bg-rose-50 px-3 text-xs font-bold text-rose-600 hover:bg-rose-100 active:scale-95 transition-all cursor-pointer"
+                            className="h-9 rounded-xl border border-rose-200 bg-rose-50 px-2 text-xs font-bold text-rose-600 hover:bg-rose-100 active:scale-95 transition-all cursor-pointer"
                           >
                             <Trash2 className="size-3.5" />
                           </button>
@@ -411,7 +411,7 @@ export function PinjamanClientManager({
 
                       {loan.status === "submitted" ? (
                         <form action={approve}>
-                          <button className="h-9 rounded-xl bg-[#2563eb] px-3 text-xs font-bold text-white hover:bg-[#1d4ed8] active:scale-95 transition-all cursor-pointer" type="submit">
+                          <button className="h-9 rounded-xl bg-[#2563eb] px-2 text-xs font-bold text-white hover:bg-[#1d4ed8] active:scale-95 transition-all cursor-pointer" type="submit">
                             Approve
                           </button>
                         </form>
@@ -423,7 +423,7 @@ export function PinjamanClientManager({
                             <option value="kas">Kas</option>
                             <option value="bank">Bank</option>
                           </select>
-                          <button className="h-9 rounded-xl bg-[#0b1220] px-3 text-xs font-bold text-white hover:bg-[#1e293b] active:scale-95 transition-all cursor-pointer" type="submit">
+                          <button className="h-9 rounded-xl bg-[#0b1220] px-2 text-xs font-bold text-white hover:bg-[#1e293b] active:scale-95 transition-all cursor-pointer" type="submit">
                             Cairkan
                           </button>
                         </form>
@@ -560,7 +560,7 @@ export function PinjamanClientManager({
             <label className="block">
               <span className="text-sm font-bold text-[#0b1220]">Tenor (Bulan)</span>
               <input
-                className="mt-2 h-12 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 text-sm font-bold outline-none focus:border-[#2563eb]"
+                className="mt-2 h-12 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-2 text-sm font-bold outline-none focus:border-[#2563eb]"
                 name="tenor_months"
                 placeholder="12"
                 required
@@ -598,7 +598,7 @@ export function PinjamanClientManager({
             <label className="block">
               <span className="text-sm font-bold text-[#0b1220]">Bunga Tahunan (%)</span>
               <input
-                className="mt-2 h-12 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 text-sm font-bold outline-none focus:border-[#2563eb] disabled:bg-slate-100 disabled:text-slate-500 transition-all"
+                className="mt-2 h-12 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-2 text-sm font-bold outline-none focus:border-[#2563eb] disabled:bg-slate-100 disabled:text-slate-500 transition-all"
                 name="annual_rate"
                 placeholder="Ikuti produk"
                 type="number"
@@ -683,7 +683,7 @@ export function PinjamanClientManager({
               <label className="block">
                 <span className="text-sm font-bold text-[#0b1220]">Tenor (Bulan)</span>
                 <input
-                  className="mt-2 h-12 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 text-sm font-bold outline-none focus:border-[#2563eb]"
+                  className="mt-2 h-12 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-2 text-sm font-bold outline-none focus:border-[#2563eb]"
                   name="tenor_months"
                   defaultValue={editingLoan.tenor_months}
                   placeholder="12"
@@ -697,7 +697,7 @@ export function PinjamanClientManager({
               <label className="block">
                 <span className="text-sm font-bold text-[#0b1220]">Bunga Tahunan (%)</span>
                 <input
-                  className="mt-2 h-12 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 text-sm font-bold outline-none focus:border-[#2563eb] disabled:bg-slate-100 disabled:text-slate-500 transition-all"
+                  className="mt-2 h-12 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-2 text-sm font-bold outline-none focus:border-[#2563eb] disabled:bg-slate-100 disabled:text-slate-500 transition-all"
                   name="annual_rate"
                   value={editAnnualRate}
                   onChange={(e) => setEditAnnualRate(e.target.value)}

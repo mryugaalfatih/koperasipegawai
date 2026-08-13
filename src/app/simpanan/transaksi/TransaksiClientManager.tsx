@@ -188,7 +188,7 @@ export function TransaksiClientManager({
                       <button
                         type="button"
                         onClick={() => setPrintTransaction(transaction)}
-                        className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-[#dbe5f1] bg-white px-3 text-xs font-bold text-[#0b1220] hover:bg-[#2563eb] hover:text-white hover:border-[#2563eb] active:scale-95 transition-all"
+                        className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-[#dbe5f1] bg-white px-2 text-xs font-bold text-[#0b1220] hover:bg-[#2563eb] hover:text-white hover:border-[#2563eb] active:scale-95 transition-all"
                         title="Cetak Kuitansi Teller"
                       >
                         <Printer className="size-4" />
@@ -199,7 +199,7 @@ export function TransaksiClientManager({
                         <button
                           type="button"
                           onClick={() => setSelectedVoidTx(transaction)}
-                          className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-[#ffe4e6] bg-[#fff1f2] px-3 text-xs font-bold text-[#be123c] hover:bg-[#be123c] hover:text-white active:scale-95 transition-all"
+                          className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-[#ffe4e6] bg-[#fff1f2] px-2 text-xs font-bold text-[#be123c] hover:bg-[#be123c] hover:text-white active:scale-95 transition-all"
                           title="Batalkan Transaksi Ini"
                         >
                           <Ban className="size-4" />
@@ -277,7 +277,7 @@ export function TransaksiClientManager({
           <label className="block">
             <span className="text-xs font-bold uppercase text-[#475569]">Tanggal Transaksi</span>
             <input
-              className="mt-1.5 h-11 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 text-xs font-bold outline-none focus:border-[#2563eb]"
+              className="mt-1.5 h-11 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-2 text-xs font-bold outline-none focus:border-[#2563eb]"
               name="transaction_date"
               type="date"
               defaultValue={new Date().toISOString().slice(0, 10)}
@@ -290,14 +290,14 @@ export function TransaksiClientManager({
               name="amount"
               placeholder="0"
               required
-              className="mt-1.5 h-11 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 text-xs font-bold outline-none focus:border-[#2563eb]"
+              className="mt-1.5 h-11 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-2 text-xs font-bold outline-none focus:border-[#2563eb]"
             />
           </label>
 
           <label className="block">
             <span className="text-xs font-bold uppercase text-[#475569]">Nomor Referensi</span>
             <input
-              className="mt-1.5 h-11 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 text-xs font-bold outline-none focus:border-[#2563eb]"
+              className="mt-1.5 h-11 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-2 text-xs font-bold outline-none focus:border-[#2563eb]"
               name="reference_no"
               placeholder="Opsional (No Kuitansi / Bukti Transfer)"
             />
@@ -306,7 +306,7 @@ export function TransaksiClientManager({
           <label className="block">
             <span className="text-xs font-bold uppercase text-[#475569]">Keterangan Transaksi</span>
             <textarea
-              className="mt-1.5 min-h-20 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 py-2.5 text-xs font-semibold outline-none focus:border-[#2563eb]"
+              className="mt-1.5 min-h-20 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-2 py-2.5 text-xs font-semibold outline-none focus:border-[#2563eb]"
               name="description"
               placeholder="Keterangan setoran/penarikan..."
             />
@@ -382,7 +382,7 @@ export function TransaksiClientManager({
                 name="void_reason"
                 required
                 placeholder="Contoh: Salah ketik nominal teller / transaksi ganda..."
-                className="mt-1.5 min-h-20 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 py-2.5 text-xs font-semibold outline-none focus:border-[#be123c]"
+                className="mt-1.5 min-h-20 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-2 py-2.5 text-xs font-semibold outline-none focus:border-[#be123c]"
               />
             </label>
 

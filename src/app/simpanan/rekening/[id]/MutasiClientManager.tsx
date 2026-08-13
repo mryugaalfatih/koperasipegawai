@@ -159,7 +159,7 @@ export function MutasiClientManager({ account, transactions }: MutasiClientManag
 
       <section className="min-w-0 pb-20 lg:pb-8">
         {/* Header */}
-        <header className="print-hide sticky top-0 z-20 border-b border-[#dbe5f1] bg-[#f8fbff]/95 px-3 py-3 backdrop-blur md:px-3">
+        <header className="print-hide sticky top-0 z-20 border-b border-[#dbe5f1] bg-[#f8fbff]/95 px-2 py-2 backdrop-blur md:px-2">
           <div className="mx-auto flex max-w-[1500px] items-center justify-between gap-3">
             <div className="flex min-w-0 items-center gap-3">
               <Link
@@ -177,7 +177,7 @@ export function MutasiClientManager({ account, transactions }: MutasiClientManag
               <button
                 type="button"
                 onClick={handlePrint}
-                className="inline-flex h-10 items-center gap-2 rounded-2xl bg-[#2563eb] px-4 text-xs font-bold text-white shadow-sm hover:bg-[#1d4ed8] active:scale-95 transition-all"
+                className="inline-flex h-10 items-center gap-2 rounded-2xl bg-[#2563eb] px-2 text-xs font-bold text-white shadow-sm hover:bg-[#1d4ed8] active:scale-95 transition-all"
               >
                 <Printer className="size-4" />
                 <span>Cetak Mutasi</span>
@@ -186,7 +186,7 @@ export function MutasiClientManager({ account, transactions }: MutasiClientManag
           </div>
         </header>
 
-        <div className="printable-mutasi-area space-y-5 px-4 py-5 md:px-3">
+        <div className="printable-mutasi-area space-y-5 px-2 py-5 md:px-2">
           {/* Print Header */}
           <div className="hidden print:block border-b-2 border-[#0b1220] pb-4 mb-6">
             <h1 className="text-2xl font-black uppercase tracking-wider text-[#0b1220]">KOPERASI SIMPAN PINJAM</h1>

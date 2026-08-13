@@ -49,31 +49,31 @@ export function AparSertifikatClientManager({ certificates }: AparSertifikatClie
           <table className="w-full text-left text-xs">
             <thead className="bg-[#f8fbff] text-[#475569] border-b border-[#dbe5f1]">
               <tr>
-                <th className="px-3 py-3 font-bold">No. Sertifikat Damkar</th>
-                <th className="px-3 py-3 font-bold">Gedung / Klien PT</th>
-                <th className="px-3 py-3 font-bold">No. Seri Tabung APAR</th>
-                <th className="px-3 py-3 font-bold">Media & Ukuran</th>
-                <th className="px-3 py-3 font-bold text-center">Tanggal Hydrotest</th>
-                <th className="px-3 py-3 font-bold text-center">Berlaku s/d</th>
-                <th className="px-3 py-3 font-bold text-center">Aksi Cetak</th>
+                <th className="px-2 py-2 font-bold">No. Sertifikat Damkar</th>
+                <th className="px-2 py-2 font-bold">Gedung / Klien PT</th>
+                <th className="px-2 py-2 font-bold">No. Seri Tabung APAR</th>
+                <th className="px-2 py-2 font-bold">Media & Ukuran</th>
+                <th className="px-2 py-2 font-bold text-center">Tanggal Hydrotest</th>
+                <th className="px-2 py-2 font-bold text-center">Berlaku s/d</th>
+                <th className="px-2 py-2 font-bold text-center">Aksi Cetak</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#e2e8f0]">
               {filteredCerts.map((c) => (
                 <tr key={c.id} className="hover:bg-[#f8fbff] transition-colors">
-                  <td className="px-3 py-3 font-bold text-[#be123c]">{c.cert_no}</td>
-                  <td className="px-3 py-3 font-bold text-[#0b1220]">{c.client_name}</td>
-                  <td className="px-3 py-3 font-mono text-[#64748b]">{c.serial_no}</td>
-                  <td className="px-3 py-3 font-semibold">
+                  <td className="px-2 py-2 font-bold text-[#be123c]">{c.cert_no}</td>
+                  <td className="px-2 py-2 font-bold text-[#0b1220]">{c.client_name}</td>
+                  <td className="px-2 py-2 font-mono text-[#64748b]">{c.serial_no}</td>
+                  <td className="px-2 py-2 font-semibold">
                     {c.media_type} {c.capacity_kg} Kg
                   </td>
-                  <td className="px-3 py-3 text-center text-[#64748b]">{c.test_date}</td>
-                  <td className="px-3 py-3 text-center font-bold text-emerald-600">{c.expired_date}</td>
-                  <td className="px-3 py-3 text-center">
+                  <td className="px-2 py-2 text-center text-[#64748b]">{c.test_date}</td>
+                  <td className="px-2 py-2 text-center font-bold text-emerald-600">{c.expired_date}</td>
+                  <td className="px-2 py-2 text-center">
                     <button
                       type="button"
                       onClick={() => setSelectedCert(c)}
-                      className="inline-flex h-8 items-center gap-1.5 rounded-xl bg-[#be123c] px-3 text-xs font-bold text-white hover:bg-[#9f1239]"
+                      className="inline-flex h-8 items-center gap-1.5 rounded-xl bg-[#be123c] px-2 text-xs font-bold text-white hover:bg-[#9f1239]"
                     >
                       <Printer className="size-3.5" />
                       <span>Cetak Sertifikat</span>
@@ -109,7 +109,7 @@ export function AparSertifikatClientManager({ certificates }: AparSertifikatClie
                 Dengan ini menerangkan bahwa Alat Pemadam Api Ringan (APAR) dengan rincian teknis di bawah ini telah melalui pengujian tekanan (*Hydrotest*) dan pengisian ulang media pemadam dengan hasil:
               </p>
 
-              <div className="inline-block rounded-xl bg-emerald-100 px-4 py-1 text-xs font-black text-emerald-800 border border-emerald-300">
+              <div className="inline-block rounded-xl bg-emerald-100 px-2 py-1 text-xs font-black text-emerald-800 border border-emerald-300">
                 ✓ LULUS UJI KELAYAKAN KESELAMATAN (PASSED)
               </div>
 
@@ -157,7 +157,7 @@ export function AparSertifikatClientManager({ certificates }: AparSertifikatClie
               <button
                 type="button"
                 onClick={() => setSelectedCert(null)}
-                className="h-11 rounded-xl bg-[#f1f5f9] px-4 text-xs font-bold text-[#0b1220] hover:bg-[#e2e8f0]"
+                className="h-11 rounded-xl bg-[#f1f5f9] px-2 text-xs font-bold text-[#0b1220] hover:bg-[#e2e8f0]"
               >
                 Tutup
               </button>

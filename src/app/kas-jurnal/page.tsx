@@ -145,7 +145,7 @@ export default async function KasJurnalPage({ searchParams }: KasJurnalPageProps
       <div className="lg:grid lg:min-h-screen lg:grid-cols-[auto_1fr]">
         <DashboardNavigation navItems={navItems} mobileNavItems={mobileNavItems} />
         <section className="min-w-0 pb-24 lg:pb-0">
-          <header className="sticky top-0 z-20 border-b border-[#dbe5f1] bg-[#f8fbff]/95 px-3 py-3 backdrop-blur md:px-3">
+          <header className="sticky top-0 z-20 border-b border-[#dbe5f1] bg-[#f8fbff]/95 px-2 py-2 backdrop-blur md:px-2">
         <div className="mx-auto flex max-w-[1500px] items-center justify-between gap-3">
           <div className="flex min-w-0 items-center gap-3">
             <Link className="grid size-10 place-items-center rounded-2xl border border-[#dbe5f1] bg-white" href="/home">
@@ -156,13 +156,13 @@ export default async function KasJurnalPage({ searchParams }: KasJurnalPageProps
               <h1 className="text-xl font-black md:text-2xl">Pembukuan operasional koperasi</h1>
             </div>
           </div>
-          <Link className="hidden h-10 items-center rounded-2xl bg-[#0b1220] px-4 text-sm font-black text-white md:inline-flex" href="/konfigurasi">
+          <Link className="hidden h-10 items-center rounded-2xl bg-[#0b1220] px-2 text-sm font-black text-white md:inline-flex" href="/konfigurasi">
             COA & periode
           </Link>
         </div>
       </header>
 
-      <div className="mx-auto grid max-w-[1500px] gap-5 px-4 py-5 md:px-3 xl:grid-cols-[1fr_420px]">
+      <div className="mx-auto grid max-w-[1500px] gap-5 px-2 py-5 md:px-2 xl:grid-cols-[1fr_420px]">
         <section className="space-y-5">
           <section className="rounded-[28px] bg-[#07152f] p-5 text-white shadow-sm md:p-6">
             <div className="flex flex-wrap items-start justify-between gap-4">
@@ -182,7 +182,7 @@ export default async function KasJurnalPage({ searchParams }: KasJurnalPageProps
             <span className="text-xs font-bold text-[#64748b] mr-1">Laporan Kas Per Unit:</span>
             <Link
               href="/kas-jurnal"
-              className={`h-8 rounded-xl px-3.5 text-xs font-bold transition-all inline-flex items-center ${
+              className={`h-8 rounded-xl px-2.5 text-xs font-bold transition-all inline-flex items-center ${
                 !selectedUnit
                   ? "bg-[#0b1220] text-white shadow-sm"
                   : "bg-[#f8fbff] text-[#64748b] ring-1 ring-[#dbe5f1] hover:bg-slate-100"
@@ -196,7 +196,7 @@ export default async function KasJurnalPage({ searchParams }: KasJurnalPageProps
                 <Link
                   key={u.id}
                   href={`/kas-jurnal?unit=${encodeURIComponent(u.name)}`}
-                  className={`h-8 rounded-xl px-3.5 text-xs font-bold transition-all inline-flex items-center ${
+                  className={`h-8 rounded-xl px-2.5 text-xs font-bold transition-all inline-flex items-center ${
                     isActive
                       ? "bg-[#2563eb] text-white shadow-sm"
                       : "bg-[#f8fbff] text-[#64748b] ring-1 ring-[#dbe5f1] hover:bg-slate-100"
@@ -329,14 +329,14 @@ export default async function KasJurnalPage({ searchParams }: KasJurnalPageProps
             <form action={postCashTransaction} className="mt-5 space-y-4">
               <label className="block">
                 <span className="text-sm font-black">Jenis kas</span>
-                <select className="mt-2 h-12 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 text-sm font-bold outline-none" name="direction">
+                <select className="mt-2 h-12 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-2 text-sm font-bold outline-none" name="direction">
                   <option value="in">Kas masuk</option>
                   <option value="out">Kas keluar</option>
                 </select>
               </label>
               <label className="block">
                 <span className="text-sm font-black">Akun lawan</span>
-                <select className="mt-2 h-12 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 text-sm font-bold outline-none" name="counter_account_id" required>
+                <select className="mt-2 h-12 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-2 text-sm font-bold outline-none" name="counter_account_id" required>
                   <option value="">Pilih akun</option>
                   {accountRows.filter((account) => account.code !== "1001").map((account) => (
                     <option key={account.id} value={account.id}>
@@ -351,11 +351,11 @@ export default async function KasJurnalPage({ searchParams }: KasJurnalPageProps
               </label>
               <label className="block">
                 <span className="text-sm font-black">Tanggal</span>
-                <input className="mt-2 h-12 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 text-sm font-bold outline-none" name="transaction_date" type="date" />
+                <input className="mt-2 h-12 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-2 text-sm font-bold outline-none" name="transaction_date" type="date" />
               </label>
               <label className="block">
                 <span className="text-sm font-black">Keterangan</span>
-                <textarea className="mt-2 min-h-20 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-3 py-3 text-sm font-bold outline-none" name="description" placeholder="Contoh: pembayaran listrik kantor" />
+                <textarea className="mt-2 min-h-20 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-2 py-2 text-sm font-bold outline-none" name="description" placeholder="Contoh: pembayaran listrik kantor" />
               </label>
               <SubmitButton className="h-12 w-full rounded-2xl bg-[#2563eb] text-sm font-black text-white hover:bg-[#1d4ed8]">
                 Posting kas
@@ -376,7 +376,7 @@ export default async function KasJurnalPage({ searchParams }: KasJurnalPageProps
             <form action={postManualJournal} className="mt-5 space-y-4">
               <label className="block">
                 <span className="text-sm font-black">Akun debit</span>
-                <select className="mt-2 h-12 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 text-sm font-bold outline-none" name="debit_account_id" required>
+                <select className="mt-2 h-12 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-2 text-sm font-bold outline-none" name="debit_account_id" required>
                   <option value="">Pilih akun debit</option>
                   {accountRows.map((account) => (
                     <option key={account.id} value={account.id}>
@@ -387,7 +387,7 @@ export default async function KasJurnalPage({ searchParams }: KasJurnalPageProps
               </label>
               <label className="block">
                 <span className="text-sm font-black">Akun kredit</span>
-                <select className="mt-2 h-12 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 text-sm font-bold outline-none" name="credit_account_id" required>
+                <select className="mt-2 h-12 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-2 text-sm font-bold outline-none" name="credit_account_id" required>
                   <option value="">Pilih akun kredit</option>
                   {accountRows.map((account) => (
                     <option key={account.id} value={account.id}>
@@ -402,11 +402,11 @@ export default async function KasJurnalPage({ searchParams }: KasJurnalPageProps
               </label>
               <label className="block">
                 <span className="text-sm font-black">Tanggal jurnal</span>
-                <input className="mt-2 h-12 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 text-sm font-bold outline-none" name="entry_date" type="date" />
+                <input className="mt-2 h-12 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-2 text-sm font-bold outline-none" name="entry_date" type="date" />
               </label>
               <label className="block">
                 <span className="text-sm font-black">Memo</span>
-                <textarea className="mt-2 min-h-20 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-3 py-3 text-sm font-bold outline-none" name="memo" placeholder="Keterangan jurnal" />
+                <textarea className="mt-2 min-h-20 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-2 py-2 text-sm font-bold outline-none" name="memo" placeholder="Keterangan jurnal" />
               </label>
               <SubmitButton className="h-12 w-full rounded-2xl bg-[#0b1220] text-sm font-black text-white hover:bg-slate-800">
                 Posting jurnal

@@ -58,25 +58,25 @@ export default async function UspHomePage() {
           <ToastNotification />
 
           {/* Header */}
-          <header className="sticky top-0 z-20 border-b border-[#dbe5f1] bg-[#f8fbff]/95 px-3 py-3 backdrop-blur">
+          <header className="sticky top-0 z-20 border-b border-[#dbe5f1] bg-[#f8fbff]/95 px-2 py-2 backdrop-blur">
             <div className="flex items-center justify-between gap-3">
               <div>
                 <p className="text-[10px] font-bold uppercase tracking-wider text-[#2563eb]">Unit Simpan Pinjam</p>
                 <h1 className="text-lg font-black text-[#0b1220]">Dashboard USP</h1>
               </div>
-              <div className="flex items-center gap-2 rounded-2xl bg-white px-3 py-1.5 shadow-sm ring-1 ring-[#dbe5f1]">
+              <div className="flex items-center gap-2 rounded-2xl bg-white px-2 py-1.5 shadow-sm ring-1 ring-[#dbe5f1]">
                 <Users className="size-4 text-[#2563eb]" />
                 <span className="text-xs font-bold text-[#0b1220]">{activeMembers} Anggota Aktif</span>
               </div>
             </div>
           </header>
 
-          <div className="px-3 py-3 space-y-4">
+          <div className="px-2 py-2 space-y-4">
             {/* Hero Banner */}
             <div className="rounded-2xl bg-[#07152f] p-5 text-white">
               <div className="flex flex-wrap items-center justify-between gap-4">
                 <div>
-                  <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs font-bold text-[#bfdbfe]">
+                  <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-2 py-1 text-xs font-bold text-[#bfdbfe]">
                     <PiggyBank className="size-3.5" /> Unit Simpan Pinjam
                   </div>
                   <h2 className="mt-2 text-xl font-black">Dashboard Simpan Pinjam</h2>
@@ -140,7 +140,7 @@ export default async function UspHomePage() {
 
             {/* Angsuran Hari Ini Alert */}
             {angsuranJatuhTempo > 0 && (
-              <div className="flex items-center gap-3 rounded-2xl border border-[#fca5a5] bg-[#fef2f2] px-4 py-3">
+              <div className="flex items-center gap-3 rounded-2xl border border-[#fca5a5] bg-[#fef2f2] px-2 py-2">
                 <AlertCircle className="size-5 shrink-0 text-[#dc2626]" />
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-black text-[#dc2626]">{angsuranJatuhTempo} Pinjaman Jatuh Tempo!</p>
@@ -183,7 +183,7 @@ export default async function UspHomePage() {
                   <p className="mt-2 text-sm font-bold text-[#64748b]">Belum ada pembayaran angsuran hari ini</p>
                 </div>
               ) : (
-                <div className="flex items-center justify-between rounded-xl bg-[#f0fdf4] px-4 py-3">
+                <div className="flex items-center justify-between rounded-xl bg-[#f0fdf4] px-2 py-2">
                   <div className="flex items-center gap-2">
                     <CheckCircle2 className="size-5 text-[#16a34a]" />
                     <p className="text-sm font-black text-[#16a34a]">{angsuranToday?.length} Pembayaran Diterima</p>

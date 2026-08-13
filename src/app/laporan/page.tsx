@@ -261,7 +261,7 @@ export default async function LaporanPage({ searchParams }: LaporanPageProps) {
       <div className="lg:grid lg:min-h-screen lg:grid-cols-[auto_1fr]">
         <DashboardNavigation navItems={navItems} mobileNavItems={mobileNavItems} />
         <section className="min-w-0 pb-24 lg:pb-0">
-          <header className="sticky top-0 z-20 border-b border-[#dbe5f1] bg-[#f8fbff]/95 px-3 py-3 backdrop-blur md:px-3">
+          <header className="sticky top-0 z-20 border-b border-[#dbe5f1] bg-[#f8fbff]/95 px-2 py-2 backdrop-blur md:px-2">
         <div className="mx-auto flex max-w-[1500px] items-center justify-between gap-3">
           <div className="flex min-w-0 items-center gap-3">
             <Link className="grid size-10 place-items-center rounded-2xl border border-[#dbe5f1] bg-white" href="/home">
@@ -274,14 +274,14 @@ export default async function LaporanPage({ searchParams }: LaporanPageProps) {
           </div>
           <div className="flex items-center gap-2">
             <Link
-              className="inline-flex h-10 items-center gap-2 rounded-2xl border border-[#dbe5f1] bg-white px-4 text-xs font-bold text-[#0b1220] shadow-sm hover:bg-slate-50 transition-all"
+              className="inline-flex h-10 items-center gap-2 rounded-2xl border border-[#dbe5f1] bg-white px-2 text-xs font-bold text-[#0b1220] shadow-sm hover:bg-slate-50 transition-all"
               href="/laporan/simpanan"
             >
               <PiggyBank className="size-4 text-[#2563eb]" />
               <span>Laporan Simpanan</span>
             </Link>
             <Link
-              className="inline-flex h-10 items-center gap-2 rounded-2xl border border-[#dbe5f1] bg-white px-4 text-xs font-bold text-[#0b1220] shadow-sm hover:bg-slate-50 transition-all"
+              className="inline-flex h-10 items-center gap-2 rounded-2xl border border-[#dbe5f1] bg-white px-2 text-xs font-bold text-[#0b1220] shadow-sm hover:bg-slate-50 transition-all"
               href="/laporan/pinjaman"
             >
               <CreditCard className="size-4 text-[#2563eb]" />
@@ -292,14 +292,14 @@ export default async function LaporanPage({ searchParams }: LaporanPageProps) {
         </div>
       </header>
 
-      <div className="mx-auto grid max-w-[1500px] gap-4 px-3 py-3 md:px-6 xl:grid-cols-[1fr_420px]">
+      <div className="mx-auto grid max-w-[1500px] gap-4 px-2 py-2 md:px-2 xl:grid-cols-[1fr_420px]">
         <section className="space-y-4">
           {/* Laba Rugi Unit Usaha Selector Toolbar */}
           <div className="flex flex-wrap items-center gap-2 rounded-xl bg-white p-3 shadow-sm ring-1 ring-[#dbe5f1]">
             <span className="text-xs font-bold text-[#64748b] mr-1">Laporan Laba Rugi:</span>
             <Link
               href="/laporan"
-              className={`h-8 rounded-lg px-3.5 text-xs font-bold transition-all inline-flex items-center ${
+              className={`h-8 rounded-lg px-2.5 text-xs font-bold transition-all inline-flex items-center ${
                 !selectedUnit
                   ? "bg-[#0b1220] text-white shadow-sm"
                   : "bg-[#f8fbff] text-[#64748b] ring-1 ring-[#dbe5f1] hover:bg-slate-100"
@@ -313,7 +313,7 @@ export default async function LaporanPage({ searchParams }: LaporanPageProps) {
                 <Link
                   key={u.id}
                   href={`/laporan?unit=${encodeURIComponent(u.name)}`}
-                  className={`h-8 rounded-lg px-3.5 text-xs font-bold transition-all inline-flex items-center ${
+                  className={`h-8 rounded-lg px-2.5 text-xs font-bold transition-all inline-flex items-center ${
                     isActive
                       ? "bg-[#2563eb] text-white shadow-sm"
                       : "bg-[#f8fbff] text-[#64748b] ring-1 ring-[#dbe5f1] hover:bg-slate-100"
@@ -415,7 +415,7 @@ export default async function LaporanPage({ searchParams }: LaporanPageProps) {
                 <p className="text-xs font-bold uppercase tracking-wider text-[#64748b]">Laporan Akuntansi Standar</p>
                 <h2 className="text-xl font-bold text-[#0b1220]">Neraca Keuangan Koperasi</h2>
               </div>
-              <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold ${
+              <span className={`inline-flex items-center gap-1.5 rounded-full px-2 py-1 text-xs font-bold ${
                 totalAset === totalPasiva ? "bg-emerald-50 text-emerald-700 border border-emerald-200" : "bg-amber-50 text-amber-700 border border-amber-200"
               }`}>
                 {totalAset === totalPasiva ? "✓ Balance (Aset = Kewajiban + Ekuitas)" : "⚠️ Saldo Neraca"}
@@ -535,11 +535,11 @@ export default async function LaporanPage({ searchParams }: LaporanPageProps) {
             <form action={createShuSimulation} className="mt-5 space-y-4">
               <label className="block">
                 <span className="text-sm font-black">Tahun buku</span>
-                <input className="mt-2 h-12 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 text-sm font-bold outline-none" name="year" placeholder="2026" type="number" />
+                <input className="mt-2 h-12 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-2 text-sm font-bold outline-none" name="year" placeholder="2026" type="number" />
               </label>
               <label className="block">
                 <span className="text-sm font-black">SHU bersih</span>
-                <input className="mt-2 h-12 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 text-sm font-bold outline-none" name="net_surplus" placeholder={String(Math.max(netSurplus, 0))} type="number" />
+                <input className="mt-2 h-12 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-2 text-sm font-bold outline-none" name="net_surplus" placeholder={String(Math.max(netSurplus, 0))} type="number" />
               </label>
               <button className="h-12 w-full rounded-2xl bg-[#2563eb] text-sm font-black text-white" type="submit">
                 Buat simulasi

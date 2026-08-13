@@ -189,7 +189,7 @@ export function AnggotaClientManager({
                       <button
                         type="button"
                         onClick={() => setSelectedEditMember(member)}
-                        className="inline-flex h-9 items-center gap-1.5 rounded-xl bg-[#f1f5f9] px-3 text-xs font-bold text-[#0b1220] hover:bg-[#e2e8f0] active:scale-95 transition-all"
+                        className="inline-flex h-9 items-center gap-1.5 rounded-xl bg-[#f1f5f9] px-2 text-xs font-bold text-[#0b1220] hover:bg-[#e2e8f0] active:scale-95 transition-all"
                       >
                         <Pencil className="size-3.5 text-[#2563eb]" />
                         <span>Edit</span>
@@ -198,7 +198,7 @@ export function AnggotaClientManager({
 
                     <Link
                       href={`/anggota/${member.id}`}
-                      className="inline-flex h-9 items-center gap-1 rounded-xl bg-[#f1f5f9] px-3 text-xs font-bold text-[#64748b] hover:bg-[#e2e8f0] hover:text-[#0b1220] transition-all"
+                      className="inline-flex h-9 items-center gap-1 rounded-xl bg-[#f1f5f9] px-2 text-xs font-bold text-[#64748b] hover:bg-[#e2e8f0] hover:text-[#0b1220] transition-all"
                       title="Lihat Info Anggota"
                     >
                       <span>{canManageMembers ? "" : "Info "}Detail</span>
@@ -241,7 +241,7 @@ export function AnggotaClientManager({
                   type="file"
                   accept="image/*"
                   name="photo"
-                  className="mt-1.5 w-full rounded-xl border border-[#dbe5f1] bg-white px-3 py-1.5 text-xs font-semibold"
+                  className="mt-1.5 w-full rounded-xl border border-[#dbe5f1] bg-white px-2 py-1.5 text-xs font-semibold"
                 />
               </label>
 
@@ -251,7 +251,7 @@ export function AnggotaClientManager({
                   type="file"
                   accept="image/*"
                   name="ktp_file"
-                  className="mt-1.5 w-full rounded-xl border border-[#dbe5f1] bg-white px-3 py-1.5 text-xs font-semibold"
+                  className="mt-1.5 w-full rounded-xl border border-[#dbe5f1] bg-white px-2 py-1.5 text-xs font-semibold"
                 />
               </label>
             </div>
@@ -265,7 +265,7 @@ export function AnggotaClientManager({
               <label className="block">
                 <span className="text-xs font-bold uppercase text-[#475569]">Nomor Anggota</span>
                 <input
-                  className="mt-1.5 h-10 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 text-xs font-bold outline-none focus:border-[#2563eb]"
+                  className="mt-1.5 h-10 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-2 text-xs font-bold outline-none focus:border-[#2563eb]"
                   name="member_no"
                   placeholder="Kosongkan untuk otomatis"
                 />
@@ -274,7 +274,7 @@ export function AnggotaClientManager({
               <label className="block">
                 <span className="text-xs font-bold uppercase text-[#475569]">Nama Lengkap *</span>
                 <input
-                  className="mt-1.5 h-10 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 text-xs font-bold outline-none focus:border-[#2563eb]"
+                  className="mt-1.5 h-10 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-2 text-xs font-bold outline-none focus:border-[#2563eb]"
                   name="full_name"
                   placeholder="Nama sesuai KTP"
                   required
@@ -286,7 +286,7 @@ export function AnggotaClientManager({
               <label className="block">
                 <span className="text-xs font-bold uppercase text-[#475569]">NIK (No KTP)</span>
                 <input
-                  className="mt-1.5 h-10 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 text-xs font-bold outline-none focus:border-[#2563eb]"
+                  className="mt-1.5 h-10 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-2 text-xs font-bold outline-none focus:border-[#2563eb]"
                   name="nik"
                   placeholder="16 digit NIK"
                 />
@@ -295,7 +295,7 @@ export function AnggotaClientManager({
               <label className="block">
                 <span className="text-xs font-bold uppercase text-[#475569]">Nomor HP / WA</span>
                 <input
-                  className="mt-1.5 h-10 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 text-xs font-bold outline-none focus:border-[#2563eb]"
+                  className="mt-1.5 h-10 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-2 text-xs font-bold outline-none focus:border-[#2563eb]"
                   name="phone"
                   placeholder="+628..."
                 />
@@ -319,7 +319,7 @@ export function AnggotaClientManager({
               <label className="block">
                 <span className="text-xs font-bold uppercase text-[#475569]">Email</span>
                 <input
-                  className="mt-1.5 h-10 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 text-xs font-bold outline-none focus:border-[#2563eb]"
+                  className="mt-1.5 h-10 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-2 text-xs font-bold outline-none focus:border-[#2563eb]"
                   name="email"
                   type="email"
                   placeholder="email@domain.com"
@@ -329,7 +329,7 @@ export function AnggotaClientManager({
               <label className="block">
                 <span className="text-xs font-bold uppercase text-[#475569]">Tempat Lahir</span>
                 <input
-                  className="mt-1.5 h-10 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 text-xs font-bold outline-none focus:border-[#2563eb]"
+                  className="mt-1.5 h-10 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-2 text-xs font-bold outline-none focus:border-[#2563eb]"
                   name="birth_place"
                   placeholder="Kota Lahir"
                 />
@@ -338,7 +338,7 @@ export function AnggotaClientManager({
               <label className="block">
                 <span className="text-xs font-bold uppercase text-[#475569]">Tanggal Lahir</span>
                 <input
-                  className="mt-1.5 h-10 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 text-xs font-bold outline-none focus:border-[#2563eb]"
+                  className="mt-1.5 h-10 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-2 text-xs font-bold outline-none focus:border-[#2563eb]"
                   name="birth_date"
                   type="date"
                 />
@@ -353,7 +353,7 @@ export function AnggotaClientManager({
               <label className="block">
                 <span className="text-xs font-bold uppercase text-[#475569]">Departemen / Divisi</span>
                 <input
-                  className="mt-1.5 h-10 w-full rounded-xl border border-[#dbe5f1] bg-white px-4 text-xs font-bold outline-none focus:border-[#2563eb]"
+                  className="mt-1.5 h-10 w-full rounded-xl border border-[#dbe5f1] bg-white px-2 text-xs font-bold outline-none focus:border-[#2563eb]"
                   name="department"
                   placeholder="Contoh: Operasional / HRD"
                 />
@@ -362,7 +362,7 @@ export function AnggotaClientManager({
               <label className="block">
                 <span className="text-xs font-bold uppercase text-[#475569]">NIP / No Pegawai</span>
                 <input
-                  className="mt-1.5 h-10 w-full rounded-xl border border-[#dbe5f1] bg-white px-4 text-xs font-bold outline-none focus:border-[#2563eb]"
+                  className="mt-1.5 h-10 w-full rounded-xl border border-[#dbe5f1] bg-white px-2 text-xs font-bold outline-none focus:border-[#2563eb]"
                   name="employee_no"
                   placeholder="No Induk Karyawan"
                 />
@@ -373,7 +373,7 @@ export function AnggotaClientManager({
               <label className="block">
                 <span className="text-xs font-bold uppercase text-[#475569]">Nama Bank</span>
                 <input
-                  className="mt-1.5 h-10 w-full rounded-xl border border-[#dbe5f1] bg-white px-4 text-xs font-bold outline-none focus:border-[#2563eb]"
+                  className="mt-1.5 h-10 w-full rounded-xl border border-[#dbe5f1] bg-white px-2 text-xs font-bold outline-none focus:border-[#2563eb]"
                   name="bank_name"
                   placeholder="BCA / Mandiri / BRI"
                 />
@@ -382,7 +382,7 @@ export function AnggotaClientManager({
               <label className="block">
                 <span className="text-xs font-bold uppercase text-[#475569]">Nomor Rekening</span>
                 <input
-                  className="mt-1.5 h-10 w-full rounded-xl border border-[#dbe5f1] bg-white px-4 text-xs font-bold outline-none focus:border-[#2563eb]"
+                  className="mt-1.5 h-10 w-full rounded-xl border border-[#dbe5f1] bg-white px-2 text-xs font-bold outline-none focus:border-[#2563eb]"
                   name="bank_account_no"
                   placeholder="No Rekening"
                 />
@@ -391,7 +391,7 @@ export function AnggotaClientManager({
               <label className="block">
                 <span className="text-xs font-bold uppercase text-[#475569]">Atas Nama Rekening</span>
                 <input
-                  className="mt-1.5 h-10 w-full rounded-xl border border-[#dbe5f1] bg-white px-4 text-xs font-bold outline-none focus:border-[#2563eb]"
+                  className="mt-1.5 h-10 w-full rounded-xl border border-[#dbe5f1] bg-white px-2 text-xs font-bold outline-none focus:border-[#2563eb]"
                   name="bank_account_name"
                   placeholder="Nama di buku tabungan"
                 />
@@ -406,7 +406,7 @@ export function AnggotaClientManager({
               <label className="block">
                 <span className="text-xs font-bold uppercase text-[#475569]">Nama Ahli Waris</span>
                 <input
-                  className="mt-1.5 h-10 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 text-xs font-bold outline-none focus:border-[#2563eb]"
+                  className="mt-1.5 h-10 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-2 text-xs font-bold outline-none focus:border-[#2563eb]"
                   name="heir_name"
                   placeholder="Nama lengkap ahli waris"
                 />
@@ -415,7 +415,7 @@ export function AnggotaClientManager({
               <label className="block">
                 <span className="text-xs font-bold uppercase text-[#475569]">Hubungan</span>
                 <input
-                  className="mt-1.5 h-10 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 text-xs font-bold outline-none focus:border-[#2563eb]"
+                  className="mt-1.5 h-10 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-2 text-xs font-bold outline-none focus:border-[#2563eb]"
                   name="heir_relation"
                   placeholder="Suami / Istri / Anak"
                 />
@@ -424,7 +424,7 @@ export function AnggotaClientManager({
               <label className="block">
                 <span className="text-xs font-bold uppercase text-[#475569]">HP Ahli Waris</span>
                 <input
-                  className="mt-1.5 h-10 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 text-xs font-bold outline-none focus:border-[#2563eb]"
+                  className="mt-1.5 h-10 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-2 text-xs font-bold outline-none focus:border-[#2563eb]"
                   name="heir_phone"
                   placeholder="+628..."
                 />
@@ -435,7 +435,7 @@ export function AnggotaClientManager({
           <label className="block">
             <span className="text-xs font-bold uppercase text-[#475569]">Alamat Lengkap Domisili</span>
             <textarea
-              className="mt-1.5 min-h-16 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 py-2.5 text-xs font-semibold outline-none focus:border-[#2563eb]"
+              className="mt-1.5 min-h-16 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-2 py-2.5 text-xs font-semibold outline-none focus:border-[#2563eb]"
               name="address"
               placeholder="Alamat tempat tinggal anggota..."
             />
@@ -478,7 +478,7 @@ export function AnggotaClientManager({
                     type="file"
                     accept="image/*"
                     name="photo"
-                    className="mt-1.5 w-full rounded-xl border border-[#dbe5f1] bg-white px-3 py-1.5 text-xs font-semibold"
+                    className="mt-1.5 w-full rounded-xl border border-[#dbe5f1] bg-white px-2 py-1.5 text-xs font-semibold"
                   />
                 </label>
 
@@ -488,7 +488,7 @@ export function AnggotaClientManager({
                     type="file"
                     accept="image/*"
                     name="ktp_file"
-                    className="mt-1.5 w-full rounded-xl border border-[#dbe5f1] bg-white px-3 py-1.5 text-xs font-semibold"
+                    className="mt-1.5 w-full rounded-xl border border-[#dbe5f1] bg-white px-2 py-1.5 text-xs font-semibold"
                   />
                 </label>
               </div>
@@ -502,7 +502,7 @@ export function AnggotaClientManager({
                 <label className="block">
                   <span className="text-xs font-bold uppercase text-[#475569]">Nomor Anggota</span>
                   <input
-                    className="mt-1.5 h-10 w-full rounded-2xl border border-[#dbe5f1] bg-[#f1f5f9] px-4 text-xs font-bold text-[#64748b] outline-none"
+                    className="mt-1.5 h-10 w-full rounded-2xl border border-[#dbe5f1] bg-[#f1f5f9] px-2 text-xs font-bold text-[#64748b] outline-none"
                     defaultValue={selectedEditMember.member_no}
                     disabled
                   />
@@ -511,7 +511,7 @@ export function AnggotaClientManager({
                 <label className="block">
                   <span className="text-xs font-bold uppercase text-[#475569]">Nama Lengkap *</span>
                   <input
-                    className="mt-1.5 h-10 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 text-xs font-bold outline-none focus:border-[#2563eb]"
+                    className="mt-1.5 h-10 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-2 text-xs font-bold outline-none focus:border-[#2563eb]"
                     defaultValue={selectedEditMember.full_name}
                     name="full_name"
                     required
@@ -536,7 +536,7 @@ export function AnggotaClientManager({
                 <label className="block">
                   <span className="text-xs font-bold uppercase text-[#475569]">NIK (No KTP)</span>
                   <input
-                    className="mt-1.5 h-10 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 text-xs font-bold outline-none focus:border-[#2563eb]"
+                    className="mt-1.5 h-10 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-2 text-xs font-bold outline-none focus:border-[#2563eb]"
                     defaultValue={selectedEditMember.nik ?? ""}
                     name="nik"
                   />
@@ -545,7 +545,7 @@ export function AnggotaClientManager({
                 <label className="block">
                   <span className="text-xs font-bold uppercase text-[#475569]">Nomor HP / WA</span>
                   <input
-                    className="mt-1.5 h-10 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 text-xs font-bold outline-none focus:border-[#2563eb]"
+                    className="mt-1.5 h-10 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-2 text-xs font-bold outline-none focus:border-[#2563eb]"
                     defaultValue={selectedEditMember.phone ?? ""}
                     name="phone"
                   />
@@ -569,7 +569,7 @@ export function AnggotaClientManager({
                 <label className="block">
                   <span className="text-xs font-bold uppercase text-[#475569]">Email</span>
                   <input
-                    className="mt-1.5 h-10 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 text-xs font-bold outline-none focus:border-[#2563eb]"
+                    className="mt-1.5 h-10 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-2 text-xs font-bold outline-none focus:border-[#2563eb]"
                     defaultValue={selectedEditMember.email ?? ""}
                     name="email"
                     type="email"
@@ -579,7 +579,7 @@ export function AnggotaClientManager({
                 <label className="block">
                   <span className="text-xs font-bold uppercase text-[#475569]">Tempat Lahir</span>
                   <input
-                    className="mt-1.5 h-10 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 text-xs font-bold outline-none focus:border-[#2563eb]"
+                    className="mt-1.5 h-10 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-2 text-xs font-bold outline-none focus:border-[#2563eb]"
                     defaultValue={selectedEditMember.birth_place ?? ""}
                     name="birth_place"
                   />
@@ -588,7 +588,7 @@ export function AnggotaClientManager({
                 <label className="block">
                   <span className="text-xs font-bold uppercase text-[#475569]">Tanggal Lahir</span>
                   <input
-                    className="mt-1.5 h-10 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 text-xs font-bold outline-none focus:border-[#2563eb]"
+                    className="mt-1.5 h-10 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-2 text-xs font-bold outline-none focus:border-[#2563eb]"
                     defaultValue={selectedEditMember.birth_date ?? ""}
                     name="birth_date"
                     type="date"
@@ -604,7 +604,7 @@ export function AnggotaClientManager({
                 <label className="block">
                   <span className="text-xs font-bold uppercase text-[#475569]">Departemen / Divisi</span>
                   <input
-                    className="mt-1.5 h-10 w-full rounded-xl border border-[#dbe5f1] bg-white px-4 text-xs font-bold outline-none focus:border-[#2563eb]"
+                    className="mt-1.5 h-10 w-full rounded-xl border border-[#dbe5f1] bg-white px-2 text-xs font-bold outline-none focus:border-[#2563eb]"
                     defaultValue={selectedEditMember.department ?? ""}
                     name="department"
                   />
@@ -613,7 +613,7 @@ export function AnggotaClientManager({
                 <label className="block">
                   <span className="text-xs font-bold uppercase text-[#475569]">NIP / No Pegawai</span>
                   <input
-                    className="mt-1.5 h-10 w-full rounded-xl border border-[#dbe5f1] bg-white px-4 text-xs font-bold outline-none focus:border-[#2563eb]"
+                    className="mt-1.5 h-10 w-full rounded-xl border border-[#dbe5f1] bg-white px-2 text-xs font-bold outline-none focus:border-[#2563eb]"
                     defaultValue={selectedEditMember.employee_no ?? ""}
                     name="employee_no"
                   />
@@ -624,7 +624,7 @@ export function AnggotaClientManager({
                 <label className="block">
                   <span className="text-xs font-bold uppercase text-[#475569]">Nama Bank</span>
                   <input
-                    className="mt-1.5 h-10 w-full rounded-xl border border-[#dbe5f1] bg-white px-4 text-xs font-bold outline-none focus:border-[#2563eb]"
+                    className="mt-1.5 h-10 w-full rounded-xl border border-[#dbe5f1] bg-white px-2 text-xs font-bold outline-none focus:border-[#2563eb]"
                     defaultValue={selectedEditMember.bank_name ?? ""}
                     name="bank_name"
                   />
@@ -633,7 +633,7 @@ export function AnggotaClientManager({
                 <label className="block">
                   <span className="text-xs font-bold uppercase text-[#475569]">Nomor Rekening</span>
                   <input
-                    className="mt-1.5 h-10 w-full rounded-xl border border-[#dbe5f1] bg-white px-4 text-xs font-bold outline-none focus:border-[#2563eb]"
+                    className="mt-1.5 h-10 w-full rounded-xl border border-[#dbe5f1] bg-white px-2 text-xs font-bold outline-none focus:border-[#2563eb]"
                     defaultValue={selectedEditMember.bank_account_no ?? ""}
                     name="bank_account_no"
                   />
@@ -642,7 +642,7 @@ export function AnggotaClientManager({
                 <label className="block">
                   <span className="text-xs font-bold uppercase text-[#475569]">Atas Nama Rekening</span>
                   <input
-                    className="mt-1.5 h-10 w-full rounded-xl border border-[#dbe5f1] bg-white px-4 text-xs font-bold outline-none focus:border-[#2563eb]"
+                    className="mt-1.5 h-10 w-full rounded-xl border border-[#dbe5f1] bg-white px-2 text-xs font-bold outline-none focus:border-[#2563eb]"
                     defaultValue={selectedEditMember.bank_account_name ?? ""}
                     name="bank_account_name"
                   />
@@ -657,7 +657,7 @@ export function AnggotaClientManager({
                 <label className="block">
                   <span className="text-xs font-bold uppercase text-[#475569]">Nama Ahli Waris</span>
                   <input
-                    className="mt-1.5 h-10 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 text-xs font-bold outline-none focus:border-[#2563eb]"
+                    className="mt-1.5 h-10 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-2 text-xs font-bold outline-none focus:border-[#2563eb]"
                     defaultValue={selectedEditMember.heir_name ?? ""}
                     name="heir_name"
                   />
@@ -666,7 +666,7 @@ export function AnggotaClientManager({
                 <label className="block">
                   <span className="text-xs font-bold uppercase text-[#475569]">Hubungan</span>
                   <input
-                    className="mt-1.5 h-10 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 text-xs font-bold outline-none focus:border-[#2563eb]"
+                    className="mt-1.5 h-10 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-2 text-xs font-bold outline-none focus:border-[#2563eb]"
                     defaultValue={selectedEditMember.heir_relation ?? ""}
                     name="heir_relation"
                   />
@@ -675,7 +675,7 @@ export function AnggotaClientManager({
                 <label className="block">
                   <span className="text-xs font-bold uppercase text-[#475569]">HP Ahli Waris</span>
                   <input
-                    className="mt-1.5 h-10 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 text-xs font-bold outline-none focus:border-[#2563eb]"
+                    className="mt-1.5 h-10 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-2 text-xs font-bold outline-none focus:border-[#2563eb]"
                     defaultValue={selectedEditMember.heir_phone ?? ""}
                     name="heir_phone"
                   />
@@ -686,7 +686,7 @@ export function AnggotaClientManager({
             <label className="block">
               <span className="text-xs font-bold uppercase text-[#475569]">Alamat Lengkap Domisili</span>
               <textarea
-                className="mt-1.5 min-h-16 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 py-2.5 text-xs font-semibold outline-none focus:border-[#2563eb]"
+                className="mt-1.5 min-h-16 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-2 py-2.5 text-xs font-semibold outline-none focus:border-[#2563eb]"
                 defaultValue={selectedEditMember.address ?? ""}
                 name="address"
               />

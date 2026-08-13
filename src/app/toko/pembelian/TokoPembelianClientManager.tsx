@@ -189,31 +189,31 @@ export function TokoPembelianClientManager({
           <table className="w-full text-left text-xs">
             <thead className="bg-[#f8fbff] text-[#475569] border-b border-[#dbe5f1]">
               <tr>
-                <th className="px-3 py-3 font-bold">No. Surat PO</th>
-                <th className="px-3 py-3 font-bold">Tanggal Pesan</th>
-                <th className="px-3 py-3 font-bold">Distributor / Supplier</th>
-                <th className="px-3 py-3 font-bold">Jenis Pembayaran</th>
-                <th className="px-3 py-3 font-bold text-right">Total Nilai PO</th>
-                <th className="px-3 py-3 font-bold text-center">Status PO</th>
-                <th className="px-3 py-3 font-bold text-center">Aksi</th>
+                <th className="px-2 py-2 font-bold">No. Surat PO</th>
+                <th className="px-2 py-2 font-bold">Tanggal Pesan</th>
+                <th className="px-2 py-2 font-bold">Distributor / Supplier</th>
+                <th className="px-2 py-2 font-bold">Jenis Pembayaran</th>
+                <th className="px-2 py-2 font-bold text-right">Total Nilai PO</th>
+                <th className="px-2 py-2 font-bold text-center">Status PO</th>
+                <th className="px-2 py-2 font-bold text-center">Aksi</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#e2e8f0]">
               {filteredPo.length ? (
                 filteredPo.map((po) => (
                   <tr key={po.id} className="hover:bg-[#f8fbff] transition-colors">
-                    <td className="px-3 py-3 font-bold text-[#2563eb]">{po.po_no}</td>
-                    <td className="px-3 py-3 font-semibold text-[#64748b]">{po.order_date}</td>
-                    <td className="px-3 py-3 font-bold text-[#0b1220]">{po.supplier_name}</td>
-                    <td className="px-3 py-3">
+                    <td className="px-2 py-2 font-bold text-[#2563eb]">{po.po_no}</td>
+                    <td className="px-2 py-2 font-semibold text-[#64748b]">{po.order_date}</td>
+                    <td className="px-2 py-2 font-bold text-[#0b1220]">{po.supplier_name}</td>
+                    <td className="px-2 py-2">
                       <span className="rounded-full bg-[#f1f5f9] px-2.5 py-1 text-[11px] font-bold text-[#475569]">
                         {po.payment_type === "tempo" ? "Tempo (Kredit Supplier)" : "Tunai / Cash"}
                       </span>
                     </td>
-                    <td className="px-3 py-3 font-black text-right text-[#0b1220]">
+                    <td className="px-2 py-2 font-black text-right text-[#0b1220]">
                       {formatRupiah(po.total_amount)}
                     </td>
-                    <td className="px-3 py-3 text-center">
+                    <td className="px-2 py-2 text-center">
                       <span
                         className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-bold ${
                           po.status === "received"
@@ -225,7 +225,7 @@ export function TokoPembelianClientManager({
                         {po.status === "received" ? "Sudah Diterima" : "Pesanan Dikirim"}
                       </span>
                     </td>
-                    <td className="px-3 py-3 text-center">
+                    <td className="px-2 py-2 text-center">
                       <button
                         type="button"
                         onClick={() => setSelectedPo(po)}
@@ -260,7 +260,7 @@ export function TokoPembelianClientManager({
               <label className="block">
                 <span className="text-xs font-bold uppercase text-[#475569]">Nama Distributor / Supplier *</span>
                 <input
-                  className="mt-1.5 h-11 w-full rounded-xl border border-[#dbe5f1] bg-[#f8fbff] px-4 text-xs font-bold outline-none focus:border-[#2563eb] focus:bg-white"
+                  className="mt-1.5 h-11 w-full rounded-xl border border-[#dbe5f1] bg-[#f8fbff] px-2 text-xs font-bold outline-none focus:border-[#2563eb] focus:bg-white"
                   name="supplier_name"
                   placeholder="Contoh: PT Sayap Mas Utama / Distributor Beras Jaya"
                   required
@@ -270,7 +270,7 @@ export function TokoPembelianClientManager({
               <label className="block">
                 <span className="text-xs font-bold uppercase text-[#475569]">No. Telepon / Sales</span>
                 <input
-                  className="mt-1.5 h-11 w-full rounded-xl border border-[#dbe5f1] bg-[#f8fbff] px-4 text-xs font-bold outline-none focus:border-[#2563eb] focus:bg-white"
+                  className="mt-1.5 h-11 w-full rounded-xl border border-[#dbe5f1] bg-[#f8fbff] px-2 text-xs font-bold outline-none focus:border-[#2563eb] focus:bg-white"
                   name="supplier_phone"
                   placeholder="Contoh: 0812-3456-7890"
                 />
@@ -282,7 +282,7 @@ export function TokoPembelianClientManager({
                 <span className="text-xs font-bold uppercase text-[#475569]">Jenis Pembayaran</span>
                 <select
                   name="payment_type"
-                  className="mt-1.5 h-11 w-full rounded-xl border border-[#dbe5f1] bg-[#f8fbff] px-4 text-xs font-bold outline-none"
+                  className="mt-1.5 h-11 w-full rounded-xl border border-[#dbe5f1] bg-[#f8fbff] px-2 text-xs font-bold outline-none"
                 >
                   <option value="cash">Tunai (Langsung Bayar)</option>
                   <option value="tempo">Tempo (Kredit Supplier 14-30 Hari)</option>
@@ -294,7 +294,7 @@ export function TokoPembelianClientManager({
                 <input
                   type="date"
                   name="due_date"
-                  className="mt-1.5 h-11 w-full rounded-xl border border-[#dbe5f1] bg-[#f8fbff] px-4 text-xs font-bold outline-none"
+                  className="mt-1.5 h-11 w-full rounded-xl border border-[#dbe5f1] bg-[#f8fbff] px-2 text-xs font-bold outline-none"
                 />
               </label>
             </div>
@@ -315,7 +315,7 @@ export function TokoPembelianClientManager({
               <div className="relative">
                 <div
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                  className="flex h-12 w-full cursor-pointer items-center justify-between rounded-xl border border-[#cbd5e1] bg-white px-4 text-xs font-bold text-[#0b1220] shadow-xs hover:border-[#2563eb] transition-all"
+                  className="flex h-12 w-full cursor-pointer items-center justify-between rounded-xl border border-[#cbd5e1] bg-white px-2 text-xs font-bold text-[#0b1220] shadow-xs hover:border-[#2563eb] transition-all"
                 >
                   {selectedProd ? (
                     <div className="flex items-center gap-2">
@@ -386,7 +386,7 @@ export function TokoPembelianClientManager({
                         min="1"
                         value={orderQty}
                         onChange={(e) => setOrderQty(e.target.value)}
-                        className="h-10 w-28 rounded-xl border border-[#cbd5e1] bg-[#f8fbff] px-3 text-sm font-black outline-none focus:border-[#2563eb]"
+                        className="h-10 w-28 rounded-xl border border-[#cbd5e1] bg-[#f8fbff] px-2 text-sm font-black outline-none focus:border-[#2563eb]"
                       />
                       <span className="font-bold text-xs text-[#475569]">{selectedProd.unit_name ?? "Pcs"}</span>
                     </div>
@@ -402,7 +402,7 @@ export function TokoPembelianClientManager({
                   <button
                     type="button"
                     onClick={addItemToPoCart}
-                    className="h-10 rounded-xl bg-[#2563eb] px-4 text-xs font-bold text-white hover:bg-[#1d4ed8] shadow-xs flex items-center gap-1.5 shrink-0"
+                    className="h-10 rounded-xl bg-[#2563eb] px-2 text-xs font-bold text-white hover:bg-[#1d4ed8] shadow-xs flex items-center gap-1.5 shrink-0"
                   >
                     <Plus className="size-4" />
                     <span>Tambahkan Barang</span>
@@ -465,7 +465,7 @@ export function TokoPembelianClientManager({
                 type="text"
                 name="notes"
                 placeholder="Contoh: Kirim sebelum tanggal 15 / Pengiriman pagi"
-                className="h-11 w-full rounded-xl border border-[#dbe5f1] bg-[#f8fbff] px-4 text-xs font-bold outline-none focus:border-[#2563eb]"
+                className="h-11 w-full rounded-xl border border-[#dbe5f1] bg-[#f8fbff] px-2 text-xs font-bold outline-none focus:border-[#2563eb]"
               />
             </label>
 
@@ -517,21 +517,21 @@ export function TokoPembelianClientManager({
               <table className="w-full text-left text-[11px]">
                 <thead className="bg-[#f8fbff] text-[#475569] border-b border-[#dbe5f1]">
                   <tr>
-                    <th className="px-3 py-2 font-bold">Barang Sembako</th>
-                    <th className="px-3 py-2 font-bold text-center">Qty Pesanan</th>
-                    <th className="px-3 py-2 font-bold text-right">Harga HPP</th>
-                    <th className="px-3 py-2 font-bold text-right">Subtotal</th>
+                    <th className="px-2 py-2 font-bold">Barang Sembako</th>
+                    <th className="px-2 py-2 font-bold text-center">Qty Pesanan</th>
+                    <th className="px-2 py-2 font-bold text-right">Harga HPP</th>
+                    <th className="px-2 py-2 font-bold text-right">Subtotal</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#e2e8f0]">
                   {selectedPo.toko_purchase_order_items?.map((item, idx) => (
                     <tr key={idx}>
-                      <td className="px-3 py-2 font-bold text-[#0b1220]">{item.product_name}</td>
-                      <td className="px-3 py-2 text-center font-bold">
+                      <td className="px-2 py-2 font-bold text-[#0b1220]">{item.product_name}</td>
+                      <td className="px-2 py-2 text-center font-bold">
                         {item.qty_ordered} {item.unit_name}
                       </td>
-                      <td className="px-3 py-2 text-right">{formatRupiah(item.buy_price)}</td>
-                      <td className="px-3 py-2 text-right font-black">{formatRupiah(item.subtotal)}</td>
+                      <td className="px-2 py-2 text-right">{formatRupiah(item.buy_price)}</td>
+                      <td className="px-2 py-2 text-right font-black">{formatRupiah(item.subtotal)}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -562,7 +562,7 @@ export function TokoPembelianClientManager({
               <button
                 type="button"
                 onClick={() => setSelectedPo(null)}
-                className="h-11 rounded-xl bg-[#f1f5f9] px-4 text-xs font-bold text-[#0b1220] hover:bg-[#e2e8f0]"
+                className="h-11 rounded-xl bg-[#f1f5f9] px-2 text-xs font-bold text-[#0b1220] hover:bg-[#e2e8f0]"
               >
                 Tutup
               </button>

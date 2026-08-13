@@ -257,7 +257,7 @@ export function DashboardNavigation({ navItems: initialNavItems, mobileNavItems,
               <button
                 type="button"
                 onClick={() => toggleMenu(item.label)}
-                className={`flex h-10 w-full items-center gap-3 rounded-xl px-3 text-[13px] font-bold transition-all cursor-pointer ${
+                className={`flex h-10 w-full items-center gap-3 rounded-xl px-2 text-[13px] font-bold transition-all cursor-pointer ${
                   parentActive ? "text-[#2563eb] bg-[#eaf2ff]" : "text-[#475569] hover:bg-white hover:text-[#0b1220]"
                 }`}
               >
@@ -294,7 +294,7 @@ export function DashboardNavigation({ navItems: initialNavItems, mobileNavItems,
 
         return (
           <Link
-            className={`flex h-10 items-center gap-3 rounded-xl px-3 text-[13px] font-bold transition-colors ${
+            className={`flex h-10 items-center gap-3 rounded-xl px-2 text-[13px] font-bold transition-colors ${
               parentActive ? "bg-[#0b1220] text-white shadow-sm" : "text-[#475569] hover:bg-white hover:text-[#0b1220]"
             }`}
             href={item.href}
@@ -317,7 +317,7 @@ export function DashboardNavigation({ navItems: initialNavItems, mobileNavItems,
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
         className={`hidden lg:flex flex-col border-r border-[#dbe5f1] bg-[#f8fbff] py-5 print:hidden transition-all duration-200 ease-in-out overflow-hidden ${
-          isExpanded ? "w-[240px] px-3" : "w-[56px] px-2"
+          isExpanded ? "w-[240px] px-2" : "w-[56px] px-2"
         }`}
         style={{ minHeight: "100vh" }}
       >
@@ -438,7 +438,7 @@ export function DashboardNavigation({ navItems: initialNavItems, mobileNavItems,
               <select
                 value={selectedUnit}
                 onChange={(e) => { handleUnitChange(e.target.value); setMobileMenuOpen(false); }}
-                className="h-10 w-full rounded-xl border border-[#dbe5f1] bg-white px-3 text-[12px] font-bold text-[#0b1220] outline-none focus:border-[#2563eb] cursor-pointer"
+                className="h-10 w-full rounded-xl border border-[#dbe5f1] bg-white px-2 text-[12px] font-bold text-[#0b1220] outline-none focus:border-[#2563eb] cursor-pointer"
               >
                 {unitOptions.map((opt) => (
                   <option key={opt.value} value={opt.value}>{opt.label}</option>

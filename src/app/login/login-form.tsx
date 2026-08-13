@@ -41,7 +41,7 @@ export function LoginForm({ action }: LoginFormProps) {
     <form action={action} className="mt-5 space-y-4" onSubmit={handleSubmit}>
       <label className="block">
         <span className="text-xs font-bold uppercase text-[#475569]">Email</span>
-        <div className="mt-1.5 flex h-11 items-center gap-3 rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 focus-within:border-[#2563eb] transition-all">
+        <div className="mt-1.5 flex h-11 items-center gap-3 rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-2 focus-within:border-[#2563eb] transition-all">
           <Mail className="size-4 text-[#64748b]" />
           <input
             autoComplete="username"
@@ -57,7 +57,7 @@ export function LoginForm({ action }: LoginFormProps) {
 
       <label className="block">
         <span className="text-xs font-bold uppercase text-[#475569]">Password</span>
-        <div className="mt-1.5 flex h-11 items-center gap-3 rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 focus-within:border-[#2563eb] transition-all">
+        <div className="mt-1.5 flex h-11 items-center gap-3 rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-2 focus-within:border-[#2563eb] transition-all">
           <KeyRound className="size-4 text-[#64748b]" />
           <input
             autoComplete="current-password"
@@ -78,7 +78,7 @@ export function LoginForm({ action }: LoginFormProps) {
         </div>
       </label>
 
-      <label className="flex items-center justify-between gap-3 rounded-2xl bg-[#f8fbff] px-4 py-2.5">
+      <label className="flex items-center justify-between gap-3 rounded-2xl bg-[#f8fbff] px-2 py-2.5">
         <span className="text-xs font-semibold text-[#475569]">Ingat email di perangkat ini</span>
         <input
           className="size-4 accent-[#2563eb]"

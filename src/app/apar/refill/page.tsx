@@ -107,7 +107,7 @@ export default async function AparRefillPage({ searchParams }: AparRefillPagePro
         <DashboardNavigation mobileNavItems={mobileNavItems} navItems={navItems} />
 
         <section className="min-w-0 pb-20 lg:pb-8">
-          <div className="px-3 py-3 md:px-3 md:py-4">
+          <div className="px-2 py-2 md:px-2 md:py-2">
             <AparRefillClientManager
               orderRows={orderRows}
               processOrderCount={processOrderCount}

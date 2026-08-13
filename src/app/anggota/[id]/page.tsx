@@ -140,7 +140,7 @@ export default async function MemberDetailPage({ params, searchParams }: MemberD
 
   return (
     <main className="min-h-screen bg-[#f4f7fb] text-[#0b1220]">
-      <header className="sticky top-0 z-20 border-b border-[#dbe5f1] bg-[#f8fbff]/95 px-3 py-3 backdrop-blur md:px-3">
+      <header className="sticky top-0 z-20 border-b border-[#dbe5f1] bg-[#f8fbff]/95 px-2 py-2 backdrop-blur md:px-2">
         <div className="mx-auto flex max-w-[1500px] items-center justify-between gap-3">
           <div className="flex min-w-0 items-center gap-3">
             <Link className="grid size-10 place-items-center rounded-2xl border border-[#dbe5f1] bg-white" href="/anggota">
@@ -151,13 +151,13 @@ export default async function MemberDetailPage({ params, searchParams }: MemberD
               <h1 className="truncate text-xl font-black md:text-2xl">{memberDetail.full_name}</h1>
             </div>
           </div>
-          <Link className="hidden h-10 items-center rounded-2xl bg-[#0b1220] px-4 text-sm font-black text-white md:inline-flex" href="/home">
+          <Link className="hidden h-10 items-center rounded-2xl bg-[#0b1220] px-2 text-sm font-black text-white md:inline-flex" href="/home">
             Dashboard
           </Link>
         </div>
       </header>
 
-      <div className="mx-auto grid max-w-[1500px] gap-5 px-4 py-5 md:px-3 xl:grid-cols-[0.85fr_1.15fr]">
+      <div className="mx-auto grid max-w-[1500px] gap-5 px-2 py-5 md:px-2 xl:grid-cols-[0.85fr_1.15fr]">
         <aside className="space-y-5">
           <section className="rounded-[28px] bg-[#07152f] p-5 text-white shadow-sm md:p-6">
             <div className="grid size-14 place-items-center rounded-3xl bg-white/10">
@@ -165,7 +165,7 @@ export default async function MemberDetailPage({ params, searchParams }: MemberD
             </div>
             <h2 className="mt-5 text-3xl font-black">{memberDetail.full_name}</h2>
             <p className="mt-2 font-bold text-[#bfdbfe]">{memberDetail.member_no}</p>
-            <div className="mt-5 inline-flex rounded-full bg-white px-3 py-1 text-xs font-black text-[#0b1220]">
+            <div className="mt-5 inline-flex rounded-full bg-white px-2 py-1 text-xs font-black text-[#0b1220]">
               {statusLabels[memberDetail.status]}
             </div>
           </section>
@@ -180,7 +180,7 @@ export default async function MemberDetailPage({ params, searchParams }: MemberD
                 <div className="mt-4 rounded-2xl bg-[#eff6ff] p-4 text-sm font-bold text-[#1d4ed8]">Status anggota diperbarui.</div>
               ) : null}
               <form action={updateStatus} className="mt-4 space-y-3">
-                <select className="h-12 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 text-sm font-bold outline-none" defaultValue={memberDetail.status} name="status">
+                <select className="h-12 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-2 text-sm font-bold outline-none" defaultValue={memberDetail.status} name="status">
                   <option value="active">Aktif</option>
                   <option value="inactive">Nonaktif</option>
                   <option value="resigned">Keluar</option>

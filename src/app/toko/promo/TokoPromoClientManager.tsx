@@ -138,7 +138,7 @@ export function TokoPromoClientManager({ promos: initialPromos }: TokoPromoClien
             <label className="block">
               <span className="font-bold uppercase text-[#475569]">Judul Promo / Paket Sembako *</span>
               <input
-                className="mt-1.5 h-11 w-full rounded-xl border border-[#dbe5f1] bg-[#f8fbff] px-4 font-bold outline-none"
+                className="mt-1.5 h-11 w-full rounded-xl border border-[#dbe5f1] bg-[#f8fbff] px-2 font-bold outline-none"
                 placeholder="Contoh: Paket Sembako Hemat Hari Raya 5kg + 2L"
                 required
               />
@@ -148,14 +148,14 @@ export function TokoPromoClientManager({ promos: initialPromos }: TokoPromoClien
               <label className="block">
                 <span className="font-bold uppercase text-[#475569]">Kode Promo / Voucher</span>
                 <input
-                  className="mt-1.5 h-11 w-full rounded-xl border border-[#dbe5f1] bg-[#f8fbff] px-4 font-mono font-bold uppercase outline-none"
+                  className="mt-1.5 h-11 w-full rounded-xl border border-[#dbe5f1] bg-[#f8fbff] px-2 font-mono font-bold uppercase outline-none"
                   placeholder="Contoh: HEMAT10"
                 />
               </label>
 
               <label className="block">
                 <span className="font-bold uppercase text-[#475569]">Jenis Promo</span>
-                <select className="mt-1.5 h-11 w-full rounded-xl border border-[#dbe5f1] bg-[#f8fbff] px-4 font-bold outline-none">
+                <select className="mt-1.5 h-11 w-full rounded-xl border border-[#dbe5f1] bg-[#f8fbff] px-2 font-bold outline-none">
                   <option value="bundling">Paket Bundling Sembako</option>
                   <option value="discount_flat">Potongan Harga Nomina (Rp)</option>
                   <option value="discount_percent">Diskon Persentase (%)</option>
@@ -168,7 +168,7 @@ export function TokoPromoClientManager({ promos: initialPromos }: TokoPromoClien
                 <span className="font-bold uppercase text-[#475569]">Nilai Potongan / Nilai Diskon</span>
                 <input
                   type="number"
-                  className="mt-1.5 h-11 w-full rounded-xl border border-[#dbe5f1] bg-[#f8fbff] px-4 font-bold outline-none"
+                  className="mt-1.5 h-11 w-full rounded-xl border border-[#dbe5f1] bg-[#f8fbff] px-2 font-bold outline-none"
                   placeholder="Contoh: 5000"
                 />
               </label>
@@ -177,7 +177,7 @@ export function TokoPromoClientManager({ promos: initialPromos }: TokoPromoClien
                 <span className="font-bold uppercase text-[#475569]">Berlaku Sampai Tanggal</span>
                 <input
                   type="date"
-                  className="mt-1.5 h-11 w-full rounded-xl border border-[#dbe5f1] bg-[#f8fbff] px-4 font-bold outline-none"
+                  className="mt-1.5 h-11 w-full rounded-xl border border-[#dbe5f1] bg-[#f8fbff] px-2 font-bold outline-none"
                 />
               </label>
             </div>
@@ -185,7 +185,7 @@ export function TokoPromoClientManager({ promos: initialPromos }: TokoPromoClien
             <label className="block">
               <span className="font-bold uppercase text-[#475569]">Deskripsi Rincian Paket</span>
               <input
-                className="mt-1.5 h-11 w-full rounded-xl border border-[#dbe5f1] bg-[#f8fbff] px-4 font-bold outline-none"
+                className="mt-1.5 h-11 w-full rounded-xl border border-[#dbe5f1] bg-[#f8fbff] px-2 font-bold outline-none"
                 placeholder="Contoh: Paket Beras Ramos 5kg + Minyak Sawit 2L hemat Rp 5.000"
               />
             </label>

@@ -163,7 +163,7 @@ export function KonfigurasiClientManager({
   return (
     <section className="min-w-0 pb-20 lg:pb-8">
       {/* Header Standardized CrudHeader */}
-      <div className="sticky top-0 z-20 bg-[#f8fbff]/95 px-3 py-3 backdrop-blur md:px-3 border-b border-[#dbe5f1]">
+      <div className="sticky top-0 z-20 bg-[#f8fbff]/95 px-2 py-2 backdrop-blur md:px-2 border-b border-[#dbe5f1]">
         <CrudHeader
           title="Konfigurasi & Setup Koperasi"
           subtitle="Pengaturan profil legal, produk simpanan, produk pinjaman, & periode buku."
@@ -172,13 +172,13 @@ export function KonfigurasiClientManager({
 
       </div>
 
-      <div className="space-y-4 px-3 py-3 md:px-6 md:py-5">
+      <div className="space-y-4 px-2 py-2 md:px-2 md:py-2">
         {/* Navigation Tabs */}
         <div className="flex flex-wrap items-center gap-2 border-b border-[#dbe5f1] pb-3">
           <button
             type="button"
             onClick={() => setActiveTab("profil")}
-            className={`inline-flex items-center gap-2 rounded-2xl px-4 py-2.5 text-xs font-bold transition-all ${
+            className={`inline-flex items-center gap-2 rounded-2xl px-2 py-2.5 text-xs font-bold transition-all ${
               activeTab === "profil"
                 ? "bg-[#2563eb] text-white shadow-sm"
                 : "bg-white text-[#64748b] hover:bg-slate-100 ring-1 ring-[#dbe5f1]"
@@ -191,7 +191,7 @@ export function KonfigurasiClientManager({
           <button
             type="button"
             onClick={() => setActiveTab("simpanan")}
-            className={`inline-flex items-center gap-2 rounded-2xl px-4 py-2.5 text-xs font-bold transition-all ${
+            className={`inline-flex items-center gap-2 rounded-2xl px-2 py-2.5 text-xs font-bold transition-all ${
               activeTab === "simpanan"
                 ? "bg-[#2563eb] text-white shadow-sm"
                 : "bg-white text-[#64748b] hover:bg-slate-100 ring-1 ring-[#dbe5f1]"
@@ -204,7 +204,7 @@ export function KonfigurasiClientManager({
           <button
             type="button"
             onClick={() => setActiveTab("pinjaman")}
-            className={`inline-flex items-center gap-2 rounded-2xl px-4 py-2.5 text-xs font-bold transition-all ${
+            className={`inline-flex items-center gap-2 rounded-2xl px-2 py-2.5 text-xs font-bold transition-all ${
               activeTab === "pinjaman"
                 ? "bg-[#2563eb] text-white shadow-sm"
                 : "bg-white text-[#64748b] hover:bg-slate-100 ring-1 ring-[#dbe5f1]"
@@ -217,7 +217,7 @@ export function KonfigurasiClientManager({
           <button
             type="button"
             onClick={() => setActiveTab("coa")}
-            className={`inline-flex items-center gap-2 rounded-2xl px-4 py-2.5 text-xs font-bold transition-all ${
+            className={`inline-flex items-center gap-2 rounded-2xl px-2 py-2.5 text-xs font-bold transition-all ${
               activeTab === "coa"
                 ? "bg-[#2563eb] text-white shadow-sm"
                 : "bg-white text-[#64748b] hover:bg-slate-100 ring-1 ring-[#dbe5f1]"
@@ -263,7 +263,7 @@ export function KonfigurasiClientManager({
                   <label className="block md:col-span-2">
                     <span className="text-xs font-bold uppercase text-[#475569]">Nama Koperasi *</span>
                     <input
-                      className="mt-1.5 h-11 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 text-xs font-bold outline-none focus:border-[#2563eb]"
+                      className="mt-1.5 h-11 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-2 text-xs font-bold outline-none focus:border-[#2563eb]"
                       defaultValue={koperasi?.name ?? ""}
                       name="name"
                       placeholder="Contoh: Koperasi Pegawai Sejahtera"
@@ -274,7 +274,7 @@ export function KonfigurasiClientManager({
                   <label className="block">
                     <span className="text-xs font-bold uppercase text-[#475569]">Nomor Badan Hukum</span>
                     <input
-                      className="mt-1.5 h-11 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 text-xs font-bold outline-none focus:border-[#2563eb]"
+                      className="mt-1.5 h-11 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-2 text-xs font-bold outline-none focus:border-[#2563eb]"
                       defaultValue={koperasi?.legal_number ?? ""}
                       name="legal_number"
                       placeholder="AHU-XXXXX.AH.01.26"
@@ -299,7 +299,7 @@ export function KonfigurasiClientManager({
                   <label className="block">
                     <span className="text-xs font-bold uppercase text-[#475569]">Email Resmi Koperasi</span>
                     <input
-                      className="mt-1.5 h-11 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 text-xs font-bold outline-none focus:border-[#2563eb]"
+                      className="mt-1.5 h-11 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-2 text-xs font-bold outline-none focus:border-[#2563eb]"
                       defaultValue={koperasi?.email ?? ""}
                       name="email"
                       placeholder="koperasi@domain.com"
@@ -310,7 +310,7 @@ export function KonfigurasiClientManager({
                   <label className="block">
                     <span className="text-xs font-bold uppercase text-[#475569]">Telepon / Whatsapp</span>
                     <input
-                      className="mt-1.5 h-11 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 text-xs font-bold outline-none focus:border-[#2563eb]"
+                      className="mt-1.5 h-11 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-2 text-xs font-bold outline-none focus:border-[#2563eb]"
                       defaultValue={koperasi?.phone ?? ""}
                       name="phone"
                       placeholder="0812XXXXXXXX"
@@ -320,7 +320,7 @@ export function KonfigurasiClientManager({
                   <label className="block md:col-span-2">
                     <span className="text-xs font-bold uppercase text-[#475569]">Alamat Lengkap Kantor</span>
                     <textarea
-                      className="mt-1.5 min-h-20 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 py-2.5 text-xs font-semibold outline-none focus:border-[#2563eb]"
+                      className="mt-1.5 min-h-20 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-2 py-2.5 text-xs font-semibold outline-none focus:border-[#2563eb]"
                       defaultValue={koperasi?.address ?? ""}
                       name="address"
                       placeholder="Alamat kantor koperasi..."
@@ -401,7 +401,7 @@ export function KonfigurasiClientManager({
                       <label className="block">
                         <span className="text-[11px] font-bold uppercase text-[#475569]">Tahun</span>
                         <input
-                          className="mt-1 h-10 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-3 text-xs font-bold outline-none focus:border-[#2563eb]"
+                          className="mt-1 h-10 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-2 text-xs font-bold outline-none focus:border-[#2563eb]"
                           defaultValue={new Date().getFullYear()}
                           name="year"
                           type="number"
@@ -463,7 +463,7 @@ export function KonfigurasiClientManager({
                 <label className="block">
                   <span className="text-xs font-bold uppercase text-[#475569]">Kode Produk *</span>
                   <input
-                    className="mt-1.5 h-11 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 text-xs font-bold outline-none focus:border-[#2563eb]"
+                    className="mt-1.5 h-11 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-2 text-xs font-bold outline-none focus:border-[#2563eb]"
                     name="code"
                     placeholder="Contoh: SW-01"
                     required
@@ -473,7 +473,7 @@ export function KonfigurasiClientManager({
                 <label className="block">
                   <span className="text-xs font-bold uppercase text-[#475569]">Nama Produk *</span>
                   <input
-                    className="mt-1.5 h-11 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 text-xs font-bold outline-none focus:border-[#2563eb]"
+                    className="mt-1.5 h-11 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-2 text-xs font-bold outline-none focus:border-[#2563eb]"
                     name="name"
                     placeholder="Contoh: Simpanan Wajib Bulanan"
                     required
@@ -492,7 +492,7 @@ export function KonfigurasiClientManager({
                 <label className="block">
                   <span className="text-xs font-bold uppercase text-[#475569]">Saldo Minimal (Rp)</span>
                   <CurrencyInput
-                    className="mt-1.5 h-11 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 text-xs font-bold outline-none focus:border-[#2563eb]"
+                    className="mt-1.5 h-11 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-2 text-xs font-bold outline-none focus:border-[#2563eb]"
                     name="minimum_balance"
                     placeholder="0"
                   />
@@ -501,14 +501,14 @@ export function KonfigurasiClientManager({
                 <label className="block">
                   <span className="text-xs font-bold uppercase text-[#475569]">Setoran Wajib Bulanan (Rp)</span>
                   <CurrencyInput
-                    className="mt-1.5 h-11 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 text-xs font-bold outline-none focus:border-[#2563eb]"
+                    className="mt-1.5 h-11 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-2 text-xs font-bold outline-none focus:border-[#2563eb]"
                     name="monthly_required_amount"
                     placeholder="0"
                   />
                 </label>
 
                 <div className="block flex items-end">
-                  <label className="flex h-11 w-full items-center justify-between rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 text-xs font-bold text-[#0b1220]">
+                  <label className="flex h-11 w-full items-center justify-between rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-2 text-xs font-bold text-[#0b1220]">
                     <span>Dapat Ditarik Kapan Saja</span>
                     <input className="size-4 accent-[#2563eb]" name="withdrawable" type="checkbox" />
                   </label>
@@ -580,7 +580,7 @@ export function KonfigurasiClientManager({
                 <label className="block md:col-span-3">
                   <span className="text-xs font-bold uppercase text-[#475569]">Nama Produk Pinjaman *</span>
                   <input
-                    className="mt-1.5 h-11 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 text-xs font-bold outline-none focus:border-[#2563eb]"
+                    className="mt-1.5 h-11 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-2 text-xs font-bold outline-none focus:border-[#2563eb]"
                     name="name"
                     placeholder="Contoh: Pinjaman Reguler Anggota"
                     required
@@ -590,7 +590,7 @@ export function KonfigurasiClientManager({
                 <label className="block">
                   <span className="text-xs font-bold uppercase text-[#475569]">Suku Bunga Tahunan (%)</span>
                   <input
-                    className="mt-1.5 h-11 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 text-xs font-bold outline-none focus:border-[#2563eb]"
+                    className="mt-1.5 h-11 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-2 text-xs font-bold outline-none focus:border-[#2563eb]"
                     name="annual_rate"
                     placeholder="12"
                     step="0.0001"
@@ -601,7 +601,7 @@ export function KonfigurasiClientManager({
                 <label className="block">
                   <span className="text-xs font-bold uppercase text-[#475569]">Tenor Maksimal (Bulan)</span>
                   <input
-                    className="mt-1.5 h-11 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 text-xs font-bold outline-none focus:border-[#2563eb]"
+                    className="mt-1.5 h-11 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-2 text-xs font-bold outline-none focus:border-[#2563eb]"
                     name="max_tenor_months"
                     placeholder="24"
                     type="number"
@@ -611,7 +611,7 @@ export function KonfigurasiClientManager({
                 <label className="block">
                   <span className="text-xs font-bold uppercase text-[#475569]">Biaya Administrasi (%)</span>
                   <input
-                    className="mt-1.5 h-11 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 text-xs font-bold outline-none focus:border-[#2563eb]"
+                    className="mt-1.5 h-11 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-2 text-xs font-bold outline-none focus:border-[#2563eb]"
                     name="admin_fee_percent"
                     placeholder="1.0"
                     step="0.0001"
@@ -628,7 +628,7 @@ export function KonfigurasiClientManager({
                 </label>
 
                 <div className="block md:col-span-2 flex items-end">
-                  <label className="flex h-11 w-full items-center justify-between rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 text-xs font-bold text-[#0b1220]">
+                  <label className="flex h-11 w-full items-center justify-between rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-2 text-xs font-bold text-[#0b1220]">
                     <span>Metode Bunga Boleh Diubah Saat Pengajuan</span>
                     <input className="size-4 accent-[#2563eb]" name="allow_method_override" type="checkbox" />
                   </label>
@@ -731,7 +731,7 @@ export function KonfigurasiClientManager({
                 <label className="block">
                   <span className="text-xs font-bold uppercase text-[#475569]">Kode Akun *</span>
                   <input
-                    className="mt-1.5 h-11 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 text-xs font-bold outline-none focus:border-[#2563eb]"
+                    className="mt-1.5 h-11 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-2 text-xs font-bold outline-none focus:border-[#2563eb]"
                     name="code"
                     placeholder="Contoh: 1003"
                     required
@@ -741,7 +741,7 @@ export function KonfigurasiClientManager({
                 <label className="block">
                   <span className="text-xs font-bold uppercase text-[#475569]">Nama Akun *</span>
                   <input
-                    className="mt-1.5 h-11 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 text-xs font-bold outline-none focus:border-[#2563eb]"
+                    className="mt-1.5 h-11 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-2 text-xs font-bold outline-none focus:border-[#2563eb]"
                     name="name"
                     placeholder="Contoh: Kas Kecil Operasional"
                     required
@@ -781,22 +781,22 @@ export function KonfigurasiClientManager({
                   <table className="w-full text-left text-xs border-collapse">
                     <thead>
                       <tr className="bg-[#f8fbff] text-[#475569] border-b border-[#e2e8f0]">
-                        <th className="px-3 py-3 font-bold uppercase">Kode</th>
-                        <th className="px-3 py-3 font-bold uppercase">Nama Akun</th>
-                        <th className="px-3 py-3 font-bold uppercase">Kategori</th>
-                        <th className="px-3 py-3 font-bold uppercase">Saldo Normal</th>
-                        <th className="px-3 py-3 font-bold uppercase text-right">Aksi</th>
+                        <th className="px-2 py-2 font-bold uppercase">Kode</th>
+                        <th className="px-2 py-2 font-bold uppercase">Nama Akun</th>
+                        <th className="px-2 py-2 font-bold uppercase">Kategori</th>
+                        <th className="px-2 py-2 font-bold uppercase">Saldo Normal</th>
+                        <th className="px-2 py-2 font-bold uppercase text-right">Aksi</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-[#f1f5f9]">
                       {accountRows.map((acc) => (
                         <tr key={acc.id} className="hover:bg-[#f8fbff]/60">
-                          <td className="px-3 py-3 font-mono font-bold text-[#2563eb]">{acc.code}</td>
-                          <td className="px-3 py-3 font-bold text-[#0b1220]">{acc.name}</td>
-                          <td className="px-3 py-3 font-semibold text-[#64748b]">
+                          <td className="px-2 py-2 font-mono font-bold text-[#2563eb]">{acc.code}</td>
+                          <td className="px-2 py-2 font-bold text-[#0b1220]">{acc.name}</td>
+                          <td className="px-2 py-2 font-semibold text-[#64748b]">
                             {categoryLabels[acc.category] ?? acc.category}
                           </td>
-                          <td className="px-3 py-3">
+                          <td className="px-2 py-2">
                             <span
                               className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase ${
                                 acc.normal_balance === "in"
@@ -807,7 +807,7 @@ export function KonfigurasiClientManager({
                               {acc.normal_balance === "in" ? "Debit" : "Kredit"}
                             </span>
                           </td>
-                          <td className="px-3 py-3 text-right">
+                          <td className="px-2 py-2 text-right">
                             <button
                               type="button"
                               onClick={() => setEditingAccount(acc)}
@@ -839,7 +839,7 @@ export function KonfigurasiClientManager({
             <label className="block">
               <span className="text-xs font-bold uppercase text-[#475569]">Kode Produk *</span>
               <input
-                className="mt-1.5 h-11 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 text-xs font-bold outline-none focus:border-[#2563eb]"
+                className="mt-1.5 h-11 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-2 text-xs font-bold outline-none focus:border-[#2563eb]"
                 name="code"
                 defaultValue={editingSavingsProduct.code}
                 required
@@ -849,7 +849,7 @@ export function KonfigurasiClientManager({
             <label className="block">
               <span className="text-xs font-bold uppercase text-[#475569]">Nama Produk *</span>
               <input
-                className="mt-1.5 h-11 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 text-xs font-bold outline-none focus:border-[#2563eb]"
+                className="mt-1.5 h-11 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-2 text-xs font-bold outline-none focus:border-[#2563eb]"
                 name="name"
                 defaultValue={editingSavingsProduct.name}
                 required
@@ -868,7 +868,7 @@ export function KonfigurasiClientManager({
             <label className="block">
               <span className="text-xs font-bold uppercase text-[#475569]">Saldo Minimal (Rp)</span>
               <CurrencyInput
-                className="mt-1.5 h-11 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 text-xs font-bold outline-none focus:border-[#2563eb]"
+                className="mt-1.5 h-11 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-2 text-xs font-bold outline-none focus:border-[#2563eb]"
                 name="minimum_balance"
                 defaultValue={editingSavingsProduct.minimum_balance}
               />
@@ -877,14 +877,14 @@ export function KonfigurasiClientManager({
             <label className="block">
               <span className="text-xs font-bold uppercase text-[#475569]">Setoran Wajib Bulanan (Rp)</span>
               <CurrencyInput
-                className="mt-1.5 h-11 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 text-xs font-bold outline-none focus:border-[#2563eb]"
+                className="mt-1.5 h-11 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-2 text-xs font-bold outline-none focus:border-[#2563eb]"
                 name="monthly_required_amount"
                 defaultValue={editingSavingsProduct.monthly_required_amount}
               />
             </label>
 
             <div className="block flex items-end">
-              <label className="flex h-11 w-full items-center justify-between rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 text-xs font-bold text-[#0b1220]">
+              <label className="flex h-11 w-full items-center justify-between rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-2 text-xs font-bold text-[#0b1220]">
                 <span>Dapat Ditarik Kapan Saja</span>
                 <input
                   className="size-4 accent-[#2563eb]"
@@ -913,7 +913,7 @@ export function KonfigurasiClientManager({
             <label className="block">
               <span className="text-xs font-bold uppercase text-[#475569]">Nama Produk Pinjaman *</span>
               <input
-                className="mt-1.5 h-11 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 text-xs font-bold outline-none focus:border-[#2563eb]"
+                className="mt-1.5 h-11 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-2 text-xs font-bold outline-none focus:border-[#2563eb]"
                 name="name"
                 defaultValue={editingLoanProduct.name}
                 required
@@ -923,7 +923,7 @@ export function KonfigurasiClientManager({
             <label className="block">
               <span className="text-xs font-bold uppercase text-[#475569]">Suku Bunga Tahunan (%)</span>
               <input
-                className="mt-1.5 h-11 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 text-xs font-bold outline-none focus:border-[#2563eb]"
+                className="mt-1.5 h-11 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-2 text-xs font-bold outline-none focus:border-[#2563eb]"
                 name="annual_rate"
                 defaultValue={editingLoanProduct.annual_rate}
                 step="0.0001"
@@ -934,7 +934,7 @@ export function KonfigurasiClientManager({
             <label className="block">
               <span className="text-xs font-bold uppercase text-[#475569]">Tenor Maksimal (Bulan)</span>
               <input
-                className="mt-1.5 h-11 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 text-xs font-bold outline-none focus:border-[#2563eb]"
+                className="mt-1.5 h-11 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-2 text-xs font-bold outline-none focus:border-[#2563eb]"
                 name="max_tenor_months"
                 defaultValue={editingLoanProduct.max_tenor_months}
                 type="number"
@@ -944,7 +944,7 @@ export function KonfigurasiClientManager({
             <label className="block">
               <span className="text-xs font-bold uppercase text-[#475569]">Biaya Administrasi (%)</span>
               <input
-                className="mt-1.5 h-11 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 text-xs font-bold outline-none focus:border-[#2563eb]"
+                className="mt-1.5 h-11 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-2 text-xs font-bold outline-none focus:border-[#2563eb]"
                 name="admin_fee_percent"
                 defaultValue={editingLoanProduct.admin_fee_percent}
                 step="0.0001"
@@ -961,7 +961,7 @@ export function KonfigurasiClientManager({
             </label>
 
             <div className="block flex items-end">
-              <label className="flex h-11 w-full items-center justify-between rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 text-xs font-bold text-[#0b1220]">
+              <label className="flex h-11 w-full items-center justify-between rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-2 text-xs font-bold text-[#0b1220]">
                 <span>Metode Bunga Boleh Diubah Saat Pengajuan</span>
                 <input
                   className="size-4 accent-[#2563eb]"
@@ -990,7 +990,7 @@ export function KonfigurasiClientManager({
             <label className="block">
               <span className="text-xs font-bold uppercase text-[#475569]">Kode Akun *</span>
               <input
-                className="mt-1.5 h-11 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 text-xs font-bold outline-none focus:border-[#2563eb]"
+                className="mt-1.5 h-11 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-2 text-xs font-bold outline-none focus:border-[#2563eb]"
                 name="code"
                 defaultValue={editingAccount.code}
                 required
@@ -1000,7 +1000,7 @@ export function KonfigurasiClientManager({
             <label className="block">
               <span className="text-xs font-bold uppercase text-[#475569]">Nama Akun *</span>
               <input
-                className="mt-1.5 h-11 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 text-xs font-bold outline-none focus:border-[#2563eb]"
+                className="mt-1.5 h-11 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-2 text-xs font-bold outline-none focus:border-[#2563eb]"
                 name="name"
                 defaultValue={editingAccount.name}
                 required

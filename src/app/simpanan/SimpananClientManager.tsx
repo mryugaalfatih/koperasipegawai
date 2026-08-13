@@ -155,7 +155,7 @@ export function SimpananClientManager({
           <button
             type="button"
             onClick={() => setActiveTab("accounts")}
-            className={`h-9 rounded-xl px-4 text-xs font-bold transition-all ${
+            className={`h-9 rounded-xl px-2 text-xs font-bold transition-all ${
               activeTab === "accounts"
                 ? "bg-[#2563eb] text-white shadow-sm"
                 : "bg-[#f4f7fb] text-[#64748b] hover:bg-[#e2e8f0] hover:text-[#0b1220]"
@@ -166,7 +166,7 @@ export function SimpananClientManager({
           <button
             type="button"
             onClick={() => setActiveTab("history")}
-            className={`h-9 rounded-xl px-4 text-xs font-bold transition-all ${
+            className={`h-9 rounded-xl px-2 text-xs font-bold transition-all ${
               activeTab === "history"
                 ? "bg-[#2563eb] text-white shadow-sm"
                 : "bg-[#f4f7fb] text-[#64748b] hover:bg-[#e2e8f0] hover:text-[#0b1220]"
@@ -179,7 +179,7 @@ export function SimpananClientManager({
         <button
           type="button"
           onClick={() => setIsAccountModalOpen(true)}
-          className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-[#dbe5f1] bg-[#f8fbff] px-3.5 text-xs font-bold text-[#0b1220] hover:bg-white active:scale-95 transition-all"
+          className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-[#dbe5f1] bg-[#f8fbff] px-2.5 text-xs font-bold text-[#0b1220] hover:bg-white active:scale-95 transition-all"
         >
           <Plus className="size-4 text-[#2563eb]" />
           <span>Buat Rekening Baru</span>
@@ -352,7 +352,7 @@ export function SimpananClientManager({
             <label className="block">
               <span className="text-xs font-bold uppercase text-[#475569]">Tanggal Transaksi</span>
               <input
-                className="mt-1.5 h-11 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 text-xs font-bold outline-none focus:border-[#2563eb]"
+                className="mt-1.5 h-11 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-2 text-xs font-bold outline-none focus:border-[#2563eb]"
                 name="transaction_date"
                 type="date"
                 defaultValue={new Date().toISOString().slice(0, 10)}
@@ -366,14 +366,14 @@ export function SimpananClientManager({
               name="amount"
               placeholder="0"
               required
-              className="mt-1.5 h-11 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 text-xs font-bold outline-none focus:border-[#2563eb]"
+              className="mt-1.5 h-11 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-2 text-xs font-bold outline-none focus:border-[#2563eb]"
             />
           </label>
 
           <label className="block">
             <span className="text-xs font-bold uppercase text-[#475569]">Nomor Referensi</span>
             <input
-              className="mt-1.5 h-11 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 text-xs font-bold outline-none focus:border-[#2563eb]"
+              className="mt-1.5 h-11 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-2 text-xs font-bold outline-none focus:border-[#2563eb]"
               name="reference_no"
               placeholder="Opsional (No Kuitansi / Bukti Transfer)"
             />
@@ -382,7 +382,7 @@ export function SimpananClientManager({
           <label className="block">
             <span className="text-xs font-bold uppercase text-[#475569]">Keterangan Transaksi</span>
             <textarea
-              className="mt-1.5 min-h-20 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 py-2.5 text-xs font-semibold outline-none focus:border-[#2563eb]"
+              className="mt-1.5 min-h-20 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-2 py-2.5 text-xs font-semibold outline-none focus:border-[#2563eb]"
               name="description"
               placeholder="Keterangan setoran/penarikan..."
             />
@@ -431,7 +431,7 @@ export function SimpananClientManager({
           <label className="block">
             <span className="text-xs font-bold uppercase text-[#475569]">Nomor Rekening</span>
             <input
-              className="mt-1.5 h-11 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 text-xs font-bold outline-none focus:border-[#2563eb]"
+              className="mt-1.5 h-11 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-2 text-xs font-bold outline-none focus:border-[#2563eb]"
               name="account_no"
               placeholder="Kosongkan untuk nomor otomatis"
             />
@@ -443,7 +443,7 @@ export function SimpananClientManager({
               <CurrencyInput
                 name="opening_balance"
                 placeholder="0"
-                className="mt-1.5 h-11 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 text-xs font-bold outline-none focus:border-[#2563eb]"
+                className="mt-1.5 h-11 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-2 text-xs font-bold outline-none focus:border-[#2563eb]"
               />
             </label>
 

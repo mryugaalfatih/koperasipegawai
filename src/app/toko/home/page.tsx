@@ -134,7 +134,7 @@ export default async function TokoHomePage() {
 
         <section className="min-w-0 pb-20 lg:pb-4">
           {/* Header */}
-          <header className="sticky top-0 z-20 border-b border-[#dbe5f1] bg-[#f8fbff]/95 px-3 py-3 backdrop-blur md:px-6">
+          <header className="sticky top-0 z-20 border-b border-[#dbe5f1] bg-[#f8fbff]/95 px-2 py-2 backdrop-blur md:px-2">
             <div className="flex items-center gap-3">
               <div className="grid size-10 shrink-0 place-items-center rounded-xl bg-[#dbeafe] text-[#2563eb]">
                 <Store className="size-5" />
@@ -150,12 +150,12 @@ export default async function TokoHomePage() {
             </div>
           </header>
 
-          <div className="space-y-4 px-3 py-3 md:px-6 md:py-5">
+          <div className="space-y-4 px-2 py-2 md:px-2 md:py-2">
             {/* Hero Banner */}
             <section className="rounded-2xl bg-[#07152f] p-4 text-white shadow-sm md:p-5">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
-                  <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs font-bold text-[#bfdbfe]">
+                  <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-2 py-1 text-xs font-bold text-[#bfdbfe]">
                     <Store className="size-3.5" />
                     {today.toLocaleDateString("id-ID", {
                       day: "numeric",
@@ -177,14 +177,14 @@ export default async function TokoHomePage() {
                 <div className="flex flex-wrap gap-2">
                   <a
                     href="/toko/kasir"
-                    className="inline-flex h-9 items-center gap-2 rounded-xl bg-white px-4 text-xs font-bold text-[#07152f] shadow-sm transition-all hover:bg-slate-100"
+                    className="inline-flex h-9 items-center gap-2 rounded-xl bg-white px-2 text-xs font-bold text-[#07152f] shadow-sm transition-all hover:bg-slate-100"
                   >
                     <ShoppingCart className="size-4 text-[#2563eb]" />
                     Buka Kasir
                   </a>
                   <a
                     href="/toko/produk"
-                    className="inline-flex h-9 items-center gap-2 rounded-xl bg-white/10 px-4 text-xs font-bold text-white shadow-sm transition-all hover:bg-white/20"
+                    className="inline-flex h-9 items-center gap-2 rounded-xl bg-white/10 px-2 text-xs font-bold text-white shadow-sm transition-all hover:bg-white/20"
                   >
                     <Package className="size-4" />
                     Produk

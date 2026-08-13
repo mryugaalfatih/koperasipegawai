@@ -82,7 +82,7 @@ export default async function AkuntansiPage({ searchParams }: AkuntansiPageProps
 
         <div>
           {/* Header */}
-          <header className="sticky top-0 z-20 border-b border-[#dbe5f1] bg-[#f8fbff]/90 px-3 py-3 backdrop-blur md:px-3">
+          <header className="sticky top-0 z-20 border-b border-[#dbe5f1] bg-[#f8fbff]/90 px-2 py-2 backdrop-blur md:px-2">
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div>
                 <p className="text-xs font-bold uppercase tracking-wider text-[#64748b]">Modul Pembukuan</p>
@@ -90,7 +90,7 @@ export default async function AkuntansiPage({ searchParams }: AkuntansiPageProps
               </div>
               <div className="flex items-center gap-2">
                 <Link
-                  className="inline-flex h-9 items-center gap-2 rounded-2xl bg-white px-4 text-xs font-bold text-[#0b1220] shadow-sm ring-1 ring-[#dbe5f1] hover:bg-slate-50 transition-all"
+                  className="inline-flex h-9 items-center gap-2 rounded-2xl bg-white px-2 text-xs font-bold text-[#0b1220] shadow-sm ring-1 ring-[#dbe5f1] hover:bg-slate-50 transition-all"
                   href="/kas"
                 >
                   <span>Lihat Kas Harian</span>

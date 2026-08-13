@@ -49,25 +49,25 @@ export default async function AparHomePage() {
           <ToastNotification />
 
           {/* Header */}
-          <header className="sticky top-0 z-20 border-b border-[#dbe5f1] bg-[#f8fbff]/95 px-3 py-3 backdrop-blur">
+          <header className="sticky top-0 z-20 border-b border-[#dbe5f1] bg-[#f8fbff]/95 px-2 py-2 backdrop-blur">
             <div className="flex items-center justify-between gap-3">
               <div>
                 <p className="text-[10px] font-bold uppercase tracking-wider text-[#2563eb]">Unit Jasa APAR & Damkar</p>
                 <h1 className="text-lg font-black text-[#0b1220]">Dashboard APAR</h1>
               </div>
-              <div className="flex items-center gap-2 rounded-2xl bg-white px-3 py-1.5 shadow-sm ring-1 ring-[#dbe5f1]">
+              <div className="flex items-center gap-2 rounded-2xl bg-white px-2 py-1.5 shadow-sm ring-1 ring-[#dbe5f1]">
                 <Flame className="size-4 text-[#dc2626]" />
                 <span className="text-xs font-bold text-[#0b1220]">{totalProducts} Produk Aktif</span>
               </div>
             </div>
           </header>
 
-          <div className="px-3 py-3 space-y-4">
+          <div className="px-2 py-2 space-y-4">
             {/* Hero Banner */}
             <div className="rounded-2xl bg-[#07152f] p-5 text-white">
               <div className="flex flex-wrap items-center justify-between gap-4">
                 <div>
-                  <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs font-bold text-[#fca5a5]">
+                  <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-2 py-1 text-xs font-bold text-[#fca5a5]">
                     <Flame className="size-3.5" /> Unit APAR Damkar
                   </div>
                   <h2 className="mt-2 text-xl font-black">Selamat Datang di Unit APAR</h2>
@@ -165,7 +165,7 @@ export default async function AparHomePage() {
               ) : (
                 <div className="space-y-2">
                   {(allOrders ?? []).slice(0, 5).map((order) => (
-                    <div key={order.id} className="flex items-center justify-between rounded-xl bg-[#f8fbff] px-3 py-2.5">
+                    <div key={order.id} className="flex items-center justify-between rounded-xl bg-[#f8fbff] px-2 py-2.5">
                       <div>
                         <p className="text-xs font-bold text-[#0b1220]">{order.client_name ?? "—"}</p>
                       </div>

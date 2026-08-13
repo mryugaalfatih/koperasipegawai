@@ -38,7 +38,7 @@ export function CrudHeader({
           <div className="flex items-center gap-2.5">
             <h1 className="text-xl font-bold text-[#0b1220] md:text-2xl">{title}</h1>
             {countBadge ? (
-              <span className="rounded-full bg-[#eaf2ff] px-3 py-0.5 text-xs font-bold text-[#2563eb] ring-1 ring-[#bfdbfe]">
+              <span className="rounded-full bg-[#eaf2ff] px-2 py-0.5 text-xs font-bold text-[#2563eb] ring-1 ring-[#bfdbfe]">
                 {countBadge}
               </span>
             ) : null}
@@ -50,7 +50,7 @@ export function CrudHeader({
           <button
             type="button"
             onClick={onAddClick}
-            className="inline-flex h-10 items-center gap-2 rounded-xl bg-[#2563eb] px-4 text-xs font-bold text-white shadow-sm hover:bg-[#1d4ed8] active:scale-[0.96] transition-all cursor-pointer"
+            className="inline-flex h-10 items-center gap-2 rounded-xl bg-[#2563eb] px-2 text-xs font-bold text-white shadow-sm hover:bg-[#1d4ed8] active:scale-[0.96] transition-all cursor-pointer"
           >
             <Plus className="size-4" />
             <span>{addButtonLabel}</span>

@@ -325,7 +325,7 @@ export function PinjamanDetailClientManager({
     <section className="min-w-0 pb-20 lg:pb-8 print:p-0 print:bg-white">
       <div className="print:hidden">
       {/* Header */}
-      <header className="print:hidden sticky top-0 z-20 border-b border-[#dbe5f1] bg-[#f8fbff]/95 px-3 py-3 backdrop-blur md:px-3">
+      <header className="print:hidden sticky top-0 z-20 border-b border-[#dbe5f1] bg-[#f8fbff]/95 px-2 py-2 backdrop-blur md:px-2">
         <div className="mx-auto flex max-w-[1500px] items-center justify-between gap-3">
           <div className="flex min-w-0 items-center gap-3">
             <Link className="grid size-10 place-items-center rounded-2xl border border-[#dbe5f1] bg-white hover:bg-slate-50 transition-all" href="/pinjaman">
@@ -343,7 +343,7 @@ export function PinjamanDetailClientManager({
                 setPrintMode("schedule");
                 setTimeout(() => window.print(), 100);
               }}
-              className="h-10 inline-flex items-center gap-2 rounded-2xl bg-[#0b1220] px-4 text-xs font-bold text-white hover:bg-[#1e293b] active:scale-95 transition-all cursor-pointer"
+              className="h-10 inline-flex items-center gap-2 rounded-2xl bg-[#0b1220] px-2 text-xs font-bold text-white hover:bg-[#1e293b] active:scale-95 transition-all cursor-pointer"
             >
               <Printer className="size-4" />
               <span>Cetak Jadwal</span>
@@ -355,7 +355,7 @@ export function PinjamanDetailClientManager({
                 setPrintMode("contract");
                 setTimeout(() => window.print(), 100);
               }}
-              className="h-10 inline-flex items-center gap-2 rounded-2xl bg-[#2563eb] px-4 text-xs font-bold text-white hover:bg-[#1d4ed8] active:scale-95 transition-all cursor-pointer"
+              className="h-10 inline-flex items-center gap-2 rounded-2xl bg-[#2563eb] px-2 text-xs font-bold text-white hover:bg-[#1d4ed8] active:scale-95 transition-all cursor-pointer"
             >
               <FileText className="size-4" />
               <span>Cetak Akad Kredit</span>
@@ -368,7 +368,7 @@ export function PinjamanDetailClientManager({
                   setPrintMode("settlement");
                   setTimeout(() => window.print(), 100);
                 }}
-                className="h-9 inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-3.5 text-xs font-bold text-white hover:bg-emerald-700 active:scale-95 transition-all cursor-pointer shadow-sm"
+                className="h-9 inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-2.5 text-xs font-bold text-white hover:bg-emerald-700 active:scale-95 transition-all cursor-pointer shadow-sm"
               >
                 <CheckCircle2 className="size-4" />
                 <span>Cetak Surat Ket. Lunas</span>
@@ -378,7 +378,7 @@ export function PinjamanDetailClientManager({
             {loanDetail.status === "disbursed" && (
               <Link
                 href="/pinjaman"
-                className="h-9 inline-flex items-center gap-2 rounded-xl bg-amber-500 px-3.5 text-xs font-bold text-white hover:bg-amber-600 active:scale-95 transition-all cursor-pointer shadow-sm"
+                className="h-9 inline-flex items-center gap-2 rounded-xl bg-amber-500 px-2.5 text-xs font-bold text-white hover:bg-amber-600 active:scale-95 transition-all cursor-pointer shadow-sm"
               >
                 <RefreshCcw className="size-4" />
                 <span>Ajukan Top-Up</span>
@@ -388,7 +388,7 @@ export function PinjamanDetailClientManager({
         </div>
       </header>
 
-      <div className="px-3 py-3 md:px-6 space-y-4">
+      <div className="px-2 py-2 md:px-2 space-y-4">
         {/* Notifications */}
         {error && <div className="rounded-xl bg-[#fff1f2] p-3.5 text-sm font-bold text-[#be123c]">{error}</div>}
         {paid && (
@@ -398,7 +398,7 @@ export function PinjamanDetailClientManager({
               <button
                 type="button"
                 onClick={() => handlePrintReceipt(paymentRows[0])}
-                className="h-8 px-3 inline-flex items-center gap-1.5 rounded-lg bg-[#2563eb] text-xs font-bold text-white hover:bg-[#1d4ed8] active:scale-95 transition-all cursor-pointer shadow-sm shrink-0"
+                className="h-8 px-2 inline-flex items-center gap-1.5 rounded-lg bg-[#2563eb] text-xs font-bold text-white hover:bg-[#1d4ed8] active:scale-95 transition-all cursor-pointer shadow-sm shrink-0"
               >
                 <Printer className="size-3.5" />
                 <span>Cetak Kuitansi Terbaru</span>
@@ -466,7 +466,7 @@ export function PinjamanDetailClientManager({
                 </h2>
               </div>
               {isSimulated && (
-                <span className="rounded-full bg-amber-50 border border-amber-200 px-3 py-1 text-xs font-bold text-amber-700 animate-pulse">
+                <span className="rounded-full bg-amber-50 border border-amber-200 px-2 py-1 text-xs font-bold text-amber-700 animate-pulse">
                   ⚠️ Belum Dicairkan
                 </span>
               )}
@@ -582,7 +582,7 @@ export function PinjamanDetailClientManager({
                   <label className="block">
                     <span className="text-sm font-bold text-[#0b1220]">Pilih Angsuran / Paket Bulan</span>
                     <select
-                      className="mt-1.5 h-11 w-full rounded-xl border border-[#dbe5f1] bg-[#f8fbff] px-3.5 text-xs font-bold outline-none focus:border-[#2563eb]"
+                      className="mt-1.5 h-11 w-full rounded-xl border border-[#dbe5f1] bg-[#f8fbff] px-2.5 text-xs font-bold outline-none focus:border-[#2563eb]"
                       name="installment_id"
                       required
                       value={selectedInstallmentId}
@@ -629,7 +629,7 @@ export function PinjamanDetailClientManager({
                         <button
                           type="button"
                           onClick={() => setPaymentMode("custom")}
-                          className={`h-9 px-3 rounded-xl border text-[11px] font-bold transition-all cursor-pointer ${
+                          className={`h-9 px-2 rounded-xl border text-[11px] font-bold transition-all cursor-pointer ${
                             paymentMode === "custom"
                               ? "border-[#2563eb] bg-[#2563eb] text-white shadow-sm"
                               : "border-slate-300 bg-white text-slate-700 hover:bg-slate-50"
@@ -658,7 +658,7 @@ export function PinjamanDetailClientManager({
                   <label className="block">
                     <span className="text-sm font-bold text-[#0b1220]">Tanggal Bayar</span>
                     <input
-                      className="mt-2 h-12 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 text-sm font-bold outline-none focus:border-[#2563eb]"
+                      className="mt-2 h-12 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-2 text-sm font-bold outline-none focus:border-[#2563eb]"
                       name="payment_date"
                       type="date"
                       defaultValue={new Date().toISOString().slice(0, 10)}
@@ -668,7 +668,7 @@ export function PinjamanDetailClientManager({
                   <label className="block">
                     <span className="text-sm font-bold text-[#0b1220]">Metode Bayar</span>
                     <select
-                      className="mt-2 h-12 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 text-sm font-bold outline-none focus:border-[#2563eb]"
+                      className="mt-2 h-12 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-2 text-sm font-bold outline-none focus:border-[#2563eb]"
                       name="payment_method"
                     >
                       <option value="kas">Tunai (Kas)</option>
@@ -687,7 +687,7 @@ export function PinjamanDetailClientManager({
                         )}
                       </div>
                       <input
-                        className={`mt-1 h-12 w-full rounded-2xl border px-4 text-sm font-bold outline-none ${
+                        className={`mt-1 h-12 w-full rounded-2xl border px-2 text-sm font-bold outline-none ${
                           paymentMode === "interest_only"
                             ? "bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed"
                             : "bg-[#f8fbff] border-[#dbe5f1] focus:border-[#2563eb]"
@@ -720,7 +720,7 @@ export function PinjamanDetailClientManager({
                         )}
                       </div>
                       <input
-                        className="mt-1 h-12 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 text-sm font-bold outline-none focus:border-[#2563eb]"
+                        className="mt-1 h-12 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-2 text-sm font-bold outline-none focus:border-[#2563eb]"
                         name="interest_paid"
                         placeholder="0"
                         type="number"
@@ -741,7 +741,7 @@ export function PinjamanDetailClientManager({
                     <label className="block">
                       <span className="text-sm font-bold text-[#0b1220]">Denda (Rp)</span>
                       <input
-                        className="mt-1 h-12 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 text-sm font-bold outline-none focus:border-[#2563eb]"
+                        className="mt-1 h-12 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-2 text-sm font-bold outline-none focus:border-[#2563eb]"
                         name="penalty_paid"
                         placeholder="0"
                         type="number"
@@ -784,7 +784,7 @@ export function PinjamanDetailClientManager({
                       <button
                         type="button"
                         onClick={() => handlePrintReceipt(payment)}
-                        className="h-8 px-3 inline-flex items-center gap-1.5 rounded-xl border border-[#dbe5f1] bg-white text-xs font-bold text-[#2563eb] hover:bg-[#eff6ff] active:scale-95 transition-all cursor-pointer shadow-sm shrink-0"
+                        className="h-8 px-2 inline-flex items-center gap-1.5 rounded-xl border border-[#dbe5f1] bg-white text-xs font-bold text-[#2563eb] hover:bg-[#eff6ff] active:scale-95 transition-all cursor-pointer shadow-sm shrink-0"
                       >
                         <Printer className="size-3.5" />
                         <span>Kuitansi</span>
@@ -1081,7 +1081,7 @@ export function PinjamanDetailClientManager({
               <div>
                 <p className="font-bold">PIHAK KEDUA (PEMINJAM)</p>
                 <div className="h-20 my-1 flex items-center justify-center">
-                  <span className="text-[8.5pt] text-gray-400 border border-gray-300 px-3 py-1.5 rounded">Materai Rp 10.000</span>
+                  <span className="text-[8.5pt] text-gray-400 border border-gray-300 px-2 py-1.5 rounded">Materai Rp 10.000</span>
                 </div>
                 <p className="font-bold underline uppercase">({memberName})</p>
                 <p className="text-[8.5pt] text-gray-600">Anggota Koperasi</p>

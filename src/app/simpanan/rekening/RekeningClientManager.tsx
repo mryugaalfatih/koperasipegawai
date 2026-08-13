@@ -107,7 +107,7 @@ export function RekeningClientManager({
 
   return (
     <section className="min-w-0 pb-20 lg:pb-8">
-      <div className="px-3 py-3 md:px-6 md:py-5 space-y-4">
+      <div className="px-2 py-2 md:px-2 md:py-2 space-y-4">
         {/* CrudHeader */}
         <CrudHeader
           title="Rekening Simpanan Anggota"
@@ -202,7 +202,7 @@ export function RekeningClientManager({
 
                     <Link
                       href={`/simpanan/rekening/${account.id}`}
-                      className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-[#2563eb] bg-[#eaf2ff] px-3 text-xs font-bold text-[#2563eb] hover:bg-[#dbeafe] active:scale-95 transition-all"
+                      className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-[#2563eb] bg-[#eaf2ff] px-2 text-xs font-bold text-[#2563eb] hover:bg-[#dbeafe] active:scale-95 transition-all"
                     >
                       Mutasi
                     </Link>
@@ -210,7 +210,7 @@ export function RekeningClientManager({
                     <button
                       type="button"
                       onClick={() => setSelectedEditAccount(account)}
-                      className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-[#dbe5f1] bg-[#f8fbff] px-3 text-xs font-bold text-[#0b1220] hover:bg-white active:scale-95 transition-all"
+                      className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-[#dbe5f1] bg-[#f8fbff] px-2 text-xs font-bold text-[#0b1220] hover:bg-white active:scale-95 transition-all"
                     >
                       Status / Edit
                     </button>
@@ -272,7 +272,7 @@ export function RekeningClientManager({
           <label className="block">
             <span className="text-xs font-bold uppercase text-[#475569]">Nomor Rekening</span>
             <input
-              className="mt-1.5 h-11 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 text-xs font-bold outline-none focus:border-[#2563eb]"
+              className="mt-1.5 h-11 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-2 text-xs font-bold outline-none focus:border-[#2563eb]"
               name="account_no"
               placeholder="Kosongkan untuk nomor otomatis"
             />
@@ -283,7 +283,7 @@ export function RekeningClientManager({
             <CurrencyInput
               name="opening_balance"
               placeholder="0"
-              className="mt-1.5 h-11 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 text-xs font-bold outline-none focus:border-[#2563eb]"
+              className="mt-1.5 h-11 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-2 text-xs font-bold outline-none focus:border-[#2563eb]"
             />
           </label>
 
@@ -312,7 +312,7 @@ export function RekeningClientManager({
             <label className="block">
               <span className="text-xs font-bold uppercase text-[#475569]">Nomor Rekening</span>
               <input
-                className="mt-1.5 h-11 w-full rounded-2xl border border-[#dbe5f1] bg-[#f1f5f9] px-4 text-xs font-bold text-[#64748b] outline-none"
+                className="mt-1.5 h-11 w-full rounded-2xl border border-[#dbe5f1] bg-[#f1f5f9] px-2 text-xs font-bold text-[#64748b] outline-none"
                 defaultValue={selectedEditAccount.account_no}
                 disabled
               />

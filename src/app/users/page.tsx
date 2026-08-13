@@ -97,7 +97,7 @@ export default async function UsersPage({ searchParams }: UsersPageProps) {
       <div className="lg:grid lg:min-h-screen lg:grid-cols-[auto_1fr]">
         <DashboardNavigation navItems={navItems} mobileNavItems={mobileNavItems} />
         <section className="min-w-0 pb-24 lg:pb-0">
-          <header className="sticky top-0 z-20 border-b border-[#dbe5f1] bg-[#f8fbff]/95 px-3 py-3 backdrop-blur md:px-3">
+          <header className="sticky top-0 z-20 border-b border-[#dbe5f1] bg-[#f8fbff]/95 px-2 py-2 backdrop-blur md:px-2">
         <div className="mx-auto flex max-w-[1500px] items-center justify-between gap-3">
           <div className="flex min-w-0 items-center gap-3">
             <Link className="grid size-10 place-items-center rounded-2xl border border-[#dbe5f1] bg-white" href="/home">
@@ -108,13 +108,13 @@ export default async function UsersPage({ searchParams }: UsersPageProps) {
               <h1 className="text-xl font-black md:text-2xl">Manajemen akses admin</h1>
             </div>
           </div>
-          <Link className="hidden h-10 items-center rounded-2xl bg-[#0b1220] px-4 text-sm font-black text-white md:inline-flex" href="/audit">
+          <Link className="hidden h-10 items-center rounded-2xl bg-[#0b1220] px-2 text-sm font-black text-white md:inline-flex" href="/audit">
             Audit
           </Link>
         </div>
       </header>
 
-      <div className="mx-auto grid max-w-[1500px] gap-5 px-4 py-5 md:px-3 xl:grid-cols-[1fr_420px]">
+      <div className="mx-auto grid max-w-[1500px] gap-5 px-2 py-5 md:px-2 xl:grid-cols-[1fr_420px]">
         <section className="space-y-5">
           <section className="rounded-[28px] bg-[#07152f] p-5 text-white shadow-sm md:p-6">
             <div className="flex flex-wrap items-start justify-between gap-4">
@@ -164,15 +164,15 @@ export default async function UsersPage({ searchParams }: UsersPageProps) {
                           <div className="grid gap-3 md:grid-cols-2">
                             <label className="block">
                               <span className="text-xs font-black uppercase text-[#64748b]">Nama</span>
-                              <input className="mt-2 h-11 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 text-sm font-bold outline-none" defaultValue={profile.full_name} name="full_name" required />
+                              <input className="mt-2 h-11 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-2 text-sm font-bold outline-none" defaultValue={profile.full_name} name="full_name" required />
                             </label>
                             <label className="block">
                               <span className="text-xs font-black uppercase text-[#64748b]">Telepon</span>
-                              <input className="mt-2 h-11 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 text-sm font-bold outline-none" defaultValue={profile.phone ?? ""} name="phone" />
+                              <input className="mt-2 h-11 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-2 text-sm font-bold outline-none" defaultValue={profile.phone ?? ""} name="phone" />
                             </label>
                             <label className="block">
                               <span className="text-xs font-black uppercase text-[#64748b]">Role</span>
-                              <select className="mt-2 h-11 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 text-sm font-bold outline-none" defaultValue={profile.role} name="role">
+                              <select className="mt-2 h-11 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-2 text-sm font-bold outline-none" defaultValue={profile.role} name="role">
                                 {roles.map((role) => (
                                   <option key={role.value} value={role.value}>{role.label}</option>
                                 ))}
@@ -180,7 +180,7 @@ export default async function UsersPage({ searchParams }: UsersPageProps) {
                             </label>
                             <label className="block">
                               <span className="text-xs font-black uppercase text-[#64748b]">Cabang</span>
-                              <select className="mt-2 h-11 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 text-sm font-bold outline-none" defaultValue={profile.branch_id ?? defaultBranchId} name="branch_id">
+                              <select className="mt-2 h-11 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-2 text-sm font-bold outline-none" defaultValue={profile.branch_id ?? defaultBranchId} name="branch_id">
                                 {branchRows.map((branch) => (
                                   <option key={branch.id} value={branch.id}>{branch.code} | {branch.name}</option>
                                 ))}
@@ -229,7 +229,7 @@ export default async function UsersPage({ searchParams }: UsersPageProps) {
 
                           <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
                             <p className="text-xs font-bold text-[#64748b]">Auth user ID: {profile.id}</p>
-                            <button className="h-10 rounded-2xl bg-[#0b1220] px-4 text-sm font-black text-white cursor-pointer hover:bg-slate-800" type="submit">
+                            <button className="h-10 rounded-2xl bg-[#0b1220] px-2 text-sm font-black text-white cursor-pointer hover:bg-slate-800" type="submit">
                               Simpan perubahan
                             </button>
                           </div>
@@ -266,19 +266,19 @@ export default async function UsersPage({ searchParams }: UsersPageProps) {
             <form action={createUserProfile} className="mt-5 space-y-4">
               <label className="block">
                 <span className="text-sm font-black">Email login</span>
-                <input className="mt-2 h-12 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 text-sm font-bold outline-none" name="email" placeholder="nama@koperasi.co.id" required type="email" />
+                <input className="mt-2 h-12 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-2 text-sm font-bold outline-none" name="email" placeholder="nama@koperasi.co.id" required type="email" />
               </label>
               <label className="block">
                 <span className="text-sm font-black">Password sementara</span>
-                <input className="mt-2 h-12 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 text-sm font-bold outline-none" minLength={8} name="password" placeholder="Minimal 8 karakter" required type="password" />
+                <input className="mt-2 h-12 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-2 text-sm font-bold outline-none" minLength={8} name="password" placeholder="Minimal 8 karakter" required type="password" />
               </label>
               <label className="block">
                 <span className="text-sm font-black">Nama lengkap</span>
-                <input className="mt-2 h-12 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 text-sm font-bold outline-none" name="full_name" placeholder="Nama user" required />
+                <input className="mt-2 h-12 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-2 text-sm font-bold outline-none" name="full_name" placeholder="Nama user" required />
               </label>
               <label className="block">
                 <span className="text-sm font-black">Role</span>
-                <select className="mt-2 h-12 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 text-sm font-bold outline-none" name="role">
+                <select className="mt-2 h-12 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-2 text-sm font-bold outline-none" name="role">
                   {roles.map((role) => (
                     <option key={role.value} value={role.value}>{role.label}</option>
                   ))}
@@ -312,7 +312,7 @@ export default async function UsersPage({ searchParams }: UsersPageProps) {
 
               <label className="block">
                 <span className="text-xs font-bold uppercase text-[#475569]">Telepon</span>
-                <input className="mt-1.5 h-11 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 text-xs font-bold outline-none" name="phone" placeholder="Opsional" />
+                <input className="mt-1.5 h-11 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-2 text-xs font-bold outline-none" name="phone" placeholder="Opsional" />
               </label>
               <button className="h-11 w-full rounded-2xl bg-[#2563eb] text-xs font-bold text-white hover:bg-[#1d4ed8]" type="submit">
                 Buat Akun User

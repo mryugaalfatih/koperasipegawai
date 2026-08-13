@@ -159,27 +159,27 @@ export function AparRefillClientManager({
           <table className="w-full text-left text-xs">
             <thead className="bg-[#f8fbff] text-[#475569] border-b border-[#dbe5f1]">
               <tr>
-                <th className="px-3 py-3 font-bold">No. Refill Order</th>
-                <th className="px-3 py-3 font-bold">Tanggal Terima</th>
-                <th className="px-3 py-3 font-bold">Nama Klien Gedung / PT</th>
-                <th className="px-3 py-3 font-bold text-center">Jumlah Tabung</th>
-                <th className="px-3 py-3 font-bold text-right">Total Biaya Refill</th>
-                <th className="px-3 py-3 font-bold text-center">Status Pengecekan</th>
-                <th className="px-3 py-3 font-bold text-center">Aksi</th>
+                <th className="px-2 py-2 font-bold">No. Refill Order</th>
+                <th className="px-2 py-2 font-bold">Tanggal Terima</th>
+                <th className="px-2 py-2 font-bold">Nama Klien Gedung / PT</th>
+                <th className="px-2 py-2 font-bold text-center">Jumlah Tabung</th>
+                <th className="px-2 py-2 font-bold text-right">Total Biaya Refill</th>
+                <th className="px-2 py-2 font-bold text-center">Status Pengecekan</th>
+                <th className="px-2 py-2 font-bold text-center">Aksi</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#e2e8f0]">
               {filteredOrders.length ? (
                 filteredOrders.map((o) => (
                   <tr key={o.id} className="hover:bg-[#f8fbff] transition-colors">
-                    <td className="px-3 py-3 font-bold text-[#be123c]">{o.order_no}</td>
-                    <td className="px-3 py-3 font-semibold text-[#64748b]">{o.order_date}</td>
-                    <td className="px-3 py-3 font-bold text-[#0b1220]">{o.client_name}</td>
-                    <td className="px-3 py-3 text-center font-bold">{o.total_cylinders} Tabung</td>
-                    <td className="px-3 py-3 font-black text-right text-[#0b1220]">
+                    <td className="px-2 py-2 font-bold text-[#be123c]">{o.order_no}</td>
+                    <td className="px-2 py-2 font-semibold text-[#64748b]">{o.order_date}</td>
+                    <td className="px-2 py-2 font-bold text-[#0b1220]">{o.client_name}</td>
+                    <td className="px-2 py-2 text-center font-bold">{o.total_cylinders} Tabung</td>
+                    <td className="px-2 py-2 font-black text-right text-[#0b1220]">
                       {formatRupiah(o.total_amount)}
                     </td>
-                    <td className="px-3 py-3 text-center">
+                    <td className="px-2 py-2 text-center">
                       <span
                         className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-bold ${
                           o.status === "completed"
@@ -191,7 +191,7 @@ export function AparRefillClientManager({
                         {o.status === "completed" ? "Selesai & Teruji" : "Dalam Pengisian"}
                       </span>
                     </td>
-                    <td className="px-3 py-3 text-center">
+                    <td className="px-2 py-2 text-center">
                       <button
                         type="button"
                         onClick={() => setSelectedOrder(o)}
@@ -225,7 +225,7 @@ export function AparRefillClientManager({
               <label className="block">
                 <span className="font-bold uppercase text-[#475569]">Nama Gedung / PT / Klien *</span>
                 <input
-                  className="mt-1.5 h-11 w-full rounded-xl border border-[#dbe5f1] bg-[#f8fbff] px-4 font-bold outline-none"
+                  className="mt-1.5 h-11 w-full rounded-xl border border-[#dbe5f1] bg-[#f8fbff] px-2 font-bold outline-none"
                   name="client_name"
                   placeholder="Contoh: PT Wisma Nusantara / RS Medika"
                   required
@@ -235,7 +235,7 @@ export function AparRefillClientManager({
               <label className="block">
                 <span className="font-bold uppercase text-[#475569]">No. Telepon / Penganggung Jawab</span>
                 <input
-                  className="mt-1.5 h-11 w-full rounded-xl border border-[#dbe5f1] bg-[#f8fbff] px-4 font-bold outline-none"
+                  className="mt-1.5 h-11 w-full rounded-xl border border-[#dbe5f1] bg-[#f8fbff] px-2 font-bold outline-none"
                   name="client_phone"
                   placeholder="Contoh: 0812-9988-7766"
                 />
@@ -245,7 +245,7 @@ export function AparRefillClientManager({
             <label className="block">
               <span className="font-bold uppercase text-[#475569]">Alamat Gedung Klien</span>
               <input
-                className="mt-1.5 h-11 w-full rounded-xl border border-[#dbe5f1] bg-[#f8fbff] px-4 font-bold outline-none"
+                className="mt-1.5 h-11 w-full rounded-xl border border-[#dbe5f1] bg-[#f8fbff] px-2 font-bold outline-none"
                 name="client_address"
                 placeholder="Contoh: Jl. Sudirman No. 45 Jakarta Pusat"
               />
@@ -264,13 +264,13 @@ export function AparRefillClientManager({
                   value={serialNo}
                   onChange={(e) => setSerialNo(e.target.value)}
                   placeholder="No. Seri Tabung (Barcode)"
-                  className="h-10 rounded-xl border border-[#dbe5f1] bg-white px-3 font-bold outline-none"
+                  className="h-10 rounded-xl border border-[#dbe5f1] bg-white px-2 font-bold outline-none"
                 />
 
                 <select
                   value={mediaType}
                   onChange={(e) => setMediaType(e.target.value)}
-                  className="h-10 rounded-xl border border-[#dbe5f1] bg-white px-3 font-bold outline-none"
+                  className="h-10 rounded-xl border border-[#dbe5f1] bg-white px-2 font-bold outline-none"
                 >
                   <option value="Powder">Powder (Serbuk)</option>
                   <option value="CO2">CO2 (Gas)</option>
@@ -284,7 +284,7 @@ export function AparRefillClientManager({
                   value={capacityKg}
                   onChange={(e) => setCapacityKg(e.target.value)}
                   placeholder="Kapasitas (Kg)"
-                  className="h-10 rounded-xl border border-[#dbe5f1] bg-white px-3 font-bold outline-none"
+                  className="h-10 rounded-xl border border-[#dbe5f1] bg-white px-2 font-bold outline-none"
                 />
 
                 <button
@@ -384,25 +384,25 @@ export function AparRefillClientManager({
               <table className="w-full text-left text-[11px]">
                 <thead className="bg-[#f8fbff] text-[#475569] border-b border-[#dbe5f1]">
                   <tr>
-                    <th className="px-3 py-2 font-bold">No. Seri Tabung</th>
-                    <th className="px-3 py-2 font-bold">Media & Ukuran</th>
-                    <th className="px-3 py-2 font-bold">Posisi Gedung</th>
-                    <th className="px-3 py-2 font-bold text-center">Masa Berlaku</th>
-                    <th className="px-3 py-2 font-bold text-right">Biaya Refill</th>
+                    <th className="px-2 py-2 font-bold">No. Seri Tabung</th>
+                    <th className="px-2 py-2 font-bold">Media & Ukuran</th>
+                    <th className="px-2 py-2 font-bold">Posisi Gedung</th>
+                    <th className="px-2 py-2 font-bold text-center">Masa Berlaku</th>
+                    <th className="px-2 py-2 font-bold text-right">Biaya Refill</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#e2e8f0]">
                   {selectedOrder.apar_refill_items?.map((item, idx) => (
                     <tr key={idx}>
-                      <td className="px-3 py-2 font-mono font-bold text-[#be123c]">{item.serial_no}</td>
-                      <td className="px-3 py-2 font-bold">
+                      <td className="px-2 py-2 font-mono font-bold text-[#be123c]">{item.serial_no}</td>
+                      <td className="px-2 py-2 font-bold">
                         {item.media_type} {item.capacity_kg} Kg
                       </td>
-                      <td className="px-3 py-2 text-[#64748b]">{item.location_tag}</td>
-                      <td className="px-3 py-2 text-center font-bold text-emerald-600">
+                      <td className="px-2 py-2 text-[#64748b]">{item.location_tag}</td>
+                      <td className="px-2 py-2 text-center font-bold text-emerald-600">
                         {item.expired_date}
                       </td>
-                      <td className="px-3 py-2 text-right font-black">{formatRupiah(item.price)}</td>
+                      <td className="px-2 py-2 text-right font-black">{formatRupiah(item.price)}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -433,7 +433,7 @@ export function AparRefillClientManager({
               <button
                 type="button"
                 onClick={() => setSelectedOrder(null)}
-                className="h-11 rounded-xl bg-[#f1f5f9] px-4 text-xs font-bold text-[#0b1220] hover:bg-[#e2e8f0]"
+                className="h-11 rounded-xl bg-[#f1f5f9] px-2 text-xs font-bold text-[#0b1220] hover:bg-[#e2e8f0]"
               >
                 Tutup
               </button>

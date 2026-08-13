@@ -56,7 +56,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
         </div>
       </section>
 
-      <section className="flex items-center justify-center px-4 py-8">
+      <section className="flex items-center justify-center px-2 py-8">
         <div className="w-full max-w-md">
           <Link className="mb-6 flex items-center gap-3 lg:hidden" href="/">
             <div className="grid size-10 place-items-center rounded-2xl bg-[#2563eb] text-white">

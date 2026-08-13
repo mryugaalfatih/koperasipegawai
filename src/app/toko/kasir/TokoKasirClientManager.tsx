@@ -217,7 +217,7 @@ export function TokoKasirClientManager({
               <button
                 type="button"
                 onClick={() => setIsMemberDropdownOpen(!isMemberDropdownOpen)}
-                className="flex h-11 items-center gap-2 rounded-xl border border-[#cbd5e1] bg-[#f8fbff] px-3.5 text-xs font-bold text-[#0b1220] shadow-xs hover:border-[#2563eb] hover:bg-white transition-all"
+                className="flex h-11 items-center gap-2 rounded-xl border border-[#cbd5e1] bg-[#f8fbff] px-2.5 text-xs font-bold text-[#0b1220] shadow-xs hover:border-[#2563eb] hover:bg-white transition-all"
               >
                 <UserCheck className="size-4 text-[#2563eb]" />
                 <span>Pilih Anggota (Harga Khusus)</span>
@@ -491,12 +491,12 @@ export function TokoKasirClientManager({
                     value={paidAmountInput}
                     onChange={(e) => setPaidAmountInput(e.target.value)}
                     placeholder="Rp 0"
-                    className="mt-1 h-9 w-full rounded-xl border border-[#dbe5f1] bg-[#f8fbff] px-3 text-xs font-bold outline-none focus:border-[#2563eb]"
+                    className="mt-1 h-9 w-full rounded-xl border border-[#dbe5f1] bg-[#f8fbff] px-2 text-xs font-bold outline-none focus:border-[#2563eb]"
                   />
                 </label>
                 <div>
                   <span className="text-[11px] font-bold uppercase text-[#475569]">Kembalian</span>
-                  <div className="mt-1 flex h-9 items-center rounded-xl bg-[#f1f5f9] px-3 text-xs font-black text-[#0b1220]">
+                  <div className="mt-1 flex h-9 items-center rounded-xl bg-[#f1f5f9] px-2 text-xs font-black text-[#0b1220]">
                     {formatRupiah(changeAmount)}
                   </div>
                 </div>
@@ -587,7 +587,7 @@ export function TokoKasirClientManager({
                   clearCart();
                   router.push("/toko/kasir");
                 }}
-                className="h-10 rounded-xl bg-[#f1f5f9] px-4 text-xs font-bold text-[#0b1220] hover:bg-[#e2e8f0]"
+                className="h-10 rounded-xl bg-[#f1f5f9] px-2 text-xs font-bold text-[#0b1220] hover:bg-[#e2e8f0]"
               >
                 Selesai
               </button>

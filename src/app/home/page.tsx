@@ -225,7 +225,7 @@ export default async function Home() {
         <DashboardNavigation navItems={navItems} mobileNavItems={mobileNavItems} />
 
         <section className="min-w-0 pb-24 lg:pb-0">
-          <header className="sticky top-0 z-20 border-b border-[#dbe5f1] bg-[#f8fbff]/95 px-3 py-3 backdrop-blur md:px-3">
+          <header className="sticky top-0 z-20 border-b border-[#dbe5f1] bg-[#f8fbff]/95 px-2 py-2 backdrop-blur md:px-2">
             <div className="flex items-center justify-between gap-3">
               <div className="flex min-w-0 items-center gap-3">
                 <button className="grid size-10 place-items-center rounded-2xl border border-[#dbe5f1] bg-white lg:hidden">
@@ -241,7 +241,7 @@ export default async function Home() {
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                <div className="hidden h-11 items-center gap-2 rounded-2xl border border-[#dbe5f1] bg-white px-4 md:flex">
+                <div className="hidden h-11 items-center gap-2 rounded-2xl border border-[#dbe5f1] bg-white px-2 md:flex">
                   <Search className="size-4 text-[#64748b]" />
                   <span className="text-sm font-semibold text-[#64748b]">Cari anggota/transaksi</span>
                 </div>
@@ -254,7 +254,7 @@ export default async function Home() {
                   </button>
                 </form>
                 <form action={signOut}>
-                  <button className="hidden h-10 items-center gap-2 rounded-2xl bg-[#0b1220] px-4 text-sm font-black text-white md:inline-flex" type="submit">
+                  <button className="hidden h-10 items-center gap-2 rounded-2xl bg-[#0b1220] px-2 text-sm font-black text-white md:inline-flex" type="submit">
                     <LogOut className="size-4" />
                     Keluar
                   </button>
@@ -263,17 +263,17 @@ export default async function Home() {
             </div>
           </header>
 
-          <div className="space-y-4 px-3 py-3 md:px-6 md:py-5">
+          <div className="space-y-4 px-2 py-2 md:px-2 md:py-2">
             {/* Hero Section */}
             <section className="rounded-xl bg-[#07152f] p-4 text-white shadow-sm md:p-5">
               <div className="flex flex-wrap items-center justify-between gap-4">
                 <div>
                   <div className="flex flex-wrap items-center gap-2">
-                    <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs font-bold text-[#bfdbfe]">
+                    <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-2 py-1 text-xs font-bold text-[#bfdbfe]">
                       <CalendarDays className="size-4" />
                       Data operasional {today.toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })}
                     </div>
-                    <span className="rounded-full bg-[#2563eb] px-3 py-0.5 text-xs font-bold text-white shadow-sm">
+                    <span className="rounded-full bg-[#2563eb] px-2 py-0.5 text-xs font-bold text-white shadow-sm">
                       Unit Usaha Aktif: {activeUnitLabel}
                     </span>
                   </div>
@@ -288,7 +288,7 @@ export default async function Home() {
                 <div className="grid w-full grid-cols-2 gap-2 sm:w-auto sm:grid-cols-4">
                   {quickActions.map((item) => (
                     <a
-                      className="inline-flex h-9 items-center justify-center gap-2 rounded-xl bg-white px-3.5 text-xs font-bold text-[#07152f] shadow-sm hover:bg-slate-100 transition-all"
+                      className="inline-flex h-9 items-center justify-center gap-2 rounded-xl bg-white px-2.5 text-xs font-bold text-[#07152f] shadow-sm hover:bg-slate-100 transition-all"
                       href={item.href}
                       key={item.label}
                     >
@@ -372,7 +372,7 @@ export default async function Home() {
                 </div>
                 <div className="mt-4 divide-y divide-[#dbe5f1]">
                   {pendingLoanRows.length ? pendingLoanRows.map((item) => (
-                    <div className="flex items-center justify-between gap-4 py-3 first:pt-0 last:pb-0" key={item.id}>
+                    <div className="flex items-center justify-between gap-4 py-2 first:pt-0 last:pb-0" key={item.id}>
                       <div className="min-w-0">
                         <p className="truncate font-bold text-sm text-[#0b1220]">{item.members?.[0]?.full_name ?? "Anggota"}</p>
                         <p className="truncate text-xs font-semibold text-[#64748b]">{item.loan_products?.[0]?.name ?? "Produk pinjaman"}</p>
@@ -397,7 +397,7 @@ export default async function Home() {
                     <p className="text-xs font-bold uppercase tracking-wider text-[#64748b]">Laporan laba rugi</p>
                     <h3 className="text-lg font-bold text-[#0b1220]">Performa berjalan</h3>
                   </div>
-                  <a className="inline-flex h-9 items-center gap-2 rounded-2xl bg-[#0b1220] px-4 text-xs font-bold text-white shadow-sm hover:bg-slate-800 transition-all" href="/laporan">
+                  <a className="inline-flex h-9 items-center gap-2 rounded-2xl bg-[#0b1220] px-2 text-xs font-bold text-white shadow-sm hover:bg-slate-800 transition-all" href="/laporan">
                     <FileBarChart2 className="size-4" />
                     Cetak Laporan
                   </a>
@@ -450,7 +450,7 @@ export default async function Home() {
                   </div>
                 </div>
                 <a
-                  className="inline-flex h-10 items-center gap-2 rounded-2xl bg-[#0b1220] px-4 text-xs font-bold text-white shadow-sm hover:bg-slate-800 transition-all"
+                  className="inline-flex h-10 items-center gap-2 rounded-2xl bg-[#0b1220] px-2 text-xs font-bold text-white shadow-sm hover:bg-slate-800 transition-all"
                   href="/konfigurasi"
                 >
                   <span>Buka Pengaturan</span>

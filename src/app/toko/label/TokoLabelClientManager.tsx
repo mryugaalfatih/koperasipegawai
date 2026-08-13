@@ -59,7 +59,7 @@ export function TokoLabelClientManager({ products }: TokoLabelClientManagerProps
               <button
                 type="button"
                 onClick={() => setPrintFormat("pricetag")}
-                className={`rounded-lg px-3 py-1.5 transition-all ${
+                className={`rounded-lg px-2 py-1.5 transition-all ${
                   printFormat === "pricetag" ? "bg-white text-[#2563eb] shadow-xs" : "text-[#64748b]"
                 }`}
               >
@@ -68,7 +68,7 @@ export function TokoLabelClientManager({ products }: TokoLabelClientManagerProps
               <button
                 type="button"
                 onClick={() => setPrintFormat("thermal")}
-                className={`rounded-lg px-3 py-1.5 transition-all ${
+                className={`rounded-lg px-2 py-1.5 transition-all ${
                   printFormat === "thermal" ? "bg-white text-[#2563eb] shadow-xs" : "text-[#64748b]"
                 }`}
               >
@@ -93,7 +93,7 @@ export function TokoLabelClientManager({ products }: TokoLabelClientManagerProps
           <table className="w-full text-left text-xs">
             <thead className="bg-[#f8fbff] text-[#475569] border-b border-[#dbe5f1]">
               <tr>
-                <th className="px-3 py-3 font-bold text-center w-12">
+                <th className="px-2 py-2 font-bold text-center w-12">
                   <input
                     type="checkbox"
                     checked={selectedIds.length > 0 && selectedIds.length === filteredProducts.length}
@@ -101,10 +101,10 @@ export function TokoLabelClientManager({ products }: TokoLabelClientManagerProps
                     className="size-4 rounded accent-[#2563eb]"
                   />
                 </th>
-                <th className="px-3 py-3 font-bold">Nama Barang Sembako</th>
-                <th className="px-3 py-3 font-bold">Barcode / SKU</th>
-                <th className="px-3 py-3 font-bold text-right">Harga Umum</th>
-                <th className="px-3 py-3 font-bold text-right text-[#2563eb]">Harga Anggota</th>
+                <th className="px-2 py-2 font-bold">Nama Barang Sembako</th>
+                <th className="px-2 py-2 font-bold">Barcode / SKU</th>
+                <th className="px-2 py-2 font-bold text-right">Harga Umum</th>
+                <th className="px-2 py-2 font-bold text-right text-[#2563eb]">Harga Anggota</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#e2e8f0]">
@@ -118,7 +118,7 @@ export function TokoLabelClientManager({ products }: TokoLabelClientManagerProps
                       isSelected ? "bg-[#eff6ff]" : "hover:bg-[#f8fbff]"
                     }`}
                   >
-                    <td className="px-3 py-3 text-center">
+                    <td className="px-2 py-2 text-center">
                       <input
                         type="checkbox"
                         checked={isSelected}
@@ -126,10 +126,10 @@ export function TokoLabelClientManager({ products }: TokoLabelClientManagerProps
                         className="size-4 rounded accent-[#2563eb]"
                       />
                     </td>
-                    <td className="px-3 py-3 font-bold text-[#0b1220]">{product.name}</td>
-                    <td className="px-3 py-3 font-mono text-[#64748b]">{product.barcode ?? "-"}</td>
-                    <td className="px-3 py-3 font-semibold text-right">{formatRupiah(product.sell_price_general)}</td>
-                    <td className="px-3 py-3 font-bold text-right text-[#2563eb]">
+                    <td className="px-2 py-2 font-bold text-[#0b1220]">{product.name}</td>
+                    <td className="px-2 py-2 font-mono text-[#64748b]">{product.barcode ?? "-"}</td>
+                    <td className="px-2 py-2 font-semibold text-right">{formatRupiah(product.sell_price_general)}</td>
+                    <td className="px-2 py-2 font-bold text-right text-[#2563eb]">
                       {formatRupiah(product.sell_price_member)}
                     </td>
                   </tr>

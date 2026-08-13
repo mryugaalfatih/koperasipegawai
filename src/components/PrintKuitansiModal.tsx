@@ -76,7 +76,7 @@ export function PrintKuitansiModal({ data, onClose }: PrintKuitansiModalProps) {
               <button
                 type="button"
                 onClick={handlePrint}
-                className="inline-flex h-10 items-center gap-2 rounded-2xl bg-[#2563eb] px-4 text-sm font-bold text-white shadow-sm hover:bg-[#1d4ed8] active:scale-95 transition-all"
+                className="inline-flex h-10 items-center gap-2 rounded-2xl bg-[#2563eb] px-2 text-sm font-bold text-white shadow-sm hover:bg-[#1d4ed8] active:scale-95 transition-all"
               >
                 <Printer className="size-4" />
                 <span>Cetak / Simpan PDF</span>
