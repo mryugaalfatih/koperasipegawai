@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState, useEffect, useRef } from "react";
+import { CustomSelect } from "@/components/CustomSelect";
 
 import {
   Building2,
@@ -337,15 +338,12 @@ export function DashboardNavigation({ navItems: initialNavItems, mobileNavItems,
         {/* Unit Selector (only when expanded) */}
         {isExpanded ? (
           <div className="mt-4 space-y-2">
-            <select
+            <CustomSelect
               value={selectedUnit}
               onChange={(e) => handleUnitChange(e.target.value)}
-              className="h-9 w-full rounded-xl border border-[#dbe5f1] bg-white px-2.5 text-[11px] font-bold text-[#0b1220] outline-none focus:border-[#2563eb] cursor-pointer"
-            >
-              {unitOptions.map((opt) => (
-                <option key={opt.value} value={opt.value}>{opt.label}</option>
-              ))}
-            </select>
+              options={unitOptions}
+              className="h-9 text-[11px]"
+            />
 
             <div className="flex items-center gap-1.5 rounded-xl bg-[#eff6ff] px-2.5 py-1.5 text-[10px] font-bold text-[#2563eb] border border-[#dbeafe]">
               <span className="size-1.5 shrink-0 rounded-full bg-[#2563eb] animate-pulse" />
@@ -433,17 +431,13 @@ export function DashboardNavigation({ navItems: initialNavItems, mobileNavItems,
               </button>
             </div>
 
-            {/* Unit Selector on mobile */}
             <div className="mb-3">
-              <select
+              <CustomSelect
                 value={selectedUnit}
                 onChange={(e) => { handleUnitChange(e.target.value); setMobileMenuOpen(false); }}
-                className="h-10 w-full rounded-xl border border-[#dbe5f1] bg-white px-2 text-[12px] font-bold text-[#0b1220] outline-none focus:border-[#2563eb] cursor-pointer"
-              >
-                {unitOptions.map((opt) => (
-                  <option key={opt.value} value={opt.value}>{opt.label}</option>
-                ))}
-              </select>
+                options={unitOptions}
+                className="h-10 text-[12px]"
+              />
             </div>
 
             <div className="border-t border-[#e2e8f0] pt-3">
