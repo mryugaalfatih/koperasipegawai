@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import {
   BadgeCheck,
@@ -9,6 +9,7 @@ import {
   CreditCard,
   FileCheck2,
   Landmark,
+  RefreshCcw,
   Trash2,
   UsersRound,
 } from "lucide-react";
@@ -33,6 +34,16 @@ type LoanProduct = {
   max_tenor_months: number;
   default_interest_method: "flat" | "annuity" | "interest_only";
   allow_method_override: boolean;
+  admin_fee_percent?: number | null;
+};
+
+type InstallmentInfo = {
+  id: string;
+  paid_amount: number;
+  principal_due: number;
+  interest_due: number;
+  principal_paid: number;
+  paid_at: string | null;
 };
 
 type LoanRow = {
@@ -44,13 +55,17 @@ type LoanRow = {
   status: "draft" | "submitted" | "review" | "approved" | "disbursed" | "closed" | "rejected";
   interest_method: "flat" | "annuity" | "interest_only";
   annual_rate_snapshot: number | null;
+  admin_fee_percent_snapshot?: number | null;
+  ref_loan_id?: string | null;
   members: {
     full_name: string;
     member_no: string;
   }[] | null;
   loan_products: {
     name: string;
+    admin_fee_percent?: number | null;
   }[] | null;
+  loan_installments?: InstallmentInfo[] | null;
 };
 
 type PinjamanClientManagerProps = {
@@ -93,10 +108,14 @@ export function PinjamanClientManager({
   const [editingLoan, setEditingLoan] = useState<LoanRow | null>(null);
 
   // States for Create Form
+  const [createMemberId, setCreateMemberId] = useState("");
   const [createProductId, setCreateProductId] = useState("");
   const [createAnnualRate, setCreateAnnualRate] = useState("");
   const [createInterestMethod, setCreateInterestMethod] = useState("flat");
   const [createAllowOverride, setCreateAllowOverride] = useState(true);
+  const [createPrincipalVal, setCreatePrincipalVal] = useState<number>(0);
+  const [isTopUpChecked, setIsTopUpChecked] = useState(false);
+  const [selectedRefLoanId, setSelectedRefLoanId] = useState("");
 
   // States for Edit Form
   const [editProductId, setEditProductId] = useState("");
@@ -130,6 +149,29 @@ export function PinjamanClientManager({
       setEditInterestMethod("flat");
       setEditAllowOverride(true);
     }
+  };
+
+  const handleOpenNewModal = () => {
+    setCreateMemberId("");
+    setIsTopUpChecked(false);
+    setSelectedRefLoanId("");
+    setCreateProductId("");
+    setCreatePrincipalVal(0);
+    setIsModalOpen(true);
+  };
+
+  const openTopUpModal = (loan: LoanRow) => {
+    setCreateMemberId(loan.member_id);
+    setIsTopUpChecked(true);
+    setSelectedRefLoanId(loan.id);
+    setCreateProductId(loan.product_id);
+    const prod = productRows.find((p) => p.id === loan.product_id);
+    if (prod) {
+      setCreateAnnualRate(String(Number(prod.annual_rate)));
+      setCreateInterestMethod(prod.default_interest_method);
+      setCreateAllowOverride(!!prod.allow_method_override);
+    }
+    setIsModalOpen(true);
   };
 
   const openEdit = (loan: LoanRow) => {
@@ -174,6 +216,51 @@ export function PinjamanClientManager({
     setEditingLoan(null);
   };
 
+  const activeLoansForMember = createMemberId
+    ? loanRows.filter((l) => l.member_id === createMemberId && l.status === "disbursed")
+    : [];
+
+  const eligibleTopUpLoan = activeLoansForMember.find((loan) => {
+    const paidCount = (loan.loan_installments ?? []).filter((i) => {
+      if (i.paid_at) return true;
+      const due = Number(i.principal_due ?? 0) + Number(i.interest_due ?? 0);
+      return due - Number(i.paid_amount ?? 0) <= 5;
+    }).length;
+    return paidCount >= 3;
+  });
+
+  const ineligibleActiveLoan = activeLoansForMember.find((loan) => {
+    const paidCount = (loan.loan_installments ?? []).filter((i) => {
+      if (i.paid_at) return true;
+      const due = Number(i.principal_due ?? 0) + Number(i.interest_due ?? 0);
+      return due - Number(i.paid_amount ?? 0) <= 5;
+    }).length;
+    return paidCount < 3;
+  });
+
+  const activeTopUpLoan = eligibleTopUpLoan ?? activeLoansForMember[0];
+
+  const topUpPaidCount = activeTopUpLoan
+    ? (activeTopUpLoan.loan_installments ?? []).filter((i) => {
+        if (i.paid_at) return true;
+        const due = Number(i.principal_due ?? 0) + Number(i.interest_due ?? 0);
+        return due - Number(i.paid_amount ?? 0) <= 5;
+      }).length
+    : 0;
+
+  const topUpSisaPokokLama = activeTopUpLoan
+    ? (activeTopUpLoan.loan_installments ?? []).reduce((sum, i) => {
+        if (i.paid_at) return sum;
+        const sisaP = Number(i.principal_due ?? 0) - Number(i.principal_paid ?? 0);
+        return sum + (sisaP <= 5 ? 0 : Math.max(sisaP, 0));
+      }, 0)
+    : 0;
+
+  const selectedProdForTopUp = productRows.find((p) => p.id === createProductId);
+  const adminFeePercentVal = selectedProdForTopUp ? Number(selectedProdForTopUp.admin_fee_percent ?? 0) : 0;
+  const adminFeeEstimasiVal = Math.round(createPrincipalVal * (adminFeePercentVal / 100));
+  const netDisbursementEstimasiVal = Math.max(createPrincipalVal - topUpSisaPokokLama - adminFeeEstimasiVal, 0);
+
   return (
     <section className="min-w-0 pb-20 lg:pb-8">
       <div className="mx-auto max-w-[1500px] px-4 py-4 md:px-7 md:py-6 space-y-6">
@@ -184,7 +271,7 @@ export function PinjamanClientManager({
           subtitle="Kelola pengajuan, approval, pencairan, dan jadwal angsuran pinjaman."
           countBadge={`${loanRows.length} Pengajuan`}
           addButtonLabel="Buat Pengajuan Baru"
-          onAddClick={() => setIsModalOpen(true)}
+          onAddClick={handleOpenNewModal}
           searchValue={search}
           onSearchChange={setSearch}
           statusFilterValue={statusFilter}
@@ -290,6 +377,17 @@ export function PinjamanClientManager({
                         Detail
                       </Link>
 
+                      {loan.status === "disbursed" && (
+                        <button
+                          type="button"
+                          onClick={() => openTopUpModal(loan)}
+                          className="h-9 px-3 inline-flex items-center gap-1.5 rounded-xl border border-[#2563eb] bg-[#2563eb] text-xs font-bold text-white hover:bg-[#1d4ed8] active:scale-95 transition-all cursor-pointer shadow-sm"
+                        >
+                          <RefreshCcw className="size-3.5" />
+                          <span>Top-Up</span>
+                        </button>
+                      )}
+
                       {loan.status !== "disbursed" && loan.status !== "closed" && loan.status !== "rejected" && (
                         <button
                           type="button"
@@ -368,6 +466,12 @@ export function PinjamanClientManager({
             <span className="text-sm font-bold text-[#0b1220]">Anggota</span>
             <SearchableSelect
               name="member_id"
+              value={createMemberId}
+              onChange={(e) => {
+                setCreateMemberId(e.target.value);
+                setIsTopUpChecked(false);
+                setSelectedRefLoanId("");
+              }}
               placeholder="Cari nama / no anggota..."
               options={memberOptions.map((m) => ({
                 value: m.id,
@@ -376,6 +480,54 @@ export function PinjamanClientManager({
               }))}
             />
           </label>
+
+          {/* Top-Up Facility Section if Member has Active Loan */}
+          {createMemberId && activeLoansForMember.length > 0 ? (
+            eligibleTopUpLoan ? (
+              <div className="rounded-2xl border border-[#bfdbfe] bg-[#eff6ff] p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold uppercase tracking-wider text-[#1d4ed8]">Fasilitas Top-Up / Suplementasi</span>
+                  <span className="rounded-full bg-[#dbeafe] px-2.5 py-0.5 text-[11px] font-bold text-[#1e40af]">
+                    Tersedia ({topUpPaidCount} Angsuran Dibayar)
+                  </span>
+                </div>
+                <label className="flex items-center gap-2.5 text-sm font-bold text-[#0b1220] cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={isTopUpChecked}
+                    onChange={(e) => {
+                      setIsTopUpChecked(e.target.checked);
+                      if (e.target.checked && eligibleTopUpLoan) {
+                        setSelectedRefLoanId(eligibleTopUpLoan.id);
+                      } else {
+                        setSelectedRefLoanId("");
+                      }
+                    }}
+                    className="size-4 rounded text-[#2563eb] focus:ring-[#2563eb] cursor-pointer"
+                  />
+                  <span>Ajukan Top-Up (Pelunasan Otomatis Pinjaman Lama)</span>
+                </label>
+
+                {isTopUpChecked && (
+                  <div className="space-y-2 pt-2 border-t border-[#bfdbfe]">
+                    <input type="hidden" name="ref_loan_id" value={selectedRefLoanId} />
+                    <p className="text-xs font-medium text-[#475569]">
+                      Pinjaman Lama: <strong className="font-bold text-[#0b1220]">KP-{eligibleTopUpLoan.id.slice(0, 8).toUpperCase()}</strong> ({(Array.isArray(eligibleTopUpLoan.loan_products) ? (eligibleTopUpLoan.loan_products[0] as { name: string } | undefined)?.name : (eligibleTopUpLoan.loan_products as { name: string } | null)?.name) ?? "Pinjaman"})
+                    </p>
+                    <div className="grid grid-cols-2 gap-2 text-xs font-semibold text-[#334155] bg-white p-2.5 rounded-xl border border-[#dbe5f1]">
+                      <div>Plafond Lama: {currency.format(eligibleTopUpLoan.principal)}</div>
+                      <div>Sisa Pokok Lama: <strong className="text-rose-600">{currency.format(topUpSisaPokokLama)}</strong></div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : ineligibleActiveLoan ? (
+              <div className="rounded-2xl border border-amber-200 bg-amber-50 p-3.5 text-xs font-semibold text-amber-900 flex items-center gap-2">
+                <CalendarClock className="size-4 text-amber-600 shrink-0" />
+                <span>Anggota ini memiliki pinjaman aktif (baru diangsur {topUpPaidCount} bulan). Syarat Top-Up minimal 3 bulan angsuran.</span>
+              </div>
+            ) : null
+          ) : null}
 
           <label className="block">
             <span className="text-sm font-bold text-[#0b1220]">Produk Pinjaman</span>
@@ -398,7 +550,12 @@ export function PinjamanClientManager({
           <div className="grid gap-3 sm:grid-cols-2">
             <label className="block">
               <span className="text-sm font-bold text-[#0b1220]">Plafond Pinjaman</span>
-              <CurrencyInput name="principal" placeholder="0" required />
+              <CurrencyInput
+                name="principal"
+                placeholder="0"
+                required
+                onValueChange={(val) => setCreatePrincipalVal(val)}
+              />
             </label>
             <label className="block">
               <span className="text-sm font-bold text-[#0b1220]">Tenor (Bulan)</span>
@@ -411,6 +568,31 @@ export function PinjamanClientManager({
               />
             </label>
           </div>
+
+          {/* Top-Up Live Calculation Preview Card */}
+          {isTopUpChecked && createPrincipalVal > 0 && (
+            <div className="rounded-2xl bg-[#07152f] p-4 text-white text-xs space-y-2 shadow-sm border border-[#1e293b]">
+              <p className="font-bold uppercase tracking-wider text-[#60a5fa]">📊 Ringkasan Estimasi Top-Up Pinjaman</p>
+              <div className="flex justify-between">
+                <span>Plafond Pinjaman Baru</span>
+                <span className="font-bold">{currency.format(createPrincipalVal)}</span>
+              </div>
+              <div className="flex justify-between text-rose-300">
+                <span>Pelunasan Sisa Pokok Pinjaman Lama</span>
+                <span className="font-bold">- {currency.format(topUpSisaPokokLama)}</span>
+              </div>
+              {adminFeePercentVal > 0 && (
+                <div className="flex justify-between text-rose-300">
+                  <span>Biaya Administrasi ({adminFeePercentVal}%)</span>
+                  <span className="font-bold">- {currency.format(adminFeeEstimasiVal)}</span>
+                </div>
+              )}
+              <div className="flex justify-between border-t border-[#1e293b] pt-2 text-sm font-black text-emerald-400">
+                <span>DITERIMA BERSIH (NET DISBURSEMENT)</span>
+                <span>{currency.format(netDisbursementEstimasiVal)}</span>
+              </div>
+            </div>
+          )}
 
           <div className="grid gap-3 sm:grid-cols-2">
             <label className="block">

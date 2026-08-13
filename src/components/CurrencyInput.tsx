@@ -8,6 +8,8 @@ type CurrencyInputProps = {
   defaultValue?: number | string;
   required?: boolean;
   className?: string;
+  onValueChange?: (val: number) => void;
+  onChange?: (e: ChangeEvent<HTMLInputElement>) => void;
 };
 
 function formatNumber(value: string | number): string {
@@ -27,6 +29,8 @@ export function CurrencyInput({
   defaultValue = "",
   required = false,
   className = "mt-2 h-12 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-4 text-sm font-bold outline-none focus:border-[#2563eb] focus:bg-white transition-all",
+  onValueChange,
+  onChange,
 }: CurrencyInputProps) {
   const [displayValue, setDisplayValue] = useState(() => formatNumber(defaultValue));
 
@@ -34,6 +38,9 @@ export function CurrencyInput({
     const rawVal = e.target.value;
     const formatted = formatNumber(rawVal);
     setDisplayValue(formatted);
+    const num = Number(parseRawNumber(formatted));
+    onValueChange?.(num);
+    onChange?.(e);
   };
 
   const rawNumber = parseRawNumber(displayValue);

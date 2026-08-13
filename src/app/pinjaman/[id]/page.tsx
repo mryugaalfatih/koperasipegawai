@@ -50,6 +50,7 @@ type PaymentRow = {
   interest_paid: number;
   penalty_paid: number;
   total_paid: number;
+  loan_installments?: { installment_no: number } | { installment_no: number }[] | null;
 };
 
 export default async function PinjamanDetailPage({ params, searchParams }: PinjamanDetailPageProps) {
@@ -83,10 +84,10 @@ export default async function PinjamanDetailPage({ params, searchParams }: Pinja
       .order("installment_no"),
     supabase
       .from("loan_payments")
-      .select("id, payment_date, principal_paid, interest_paid, penalty_paid, total_paid")
+      .select("id, payment_date, principal_paid, interest_paid, penalty_paid, total_paid, loan_installments(installment_no)")
       .eq("loan_id", id)
       .order("created_at", { ascending: false })
-      .limit(20),
+      .limit(30),
     supabase
       .from("cooperative_profiles")
       .select("name, legal_number, address, phone, email")

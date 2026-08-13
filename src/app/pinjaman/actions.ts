@@ -162,7 +162,6 @@ export async function updateLoan(loanId: string, formData: FormData) {
   await writeAuditLog(supabase, profileId, "loan.updated", "loans", loanId, {
     principal,
     tenor_months: tenorMonths,
-    interest_method: interestMethod,
   });
 
   revalidatePath("/pinjaman");
@@ -238,7 +237,7 @@ export async function disburseLoan(loanId: string, formData: FormData) {
   const fundSource = String(formData.get("fund_source") ?? "kas");
   const { data: loan } = await supabase
     .from("loans")
-    .select("id, principal, tenor_months, interest_method, annual_rate_snapshot")
+    .select("id, member_id, principal, tenor_months, interest_method, annual_rate_snapshot, admin_fee_percent_snapshot")
     .eq("id", loanId)
     .single();
 
@@ -248,7 +247,40 @@ export async function disburseLoan(loanId: string, formData: FormData) {
 
   const principal = Number(loan.principal);
 
-  // Validate fund source balance before disbursement
+  // Check if member has an active disbursed loan eligible for Top-Up (min 3 paid installments)
+  const { data: activeLoans } = await supabase
+    .from("loans")
+    .select("id, principal, loan_installments(id, principal_due, interest_due, principal_paid, paid_amount, paid_at)")
+    .eq("member_id", loan.member_id)
+    .eq("status", "disbursed")
+    .neq("id", loanId);
+
+  const refLoan = (activeLoans ?? []).find((l) => {
+    const paidCount = (l.loan_installments ?? []).filter((i) => {
+      if (i.paid_at) return true;
+      const due = Number(i.principal_due ?? 0) + Number(i.interest_due ?? 0);
+      return due - Number(i.paid_amount ?? 0) <= 5;
+    }).length;
+    return paidCount >= 3;
+  });
+
+  const refLoanId = refLoan?.id;
+
+  // Calculate remaining principal of old loan
+  let oldLoanRemainingPrincipal = 0;
+  if (refLoanId && refLoan?.loan_installments) {
+    oldLoanRemainingPrincipal = refLoan.loan_installments.reduce((sum, inst) => {
+      if (inst.paid_at) return sum;
+      const sisaP = Number(inst.principal_due ?? 0) - Number(inst.principal_paid ?? 0);
+      return sum + (sisaP <= 5 ? 0 : Math.max(sisaP, 0));
+    }, 0);
+  }
+
+  const adminFeePercent = Number(loan.admin_fee_percent_snapshot ?? 0);
+  const adminFeeAmount = Math.round(principal * (adminFeePercent / 100));
+  const netDisbursementAmount = Math.max(principal - oldLoanRemainingPrincipal - adminFeeAmount, 0);
+
+  // Validate fund source balance before disbursement (check against Net Disbursement)
   const cashCode = fundSource === "bank" ? "1002" : "1001";
   const cashLabel = fundSource === "bank" ? "Bank" : "Kas";
 
@@ -273,11 +305,40 @@ export async function disburseLoan(loanId: string, formData: FormData) {
     0
   );
 
-  if (currentBalance < principal) {
+  if (currentBalance < netDisbursementAmount) {
     const fmt = new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 });
     redirect(
-      `/pinjaman?error=${encodeURIComponent(`Saldo ${cashLabel} tidak mencukupi. Saldo saat ini: ${fmt.format(currentBalance)}, dibutuhkan: ${fmt.format(principal)}.`)}`
+      `/pinjaman?error=${encodeURIComponent(`Saldo ${cashLabel} tidak mencukupi untuk pencairan (Net). Saldo saat ini: ${fmt.format(currentBalance)}, dibutuhkan: ${fmt.format(netDisbursementAmount)}.`)}`
     );
+  }
+
+  // If Top-Up loan: close old loan and mark its installments as paid
+  if (refLoanId) {
+    const { data: oldInsts } = await supabase
+      .from("loan_installments")
+      .select("id, principal_due, interest_due")
+      .eq("loan_id", refLoanId);
+
+    const nowIso = new Date().toISOString();
+    for (const inst of oldInsts ?? []) {
+      const pDue = Number(inst.principal_due ?? 0);
+      const iDue = Number(inst.interest_due ?? 0);
+
+      await supabase
+        .from("loan_installments")
+        .update({
+          paid_amount: pDue + iDue,
+          principal_paid: pDue,
+          interest_paid: iDue,
+          paid_at: nowIso,
+        })
+        .eq("id", inst.id);
+    }
+
+    await supabase
+      .from("loans")
+      .update({ status: "closed" })
+      .eq("id", refLoanId);
   }
 
   const tenor = Number(loan.tenor_months);
@@ -342,17 +403,24 @@ export async function disburseLoan(loanId: string, formData: FormData) {
     const branchId = (memberData?.members as unknown as { branch_id: string } | null)?.branch_id;
 
     if (branchId) {
-      const { data: receivableAccount } = await supabase.from("accounts").select("id").eq("code", "1101").single();
+      const [{ data: receivableAccount }, { data: adminAccount }] = await Promise.all([
+        supabase.from("accounts").select("id").eq("code", "1101").single(),
+        supabase.from("accounts").select("id").eq("code", "4102").single(),
+      ]);
 
       if (fundAccount && receivableAccount) {
         const entryNo = `KK-PINJ-${Date.now().toString().slice(-8)}`;
+        const memoText = refLoanId
+          ? `Pencairan Top-Up Pinjaman via ${cashLabel}: Plafond Baru ${principal.toLocaleString('id-ID')}, Pelunasan Pinjaman Lama ${oldLoanRemainingPrincipal.toLocaleString('id-ID')}, Net ${netDisbursementAmount.toLocaleString('id-ID')}`
+          : `Pencairan Pinjaman via ${cashLabel} (${principal.toLocaleString('id-ID')})`;
+
         const { data: journal } = await supabase
           .from("journal_entries")
           .insert({
             branch_id: branchId,
             entry_no: entryNo,
             entry_date: new Date().toISOString().slice(0, 10),
-            memo: `Pencairan Pinjaman via ${fundSource === "bank" ? "Transfer Bank" : "Kas Tunai"} (${principal.toLocaleString('id-ID')})`,
+            memo: memoText,
             source_type: "loans",
             source_id: loanId,
             created_by: profileId,
@@ -362,27 +430,42 @@ export async function disburseLoan(loanId: string, formData: FormData) {
           .single();
 
         if (journal) {
-          await supabase.from("journal_lines").insert([
+          const lines = [
             { journal_entry_id: journal.id, account_id: receivableAccount.id, debit: principal, credit: 0 },
-            { journal_entry_id: journal.id, account_id: fundAccount.id, debit: 0, credit: principal },
-          ]);
+          ];
+
+          if (refLoanId && oldLoanRemainingPrincipal > 0) {
+            lines.push({ journal_entry_id: journal.id, account_id: receivableAccount.id, debit: 0, credit: oldLoanRemainingPrincipal });
+          }
+
+          if (adminFeeAmount > 0 && adminAccount) {
+            lines.push({ journal_entry_id: journal.id, account_id: adminAccount.id, debit: 0, credit: adminFeeAmount });
+          }
+
+          if (netDisbursementAmount > 0) {
+            lines.push({ journal_entry_id: journal.id, account_id: fundAccount.id, debit: 0, credit: netDisbursementAmount });
+          }
+
+          await supabase.from("journal_lines").insert(lines);
         }
 
-        // Record Cash Transaction (Kas Keluar)
-        const ctDescription = fundSource === "bank"
-          ? `Pencairan Pinjaman via Transfer Bank (No. Kontrak: KP-${loanId.slice(0, 8).toUpperCase()})`
-          : `Pencairan Pinjaman via Kas Tunai (No. Kontrak: KP-${loanId.slice(0, 8).toUpperCase()})`;
+        // Record Cash Transaction (Kas Keluar Net)
+        if (netDisbursementAmount > 0) {
+          const ctDescription = refLoanId
+            ? `Pencairan Top-Up Pinjaman via ${cashLabel} (No. Kontrak: KP-${loanId.slice(0, 8).toUpperCase()}, Pelunasan KP-${refLoanId.slice(0, 8).toUpperCase()})`
+            : `Pencairan Pinjaman via ${cashLabel} (No. Kontrak: KP-${loanId.slice(0, 8).toUpperCase()})`;
 
-        await supabase.from("cash_transactions").insert({
-          branch_id: branchId,
-          direction: "out",
-          amount: principal,
-          source_type: fundSource === "bank" ? "kas_bank" : "kas_tunai",
-          source_id: loanId,
-          description: ctDescription,
-          transaction_date: new Date().toISOString().slice(0, 10),
-          created_by: profileId,
-        });
+          await supabase.from("cash_transactions").insert({
+            branch_id: branchId,
+            direction: "out",
+            amount: netDisbursementAmount,
+            source_type: fundSource === "bank" ? "kas_bank" : "kas_tunai",
+            source_id: loanId,
+            description: ctDescription,
+            transaction_date: new Date().toISOString().slice(0, 10),
+            created_by: profileId,
+          });
+        }
       }
     }
   } catch (err) {

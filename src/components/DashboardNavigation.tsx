@@ -195,7 +195,7 @@ export function DashboardNavigation({ navItems: initialNavItems, mobileNavItems 
   return (
     <>
       {/* ===== DESKTOP SIDEBAR ===== */}
-      <aside className="hidden border-r border-[#dbe5f1] bg-[#f8fbff] px-5 py-6 lg:block">
+      <aside className="hidden border-r border-[#dbe5f1] bg-[#f8fbff] px-5 py-6 lg:block print:hidden">
         <div className="space-y-3">
           <div className="flex items-center gap-3">
             <div className="grid size-10 place-items-center rounded-2xl bg-[#2563eb] text-white shadow-sm">
@@ -237,7 +237,7 @@ export function DashboardNavigation({ navItems: initialNavItems, mobileNavItems 
       </aside>
 
       {/* ===== MOBILE BOTTOM BAR ===== */}
-      <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-[#dbe5f1] bg-[#f8fbff]/95 px-2 py-2 backdrop-blur lg:hidden">
+      <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-[#dbe5f1] bg-[#f8fbff]/95 px-2 py-2 backdrop-blur lg:hidden print:hidden">
         <div className="grid grid-cols-5 gap-1">
           {mobileNavItems.slice(0, 4).map((item) => {
             const active = isActive(item.href);

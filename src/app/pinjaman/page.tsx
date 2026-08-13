@@ -27,6 +27,15 @@ type LoanProduct = {
   allow_method_override: boolean;
 };
 
+type InstallmentInfo = {
+  id: string;
+  paid_amount: number;
+  principal_due: number;
+  interest_due: number;
+  principal_paid: number;
+  paid_at: string | null;
+};
+
 type LoanRow = {
   id: string;
   principal: number;
@@ -36,13 +45,17 @@ type LoanRow = {
   product_id: string;
   interest_method: "flat" | "annuity" | "interest_only";
   annual_rate_snapshot: number | null;
+  admin_fee_percent_snapshot?: number | null;
+  ref_loan_id?: string | null;
   members: {
     full_name: string;
     member_no: string;
   }[] | null;
   loan_products: {
     name: string;
+    admin_fee_percent?: number | null;
   }[] | null;
+  loan_installments?: InstallmentInfo[] | null;
 };
 
 export default async function PinjamanPage({ searchParams }: PinjamanPageProps) {
@@ -61,14 +74,14 @@ export default async function PinjamanPage({ searchParams }: PinjamanPageProps) 
     supabase.from("members").select("id, member_no, full_name").eq("status", "active").order("full_name").limit(100),
     supabase
       .from("loan_products")
-      .select("id, name, annual_rate, max_tenor_months, default_interest_method, allow_method_override")
+      .select("id, name, annual_rate, max_tenor_months, default_interest_method, allow_method_override, admin_fee_percent")
       .eq("is_active", true)
       .order("name"),
     supabase
       .from("loans")
-      .select("id, member_id, product_id, principal, tenor_months, status, interest_method, annual_rate_snapshot, members(full_name, member_no), loan_products(name)")
+      .select("id, member_id, product_id, principal, tenor_months, status, interest_method, annual_rate_snapshot, admin_fee_percent_snapshot, members(full_name, member_no), loan_products(name, admin_fee_percent), loan_installments(id, paid_amount, principal_due, interest_due, principal_paid, paid_at)")
       .order("created_at", { ascending: false })
-      .limit(50),
+      .limit(100),
   ]);
 
   if (!profile) {

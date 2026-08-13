@@ -35,84 +35,121 @@ async function requireUser() {
 
 export async function postInstallmentPayment(loanId: string, formData: FormData) {
   const { supabase, profileId } = await requireUser();
-  const installmentId = clean(formData.get("installment_id"));
+  const rawInstallmentId = clean(formData.get("installment_id"));
 
-  if (!installmentId) {
+  if (!rawInstallmentId) {
     redirect(`/pinjaman/${loanId}?error=Angsuran%20wajib%20dipilih.`);
   }
 
-  const principalPaid = numberValue(formData.get("principal_paid"));
-  const interestPaid = numberValue(formData.get("interest_paid"));
-  const penaltyPaid = numberValue(formData.get("penalty_paid"));
+  const installmentIds = rawInstallmentId.split(",").map((s) => s.trim()).filter(Boolean);
+  if (!installmentIds.length) {
+    redirect(`/pinjaman/${loanId}?error=Angsuran%20wajib%20dipilih.`);
+  }
+
+  const principalPaidTotal = numberValue(formData.get("principal_paid"));
+  const interestPaidTotal = numberValue(formData.get("interest_paid"));
+  const penaltyPaidTotal = numberValue(formData.get("penalty_paid"));
   const paymentMethod = String(formData.get("payment_method") ?? "kas");
-  const totalPaid = principalPaid + interestPaid + penaltyPaid;
+  const totalPaid = principalPaidTotal + interestPaidTotal + penaltyPaidTotal;
 
   if (totalPaid <= 0) {
     redirect(`/pinjaman/${loanId}?error=Nominal%20pembayaran%20harus%20lebih%20dari%200.`);
   }
 
-  // Fetch installment with current tracking
-  const { data: installment } = await supabase
+  // Fetch installments ordered by installment_no ASC
+  const { data: installments } = await supabase
     .from("loan_installments")
-    .select("installment_no, paid_amount, principal_paid, interest_paid, principal_due, interest_due")
-    .eq("id", installmentId)
+    .select("id, installment_no, paid_amount, principal_paid, interest_paid, principal_due, interest_due")
+    .in("id", installmentIds)
     .eq("loan_id", loanId)
-    .single();
+    .order("installment_no", { ascending: true });
 
-  if (!installment) {
+  if (!installments || installments.length === 0) {
     redirect(`/pinjaman/${loanId}?error=Angsuran%20tidak%20ditemukan.`);
   }
 
-  // Validate: don't overpay principal or interest
-  const currentPrincipalPaid = Number(installment.principal_paid ?? 0);
-  const currentInterestPaid = Number(installment.interest_paid ?? 0);
-  const principalDue = Number(installment.principal_due ?? 0);
-  const interestDue = Number(installment.interest_due ?? 0);
+  // Calculate total due across selected installments
+  const totalPrincipalDue = installments.reduce(
+    (sum, inst) => sum + Math.max(Number(inst.principal_due ?? 0) - Number(inst.principal_paid ?? 0), 0),
+    0
+  );
+  const totalInterestDue = installments.reduce(
+    (sum, inst) => sum + Math.max(Number(inst.interest_due ?? 0) - Number(inst.interest_paid ?? 0), 0),
+    0
+  );
 
-  const newPrincipalPaid = currentPrincipalPaid + principalPaid;
-  const newInterestPaid = currentInterestPaid + interestPaid;
-
-  if (newPrincipalPaid > principalDue + 1) { // +1 for rounding tolerance
-    redirect(`/pinjaman/${loanId}?error=Pembayaran%20pokok%20melebihi%20tagihan%20pokok.`);
+  if (principalPaidTotal > totalPrincipalDue + 1) {
+    redirect(`/pinjaman/${loanId}?error=Pembayaran%20pokok%20melebihi%20total%20tagihan%20pokok%20angsuran%20yang%20dipilih.`);
   }
-  if (newInterestPaid > interestDue + 1) {
-    redirect(`/pinjaman/${loanId}?error=Pembayaran%20jasa%20melebihi%20tagihan%20jasa.`);
-  }
-
-  // Insert payment record
-  const { error: paymentError } = await supabase.from("loan_payments").insert({
-    loan_id: loanId,
-    installment_id: installmentId,
-    payment_date: clean(formData.get("payment_date")) ?? new Date().toISOString().slice(0, 10),
-    principal_paid: principalPaid,
-    interest_paid: interestPaid,
-    penalty_paid: penaltyPaid,
-    created_by: profileId,
-  });
-
-  if (paymentError) {
-    redirect(`/pinjaman/${loanId}?error=${encodeURIComponent(paymentError.message)}`);
+  if (interestPaidTotal > totalInterestDue + 1) {
+    redirect(`/pinjaman/${loanId}?error=Pembayaran%20jasa%20melebihi%20total%20tagihan%20jasa%20angsuran%20yang%20dipilih.`);
   }
 
-  // Update installment tracking (denormalized for fast reads)
-  const nextPaidAmount = Number(installment.paid_amount ?? 0) + totalPaid;
-  const isPrincipalFullyPaid = newPrincipalPaid >= principalDue - 1;
-  const isInterestFullyPaid = newInterestPaid >= interestDue - 1;
-  const isFullyPaid = isPrincipalFullyPaid && isInterestFullyPaid;
+  const paymentDate = clean(formData.get("payment_date")) ?? new Date().toISOString().slice(0, 10);
+  let remPrincipal = principalPaidTotal;
+  let remInterest = interestPaidTotal;
+  let remPenalty = penaltyPaidTotal;
 
-  const { error: installmentError } = await supabase
-    .from("loan_installments")
-    .update({
-      paid_amount: nextPaidAmount,
-      principal_paid: newPrincipalPaid,
-      interest_paid: newInterestPaid,
-      // Only mark paid_at when FULLY paid (both principal + interest)
-      paid_at: isFullyPaid ? new Date().toISOString() : null,
-    })
-    .eq("id", installmentId);
+  const installmentNoList: number[] = [];
 
-  if (installmentError) {
-    redirect(`/pinjaman/${loanId}?error=${encodeURIComponent(installmentError.message)}`);
+  for (const inst of installments) {
+    installmentNoList.push(inst.installment_no);
+    const sisaP = Math.max(Number(inst.principal_due ?? 0) - Number(inst.principal_paid ?? 0), 0);
+    const sisaI = Math.max(Number(inst.interest_due ?? 0) - Number(inst.interest_paid ?? 0), 0);
+
+    const pAlloc = Math.min(remPrincipal, sisaP);
+    const iAlloc = Math.min(remInterest, sisaI);
+    const penAlloc = remPenalty; // Put penalty on first/current installment
+    remPenalty = 0;
+
+    remPrincipal -= pAlloc;
+    remInterest -= iAlloc;
+
+    if (pAlloc > 0 || iAlloc > 0 || penAlloc > 0) {
+      // Insert payment record for this installment
+      const { error: paymentError } = await supabase.from("loan_payments").insert({
+        loan_id: loanId,
+        installment_id: inst.id,
+        payment_date: paymentDate,
+        principal_paid: pAlloc,
+        interest_paid: iAlloc,
+        penalty_paid: penAlloc,
+        created_by: profileId,
+      });
+
+      if (paymentError) {
+        redirect(`/pinjaman/${loanId}?error=${encodeURIComponent(paymentError.message)}`);
+      }
+
+      // Update installment tracking
+      const newPrincipalPaid = Number(inst.principal_paid ?? 0) + pAlloc;
+      const newInterestPaid = Number(inst.interest_paid ?? 0) + iAlloc;
+
+      const pDue = Number(inst.principal_due ?? 0);
+      const iDue = Number(inst.interest_due ?? 0);
+
+      const isPrincipalFullyPaid = newPrincipalPaid >= pDue - 5;
+      const isInterestFullyPaid = newInterestPaid >= iDue - 5;
+      const isFullyPaid = isPrincipalFullyPaid && isInterestFullyPaid;
+
+      // Snap to exact due amount if fully paid to eliminate rounding leftovers (e.g., 1 rupiah)
+      const finalPrincipalPaid = isPrincipalFullyPaid ? pDue : newPrincipalPaid;
+      const finalInterestPaid = isInterestFullyPaid ? iDue : newInterestPaid;
+      const nextPaidAmount = Math.max(
+        Number(inst.paid_amount ?? 0) + pAlloc + iAlloc + penAlloc,
+        finalPrincipalPaid + finalInterestPaid
+      );
+
+      await supabase
+        .from("loan_installments")
+        .update({
+          paid_amount: nextPaidAmount,
+          principal_paid: finalPrincipalPaid,
+          interest_paid: finalInterestPaid,
+          paid_at: isFullyPaid ? new Date().toISOString() : null,
+        })
+        .eq("id", inst.id);
+    }
   }
 
   // Automatic Journal Creation for Installment Payment
@@ -135,11 +172,15 @@ export async function postInstallmentPayment(loanId: string, formData: FormData)
       ]);
 
       if (fundAccount && receivableAccount) {
-        const paymentLabel = principalPaid > 0 && interestPaid > 0
+        const paymentLabel = principalPaidTotal > 0 && interestPaidTotal > 0
           ? "Pokok + Bunga"
-          : principalPaid > 0
+          : principalPaidTotal > 0
           ? "Pokok Saja"
           : "Bunga Saja";
+
+        const instDesc = installmentNoList.length > 1
+          ? `#${installmentNoList[0]} s/d #${installmentNoList[installmentNoList.length - 1]} (${installmentNoList.length} Bulan)`
+          : `#${installmentNoList[0]}`;
 
         const entryNo = `KM-ANGS-${Date.now().toString().slice(-8)}`;
         const { data: journal } = await supabase
@@ -147,8 +188,8 @@ export async function postInstallmentPayment(loanId: string, formData: FormData)
           .insert({
             branch_id: branchId,
             entry_no: entryNo,
-            entry_date: clean(formData.get("payment_date")) ?? new Date().toISOString().slice(0, 10),
-            memo: `Angsuran (${paymentLabel}) via ${paymentMethod === "bank" ? "Transfer" : "Tunai"}: Pokok ${principalPaid.toLocaleString('id-ID')}, Bunga ${interestPaid.toLocaleString('id-ID')}`,
+            entry_date: paymentDate,
+            memo: `Angsuran ${instDesc} (${paymentLabel}) via ${paymentMethod === "bank" ? "Transfer" : "Tunai"}: Pokok ${principalPaidTotal.toLocaleString('id-ID')}, Bunga ${interestPaidTotal.toLocaleString('id-ID')}`,
             source_type: "loan_payments",
             source_id: loanId,
             created_by: profileId,
@@ -162,24 +203,23 @@ export async function postInstallmentPayment(loanId: string, formData: FormData)
             { journal_entry_id: journal.id, account_id: fundAccount.id, debit: totalPaid, credit: 0 },
           ];
 
-          if (principalPaid > 0) {
-            lines.push({ journal_entry_id: journal.id, account_id: receivableAccount.id, debit: 0, credit: principalPaid });
+          if (principalPaidTotal > 0) {
+            lines.push({ journal_entry_id: journal.id, account_id: receivableAccount.id, debit: 0, credit: principalPaidTotal });
           }
-          if (interestPaid > 0 && interestAccount) {
-            lines.push({ journal_entry_id: journal.id, account_id: interestAccount.id, debit: 0, credit: interestPaid });
+          if (interestPaidTotal > 0 && interestAccount) {
+            lines.push({ journal_entry_id: journal.id, account_id: interestAccount.id, debit: 0, credit: interestPaidTotal });
           }
-          if (penaltyPaid > 0 && penaltyAccount) {
-            lines.push({ journal_entry_id: journal.id, account_id: penaltyAccount.id, debit: 0, credit: penaltyPaid });
+          if (penaltyPaidTotal > 0 && penaltyAccount) {
+            lines.push({ journal_entry_id: journal.id, account_id: penaltyAccount.id, debit: 0, credit: penaltyPaidTotal });
           }
 
           await supabase.from("journal_lines").insert(lines);
         }
 
         // Record Cash Transaction (Kas Masuk)
-        const paymentDate = clean(formData.get("payment_date")) ?? new Date().toISOString().slice(0, 10);
         const ctDescription = paymentMethod === "bank"
-          ? `Angsuran #${installment.installment_no} via Transfer Bank (No. Kontrak: KP-${loanId.slice(0, 8).toUpperCase()})`
-          : `Angsuran #${installment.installment_no} via Kas Tunai (No. Kontrak: KP-${loanId.slice(0, 8).toUpperCase()})`;
+          ? `Angsuran ${instDesc} via Transfer Bank (No. Kontrak: KP-${loanId.slice(0, 8).toUpperCase()})`
+          : `Angsuran ${instDesc} via Kas Tunai (No. Kontrak: KP-${loanId.slice(0, 8).toUpperCase()})`;
 
         await supabase.from("cash_transactions").insert({
           branch_id: branchId,
