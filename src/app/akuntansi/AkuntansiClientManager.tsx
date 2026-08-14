@@ -646,11 +646,8 @@ export function AkuntansiClientManager({ accountRows, journalRows, businessUnits
           </label>
 
           <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <div>
-                <span className="text-xs font-bold uppercase tracking-wider text-[#475569]">Rincian Baris Jurnal (Double-Entry)</span>
-                <p className="text-[11px] text-[#64748b]">Pastikan akun yang dipilih tepat dan total Debit seimbang dengan Kredit.</p>
-              </div>
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-xs font-bold uppercase tracking-wider text-[#475569]">Baris Jurnal</span>
               <button
                 type="button"
                 onClick={addEditLine}
@@ -661,23 +658,15 @@ export function AkuntansiClientManager({ accountRows, journalRows, businessUnits
               </button>
             </div>
 
-            {/* Column Headers for Desktop */}
-            <div className="hidden sm:grid grid-cols-[1fr_140px_140px_36px] gap-2.5 px-2 text-[11px] font-bold text-[#64748b] uppercase">
-              <span>Akun Bagan (COA)</span>
-              <span className="text-right">Debit (Rp)</span>
-              <span className="text-right">Kredit (Rp)</span>
-              <span className="text-center">Aksi</span>
-            </div>
-
             {/* Line Items List */}
-            <div className="space-y-2.5">
+            <div className="space-y-2">
               {editLines.map((line, index) => (
                 <div
                   key={index}
-                  className="flex flex-col sm:grid sm:grid-cols-[1fr_140px_140px_36px] gap-2.5 rounded-2xl bg-[#f8fbff] p-2.5 border border-[#e2e8f0] items-center"
+                  className="flex items-center gap-2 rounded-xl bg-[#f8fbff] p-2 border border-[#e2e8f0]"
                 >
-                  {/* COA Searchable Select */}
-                  <div className="w-full min-w-0">
+                  {/* Wide COA Searchable Select */}
+                  <div className="flex-1 min-w-0">
                     <SearchableSelect
                       value={line.account_id}
                       onChange={(e) => updateEditLine(index, "account_id", e.target.value)}
@@ -692,15 +681,12 @@ export function AkuntansiClientManager({ accountRows, journalRows, businessUnits
                     />
                   </div>
 
-                  {/* Debit Input with Thousand Separator */}
-                  <div className="w-full relative">
-                    <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[10px] font-black text-[#2563eb] bg-blue-50 px-1 py-0.5 rounded border border-blue-200">
-                      Dr
-                    </span>
+                  {/* Debit Input */}
+                  <div className="w-32 shrink-0">
                     <input
                       type="text"
-                      className="w-full h-10 rounded-xl border border-[#dbe5f1] bg-white pl-8 pr-2.5 text-xs font-bold text-[#0b1220] outline-none text-right font-mono focus:border-[#2563eb] focus:ring-2 focus:ring-[#2563eb]/20"
-                      placeholder="0"
+                      className="w-full h-10 rounded-xl border border-[#dbe5f1] bg-white px-2.5 text-xs font-bold text-[#0b1220] outline-none text-right font-mono focus:border-[#2563eb] focus:ring-1 focus:ring-[#2563eb]"
+                      placeholder="0 (Debit)"
                       value={line.debit && Number(line.debit) > 0 ? Number(line.debit).toLocaleString("id-ID") : ""}
                       onChange={(e) => {
                         const raw = e.target.value.replace(/\D/g, "");
@@ -709,15 +695,12 @@ export function AkuntansiClientManager({ accountRows, journalRows, businessUnits
                     />
                   </div>
 
-                  {/* Credit Input with Thousand Separator */}
-                  <div className="w-full relative">
-                    <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[10px] font-black text-amber-700 bg-amber-50 px-1 py-0.5 rounded border border-amber-200">
-                      Cr
-                    </span>
+                  {/* Credit Input */}
+                  <div className="w-32 shrink-0">
                     <input
                       type="text"
-                      className="w-full h-10 rounded-xl border border-[#dbe5f1] bg-white pl-8 pr-2.5 text-xs font-bold text-[#0b1220] outline-none text-right font-mono focus:border-[#2563eb] focus:ring-2 focus:ring-[#2563eb]/20"
-                      placeholder="0"
+                      className="w-full h-10 rounded-xl border border-[#dbe5f1] bg-white px-2.5 text-xs font-bold text-[#0b1220] outline-none text-right font-mono focus:border-[#2563eb] focus:ring-1 focus:ring-[#2563eb]"
+                      placeholder="0 (Kredit)"
                       value={line.credit && Number(line.credit) > 0 ? Number(line.credit).toLocaleString("id-ID") : ""}
                       onChange={(e) => {
                         const raw = e.target.value.replace(/\D/g, "");
@@ -727,16 +710,14 @@ export function AkuntansiClientManager({ accountRows, journalRows, businessUnits
                   </div>
 
                   {/* Remove Button */}
-                  <div className="w-full sm:w-auto flex justify-end">
-                    <button
-                      type="button"
-                      onClick={() => removeEditLine(index)}
-                      className="grid size-9 place-items-center rounded-xl text-rose-500 bg-white border border-rose-200 hover:bg-rose-50 hover:text-rose-600 active:scale-95 transition-all cursor-pointer"
-                      title="Hapus baris ini"
-                    >
-                      <X className="size-4" />
-                    </button>
-                  </div>
+                  <button
+                    type="button"
+                    onClick={() => removeEditLine(index)}
+                    className="grid size-10 shrink-0 place-items-center rounded-xl text-rose-500 hover:bg-rose-50 hover:text-rose-600 active:scale-95 transition-all cursor-pointer"
+                    title="Hapus baris"
+                  >
+                    <X className="size-4" />
+                  </button>
                 </div>
               ))}
             </div>
