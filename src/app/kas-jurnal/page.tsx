@@ -5,6 +5,7 @@ import {
   Banknote,
   BookOpenCheck,
   Calculator,
+  Calendar,
   FileText,
   Landmark,
   Plus,
@@ -26,6 +27,9 @@ type KasJurnalPageProps = {
     error?: string;
     saved?: string;
     unit?: string;
+    period?: string;
+    startDate?: string;
+    endDate?: string;
   }>;
 };
 
@@ -63,7 +67,7 @@ type JournalRow = {
   entry_date: string;
   memo: string | null;
   source_type: string | null;
-  journal_lines: JournalLineRow[] | null;
+  journal_lines: JournalLineRow[];
 };
 
 const currency = new Intl.NumberFormat("id-ID", {
@@ -84,6 +88,30 @@ export default async function KasJurnalPage({ searchParams }: KasJurnalPageProps
   const supabase = await createClient();
   const params = await searchParams;
   const selectedUnit = params.unit ?? "";
+  const period = params.period ?? "this_month";
+
+  const now = new Date();
+  const currentMonthStart = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-01`;
+  const currentMonthEnd = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate()).padStart(2, "0")}`;
+
+  let startDate = params.startDate ?? "";
+  let endDate = params.endDate ?? "";
+
+  if (period === "this_month" && !startDate && !endDate) {
+    startDate = currentMonthStart;
+    endDate = currentMonthEnd;
+  } else if (period === "today" && !startDate && !endDate) {
+    const todayStr = now.toISOString().slice(0, 10);
+    startDate = todayStr;
+    endDate = todayStr;
+  } else if (period === "last_month" && !startDate && !endDate) {
+    const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    startDate = `${lastMonth.getFullYear()}-${String(lastMonth.getMonth() + 1).padStart(2, "0")}-01`;
+    endDate = `${lastMonth.getFullYear()}-${String(lastMonth.getMonth() + 1).padStart(2, "0")}-${String(new Date(lastMonth.getFullYear(), lastMonth.getMonth() + 1, 0).getDate()).padStart(2, "0")}`;
+  } else if (period === "this_year" && !startDate && !endDate) {
+    startDate = `${now.getFullYear()}-01-01`;
+    endDate = `${now.getFullYear()}-12-31`;
+  }
 
   const {
     data: { user },
@@ -99,13 +127,15 @@ export default async function KasJurnalPage({ searchParams }: KasJurnalPageProps
     supabase
       .from("cash_transactions")
       .select("id, direction, amount, source_type, description, transaction_date")
+      .order("transaction_date", { ascending: false })
       .order("created_at", { ascending: false })
-      .limit(50),
+      .limit(500),
     supabase
       .from("journal_entries")
       .select("id, entry_no, entry_date, memo, source_type, journal_lines(debit, credit, accounts(code, name))")
+      .order("entry_date", { ascending: false })
       .order("created_at", { ascending: false })
-      .limit(50),
+      .limit(500),
     supabase.from("business_units").select("id, code, name").eq("is_active", true).order("code"),
   ]);
 
@@ -118,13 +148,19 @@ export default async function KasJurnalPage({ searchParams }: KasJurnalPageProps
   const rawJournalRows = (journalEntries ?? []) as unknown as JournalRow[];
   const unitList = (businessUnits ?? []) as { id: string; code: string; name: string }[];
 
-  const cashRows = selectedUnit
-    ? rawCashRows.filter((item) => item.description?.toLowerCase().includes(selectedUnit.toLowerCase()))
-    : rawCashRows;
+  const cashRows = rawCashRows.filter((item) => {
+    if (selectedUnit && !item.description?.toLowerCase().includes(selectedUnit.toLowerCase())) return false;
+    if (startDate && item.transaction_date < startDate) return false;
+    if (endDate && item.transaction_date > endDate) return false;
+    return true;
+  });
 
-  const journalRows = selectedUnit
-    ? rawJournalRows.filter((item) => item.memo?.toLowerCase().includes(selectedUnit.toLowerCase()))
-    : rawJournalRows;
+  const journalRows = rawJournalRows.filter((item) => {
+    if (selectedUnit && !item.memo?.toLowerCase().includes(selectedUnit.toLowerCase())) return false;
+    if (startDate && item.entry_date < startDate) return false;
+    if (endDate && item.entry_date > endDate) return false;
+    return true;
+  });
 
   const cashIn = cashRows.filter((row) => row.direction === "in").reduce((sum, row) => sum + Number(row.amount ?? 0), 0);
   const cashOut = cashRows.filter((row) => row.direction === "out").reduce((sum, row) => sum + Number(row.amount ?? 0), 0);
@@ -139,6 +175,21 @@ export default async function KasJurnalPage({ searchParams }: KasJurnalPageProps
     },
     { debit: 0, credit: 0 },
   );
+
+  const buildUrl = (newParams: Record<string, string | undefined>) => {
+    const p = new URLSearchParams();
+    if (selectedUnit && newParams.unit === undefined) p.set("unit", selectedUnit);
+    else if (newParams.unit) p.set("unit", newParams.unit);
+
+    if (period && newParams.period === undefined && !newParams.startDate) p.set("period", period);
+    else if (newParams.period) p.set("period", newParams.period);
+
+    if (newParams.startDate) p.set("startDate", newParams.startDate);
+    if (newParams.endDate) p.set("endDate", newParams.endDate);
+
+    const qs = p.toString();
+    return qs ? `/kas-jurnal?${qs}` : "/kas-jurnal";
+  };
 
   return (
     <main className="min-h-screen bg-[#f4f7fb] text-[#0b1220]">
@@ -177,35 +228,72 @@ export default async function KasJurnalPage({ searchParams }: KasJurnalPageProps
             </div>
           </section>
 
-          {/* Unit Usaha Filter Toolbar */}
-          <div className="flex flex-wrap items-center gap-2 rounded-2xl bg-white p-3 shadow-sm ring-1 ring-[#dbe5f1]">
-            <span className="text-xs font-bold text-[#64748b] mr-1">Laporan Kas Per Unit:</span>
-            <Link
-              href="/kas-jurnal"
-              className={`h-8 rounded-xl px-2.5 text-xs font-bold transition-all inline-flex items-center ${
-                !selectedUnit
-                  ? "bg-[#0b1220] text-white shadow-sm"
-                  : "bg-[#f8fbff] text-[#64748b] ring-1 ring-[#dbe5f1] hover:bg-slate-100"
-              }`}
-            >
-              Semua Unit ({rawJournalRows.length})
-            </Link>
-            {unitList.map((u) => {
-              const isActive = selectedUnit.toLowerCase() === u.name.toLowerCase() || selectedUnit.toLowerCase() === u.code.toLowerCase();
-              return (
-                <Link
-                  key={u.id}
-                  href={`/kas-jurnal?unit=${encodeURIComponent(u.name)}`}
-                  className={`h-8 rounded-xl px-2.5 text-xs font-bold transition-all inline-flex items-center ${
-                    isActive
-                      ? "bg-[#2563eb] text-white shadow-sm"
-                      : "bg-[#f8fbff] text-[#64748b] ring-1 ring-[#dbe5f1] hover:bg-slate-100"
-                  }`}
-                >
-                  {u.code} · {u.name}
-                </Link>
-              );
-            })}
+          {/* Filter Bar: Periode & Unit Usaha */}
+          <div className="space-y-2.5 rounded-2xl bg-white p-3.5 shadow-sm ring-1 ring-[#dbe5f1]">
+            {/* Periode Filter Buttons */}
+            <div className="flex flex-wrap items-center gap-1.5 pb-2 border-b border-[#f1f5f9]">
+              <span className="text-xs font-bold text-[#64748b] mr-1 flex items-center gap-1">
+                <Calendar className="size-3.5 text-[#2563eb]" /> Periode:
+              </span>
+              {[
+                { id: "this_month", label: "Bulan Ini" },
+                { id: "today", label: "Hari Ini" },
+                { id: "last_month", label: "Bulan Lalu" },
+                { id: "this_year", label: "Tahun Ini" },
+                { id: "all", label: "Semua Periode" },
+              ].map((p) => {
+                const isActive = period === p.id && !params.startDate;
+                return (
+                  <Link
+                    key={p.id}
+                    href={buildUrl({ period: p.id, startDate: undefined, endDate: undefined })}
+                    className={`h-7.5 rounded-xl px-2.5 text-xs font-bold transition-all inline-flex items-center ${
+                      isActive
+                        ? "bg-[#2563eb] text-white shadow-sm"
+                        : "bg-[#f8fbff] text-[#64748b] ring-1 ring-[#dbe5f1] hover:bg-slate-100"
+                    }`}
+                  >
+                    {p.label}
+                  </Link>
+                );
+              })}
+              {startDate && endDate && (
+                <span className="ml-auto text-[11px] font-semibold text-[#64748b] bg-slate-50 px-2 py-0.5 rounded-lg border border-slate-200">
+                  📅 {startDate} s/d {endDate}
+                </span>
+              )}
+            </div>
+
+            {/* Unit Usaha Filter Buttons */}
+            <div className="flex flex-wrap items-center gap-1.5">
+              <span className="text-xs font-bold text-[#64748b] mr-1">Unit Usaha:</span>
+              <Link
+                href={buildUrl({ unit: "" })}
+                className={`h-7.5 rounded-xl px-2.5 text-xs font-bold transition-all inline-flex items-center ${
+                  !selectedUnit
+                    ? "bg-[#0b1220] text-white shadow-sm"
+                    : "bg-[#f8fbff] text-[#64748b] ring-1 ring-[#dbe5f1] hover:bg-slate-100"
+                }`}
+              >
+                Semua Unit ({rawJournalRows.length})
+              </Link>
+              {unitList.map((u) => {
+                const isActive = selectedUnit.toLowerCase() === u.name.toLowerCase() || selectedUnit.toLowerCase() === u.code.toLowerCase();
+                return (
+                  <Link
+                    key={u.id}
+                    href={buildUrl({ unit: u.name })}
+                    className={`h-7.5 rounded-xl px-2.5 text-xs font-bold transition-all inline-flex items-center ${
+                      isActive
+                        ? "bg-[#0b1220] text-white shadow-sm"
+                        : "bg-[#f8fbff] text-[#64748b] ring-1 ring-[#dbe5f1] hover:bg-slate-100"
+                    }`}
+                  >
+                    {u.code} · {u.name}
+                  </Link>
+                );
+              })}
+            </div>
           </div>
 
           <div className="grid gap-3 md:grid-cols-4">

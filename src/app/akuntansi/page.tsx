@@ -62,8 +62,9 @@ export default async function AkuntansiPage({ searchParams }: AkuntansiPageProps
     supabase
       .from("journal_entries")
       .select("id, entry_no, entry_date, memo, source_type, status, journal_lines(debit, credit, accounts(id, code, name))")
+      .order("entry_date", { ascending: false })
       .order("created_at", { ascending: false })
-      .limit(50),
+      .limit(500),
   ]);
 
   if (!profile) {
