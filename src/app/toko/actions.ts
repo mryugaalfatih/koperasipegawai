@@ -543,17 +543,18 @@ export async function processPosSale(formData: FormData) {
   });
 
   // 5. Post Automatic Journal Entry in journal_entries tagged with Unit Toko Waserda
-  const { data: cashAccount } = await supabase
-    .from("accounts")
-    .select("id")
-    .eq("code", paymentMethod === "bank" ? "1002" : paymentMethod === "credit" ? "1102" : "1001")
-    .maybeSingle();
+  const cashCode = paymentMethod === "bank" ? "1002" : paymentMethod === "credit" ? "1102" : "1001";
+  let { data: cashAccount } = await supabase.from("accounts").select("id").eq("code", cashCode).maybeSingle();
+  if (!cashAccount) {
+    const { data: fallbackCash } = await supabase.from("accounts").select("id").eq("code", "1001").maybeSingle();
+    cashAccount = fallbackCash;
+  }
 
-  const { data: revenueAccount } = await supabase
-    .from("accounts")
-    .select("id")
-    .eq("code", "4101")
-    .maybeSingle();
+  let { data: revenueAccount } = await supabase.from("accounts").select("id").eq("code", "4201").maybeSingle();
+  if (!revenueAccount) {
+    const { data: fallbackRev } = await supabase.from("accounts").select("id").eq("code", "4101").maybeSingle();
+    revenueAccount = fallbackRev;
+  }
 
   if (cashAccount && revenueAccount && grandTotal > 0) {
     const entryNo = `JRN-TOKO-${Date.now().toString().slice(-8)}`;
@@ -563,7 +564,7 @@ export async function processPosSale(formData: FormData) {
         branch_id: profile.branch_id,
         entry_no: entryNo,
         entry_date: today,
-        memo: `Penjualan Toko Waserda [${paymentMethodLabel}] - No: ${invoiceNo}`,
+        memo: `[Unit Toko Waserda] Penjualan Kasir POS [${paymentMethodLabel}] - No: ${invoiceNo}`,
         source_type: "toko_pos",
         source_id: saleId,
         status: "draft",
@@ -588,10 +589,14 @@ export async function processPosSale(formData: FormData) {
         },
       ]);
 
-      // HPP Perpetual Journal (Debet 5101 HPP Waserda, Kredit 1301 Persediaan Barang)
+      // HPP Perpetual Journal (Debet 5201/5101 HPP Waserda, Kredit 1301 Persediaan Barang)
       const totalHpp = cartItems.reduce((sum, item) => sum + (Number(item.buy_price ?? 0) * Number(item.qty ?? 1)), 0);
       if (totalHpp > 0) {
-        const { data: hppAcc } = await supabase.from("accounts").select("id").eq("code", "5101").maybeSingle();
+        let { data: hppAcc } = await supabase.from("accounts").select("id").eq("code", "5201").maybeSingle();
+        if (!hppAcc) {
+          const { data: fallbackHpp } = await supabase.from("accounts").select("id").eq("code", "5101").maybeSingle();
+          hppAcc = fallbackHpp;
+        }
         const { data: invAcc } = await supabase.from("accounts").select("id").eq("code", "1301").maybeSingle();
 
         if (hppAcc && invAcc) {
@@ -601,7 +606,7 @@ export async function processPosSale(formData: FormData) {
               branch_id: profile.branch_id,
               entry_no: `JRN-HPP-${Date.now().toString().slice(-8)}`,
               entry_date: today,
-              memo: `HPP Penjualan Toko Waserda - No: ${invoiceNo}`,
+              memo: `[Unit Toko Waserda] HPP Penjualan Toko Waserda - No: ${invoiceNo}`,
               source_type: "toko_hpp",
               source_id: saleId,
               status: "draft",
@@ -845,7 +850,11 @@ export async function receivePurchaseOrder(poId: string) {
 
   // Post Automatic Journal Entry
   const { data: invAcc } = await supabase.from("accounts").select("id").eq("code", "1301").maybeSingle();
-  const { data: cashAcc } = await supabase.from("accounts").select("id").eq("code", po.payment_type === "tempo" ? "2101" : "1001").maybeSingle();
+  let { data: cashAcc } = await supabase.from("accounts").select("id").eq("code", po.payment_type === "tempo" ? "2102" : "1001").maybeSingle();
+  if (!cashAcc && po.payment_type === "tempo") {
+    const { data: fallbackDebt } = await supabase.from("accounts").select("id").eq("code", "2101").maybeSingle();
+    cashAcc = fallbackDebt;
+  }
 
   if (invAcc && cashAcc && totalAmount > 0) {
     const { data: journal } = await supabase
