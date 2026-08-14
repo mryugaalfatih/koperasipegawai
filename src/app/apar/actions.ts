@@ -193,7 +193,7 @@ export async function processAparRefillComplete(orderId: string) {
         memo: `Pendapatan Jasa Refill APAR Klien ${order.client_name} (Order #${order.order_no})`,
         source_type: "apar_refill",
         source_id: orderId,
-        status: "approved",
+        status: "draft",
         created_by: user.id,
       })
       .select("id")

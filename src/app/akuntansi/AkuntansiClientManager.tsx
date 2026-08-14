@@ -548,7 +548,12 @@ export function AkuntansiClientManager({ accountRows, journalRows, businessUnits
                 }`}
               >
                 <Clock className="size-3.5" />
-                <span>Menunggu Review ({draftCountTotal})</span>
+                <span>Menunggu Review</span>
+                {draftCountTotal > 0 ? (
+                  <span className="rounded-full bg-amber-500 px-1.5 py-0.2 text-[10px] font-black text-white">
+                    {draftCountTotal}
+                  </span>
+                ) : null}
               </button>
               <button
                 type="button"

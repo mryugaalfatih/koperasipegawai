@@ -293,7 +293,7 @@ export async function adjustTokoStock(productId: string, formData: FormData) {
           entry_date: today,
           memo: `[Unit Toko Waserda] Pasokan Masuk: ${prod?.name ?? "Produk"} (${qtyInput} ${unitLabel}) ${notes ? '- ' + notes : ''}`,
           source_type: "toko_stock_in",
-          status: "approved",
+          status: "draft",
           created_by: user.id,
         })
         .select("id")
@@ -322,7 +322,7 @@ export async function adjustTokoStock(productId: string, formData: FormData) {
           entry_date: today,
           memo: `[Unit Toko Waserda] Kerugian Barang Rusak: ${prod?.name ?? "Produk"} (${qtyInput} ${unitLabel}) ${notes ? '- ' + notes : ''}`,
           source_type: "toko_damage",
-          status: "approved",
+          status: "draft",
           created_by: user.id,
         })
         .select("id")
@@ -362,7 +362,7 @@ export async function adjustTokoStock(productId: string, formData: FormData) {
           entry_date: today,
           memo: `[Unit Toko Waserda] Retur Barang ke Supplier: ${prod?.name ?? "Produk"} (${qtyInput} ${unitLabel})`,
           source_type: "toko_retur_out",
-          status: "approved",
+          status: "draft",
           created_by: user.id,
         })
         .select("id")
@@ -566,7 +566,7 @@ export async function processPosSale(formData: FormData) {
         memo: `Penjualan Toko Waserda [${paymentMethodLabel}] - No: ${invoiceNo}`,
         source_type: "toko_pos",
         source_id: saleId,
-        status: "approved",
+        status: "draft",
         created_by: user.id,
       })
       .select("id")
@@ -604,7 +604,7 @@ export async function processPosSale(formData: FormData) {
               memo: `HPP Penjualan Toko Waserda - No: ${invoiceNo}`,
               source_type: "toko_hpp",
               source_id: saleId,
-              status: "approved",
+              status: "draft",
               created_by: user.id,
             })
             .select("id")
@@ -857,7 +857,7 @@ export async function receivePurchaseOrder(poId: string) {
         memo: `[Unit Toko Waserda] Penerimaan Barang PO #${po.po_no} (${po.supplier_name})`,
         source_type: "toko_po",
         source_id: poId,
-        status: "approved",
+        status: "draft",
         created_by: user.id,
       })
       .select("id")
