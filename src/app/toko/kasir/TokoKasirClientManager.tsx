@@ -48,6 +48,11 @@ type TokoKasirClientManagerProps = {
   members: MemberOption[];
   successInv?: string;
   successTotal?: number;
+  cooperativeProfile?: {
+    name: string;
+    address: string | null;
+    phone: string | null;
+  } | null;
 };
 
 const formatRupiah = (val: number) =>
@@ -58,6 +63,7 @@ export function TokoKasirClientManager({
   members,
   successInv,
   successTotal,
+  cooperativeProfile,
 }: TokoKasirClientManagerProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -559,7 +565,11 @@ export function TokoKasirClientManager({
             {/* Thermal Receipt Box */}
             <div className="rounded-xl border border-dashed border-[#cbd5e1] bg-[#f8fbff] p-4 text-left font-mono text-[11px] space-y-2 text-[#0b1220]">
               <div className="text-center font-bold">
-                <p>WASERDA TOKO KOPERASI</p>
+                <p className="text-xs uppercase font-black">{cooperativeProfile?.name || "KOPERASI WASERDA TOKO"}</p>
+                {cooperativeProfile?.address ? (
+                  <p className="text-[9px] font-normal text-[#64748b]">{cooperativeProfile.address}</p>
+                ) : null}
+                <p className="text-[9px] font-semibold text-[#2563eb]">UNIT USAHA TOKO WASERDA</p>
                 <p className="text-[9px] font-normal text-[#64748b]">Struk Bukti Pembayaran Resmi</p>
               </div>
               <div className="border-t border-dashed border-[#cbd5e1] pt-1">

@@ -94,10 +94,11 @@ export default async function TokoKasirPage({ searchParams }: TokoKasirPageProps
     redirect("/login");
   }
 
-  const [{ data: profile }, { data: dbProducts }, { data: dbMembers }] = await Promise.all([
+  const [{ data: profile }, { data: dbProducts }, { data: dbMembers }, { data: cooperativeProfile }] = await Promise.all([
     supabase.from("profiles").select("branch_id, role, full_name").eq("id", user.id).single(),
     supabase.from("toko_products").select("*").eq("is_active", true).order("name"),
     supabase.from("members").select("id, member_no, full_name, department").eq("status", "active").order("full_name"),
+    supabase.from("cooperative_profiles").select("name, address, phone").order("created_at").limit(1).maybeSingle(),
   ]);
 
   if (!profile) {
@@ -126,6 +127,7 @@ export default async function TokoKasirPage({ searchParams }: TokoKasirPageProps
               products={products}
               successInv={params.inv}
               successTotal={params.total ? Number(params.total) : undefined}
+              cooperativeProfile={cooperativeProfile}
             />
           </div>
         </section>
