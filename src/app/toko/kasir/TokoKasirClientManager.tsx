@@ -53,6 +53,8 @@ type TokoKasirClientManagerProps = {
     address: string | null;
     phone: string | null;
   } | null;
+  lastSaleData?: any;
+  cashierName?: string;
 };
 
 const formatRupiah = (val: number) =>
@@ -64,6 +66,8 @@ export function TokoKasirClientManager({
   successInv,
   successTotal,
   cooperativeProfile,
+  lastSaleData,
+  cashierName = "Kasir",
 }: TokoKasirClientManagerProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -675,7 +679,7 @@ export function TokoKasirClientManager({
       {/* Thermal Receipt Modal */}
       {showReceiptModal && successInv ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
-          <div className="w-full max-w-sm rounded-2xl bg-white p-5 shadow-2xl space-y-4 text-center">
+          <div className="w-full max-w-sm rounded-2xl bg-white p-5 shadow-2xl space-y-4 text-center max-h-[90vh] overflow-y-auto">
             <div className="mx-auto grid size-12 place-items-center rounded-full bg-emerald-100 text-emerald-600">
               <CheckCircle2 className="size-8" />
             </div>
@@ -683,33 +687,151 @@ export function TokoKasirClientManager({
             <div>
               <h3 className="text-base font-black text-[#0b1220]">Transaksi POS Berhasil!</h3>
               <p className="text-xs text-[#64748b]">No. Faktur: <span className="font-bold text-[#2563eb]">{successInv}</span></p>
-              <p className="text-sm font-black text-[#0b1220] mt-1">{formatRupiah(successTotal ?? 0)}</p>
+              <p className="text-base font-black text-[#0b1220] mt-1">
+                {formatRupiah(lastSaleData?.grand_total ?? successTotal ?? 0)}
+              </p>
             </div>
 
-            {/* Thermal Receipt Box */}
-            <div className="rounded-xl border border-dashed border-[#cbd5e1] bg-[#f8fbff] p-4 text-left font-mono text-[11px] space-y-2 text-[#0b1220]">
-              <div className="text-center font-bold">
-                <p className="text-xs uppercase font-black">{cooperativeProfile?.name || "KOPERASI WASERDA TOKO"}</p>
+            {/* Thermal Receipt Box (Printable) */}
+            <div id="printable-receipt" className="rounded-xl border border-dashed border-[#cbd5e1] bg-[#f8fbff] p-4 text-left font-mono text-[11px] space-y-2 text-[#0b1220]">
+              {/* Header */}
+              <div className="text-center">
+                <p className="text-xs uppercase font-black">{cooperativeProfile?.name || "KOPKAR MANUNGGAL PERKASA"}</p>
                 {cooperativeProfile?.address ? (
-                  <p className="text-[9px] font-normal text-[#64748b]">{cooperativeProfile.address}</p>
+                  <p className="text-[9px] font-normal text-[#64748b] mt-0.5">{cooperativeProfile.address}</p>
                 ) : null}
-                <p className="text-[9px] font-semibold text-[#2563eb]">UNIT USAHA TOKO WASERDA</p>
+                {cooperativeProfile?.phone ? (
+                  <p className="text-[9px] font-normal text-[#64748b]">Telp: {cooperativeProfile.phone}</p>
+                ) : null}
+                <p className="text-[10px] font-bold text-[#2563eb] mt-1">UNIT USAHA TOKO WASERDA</p>
                 <p className="text-[9px] font-normal text-[#64748b]">Struk Bukti Pembayaran Resmi</p>
               </div>
-              <div className="border-t border-dashed border-[#cbd5e1] pt-1">
-                <p>No: {successInv}</p>
-                <p>Tgl: {new Date().toLocaleDateString("id-ID")}</p>
+
+              {/* Transaction Metadata */}
+              <div className="border-t border-dashed border-[#cbd5e1] pt-1.5 space-y-0.5 text-[10px] text-[#475569]">
+                <div className="flex justify-between">
+                  <span>No. Faktur:</span>
+                  <span className="font-bold text-[#0b1220]">{successInv}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Tanggal:</span>
+                  <span>{new Date().toLocaleDateString("id-ID", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Kasir:</span>
+                  <span>{cashierName}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Pelanggan:</span>
+                  <span className="font-bold text-[#0b1220]">
+                    {lastSaleData?.members?.full_name
+                      ? `${lastSaleData.members.full_name} (${lastSaleData.members.member_no})`
+                      : "Pembeli Umum"}
+                  </span>
+                </div>
               </div>
-              <div className="border-t border-dashed border-[#cbd5e1] pt-1 text-center font-bold text-emerald-600">
-                LUNAS - TERIMA KASIH
+
+              {/* Itemized Products List */}
+              <div className="border-t border-dashed border-[#cbd5e1] pt-2 pb-1 space-y-1.5 text-xs">
+                {lastSaleData?.toko_sale_items && lastSaleData.toko_sale_items.length > 0 ? (
+                  lastSaleData.toko_sale_items.map((item: any, idx: number) => (
+                    <div key={item.id || idx} className="space-y-0.5">
+                      <p className="font-bold text-[#0b1220] leading-tight truncate">{item.product_name}</p>
+                      <div className="flex justify-between text-[10px] text-[#64748b]">
+                        <span>{item.qty} {item.unit_name ?? "Pcs"} x {formatRupiah(item.sell_price)}</span>
+                        <span className="font-bold text-[#0b1220]">{formatRupiah(item.subtotal)}</span>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-center text-[#64748b] text-[10px] italic py-1">Memuat rincian item barang...</p>
+                )}
+              </div>
+
+              {/* Totals Breakdown */}
+              <div className="border-t border-dashed border-[#cbd5e1] pt-1.5 space-y-1 text-xs">
+                <div className="flex justify-between text-[#64748b]">
+                  <span>Subtotal:</span>
+                  <span>{formatRupiah(lastSaleData?.total_amount ?? successTotal ?? 0)}</span>
+                </div>
+                {(lastSaleData?.discount_amount ?? 0) > 0 ? (
+                  <div className="flex justify-between text-emerald-600 font-bold">
+                    <span>Diskon:</span>
+                    <span>-{formatRupiah(lastSaleData?.discount_amount ?? 0)}</span>
+                  </div>
+                ) : null}
+                <div className="flex justify-between font-black text-[#0b1220] text-xs pt-1 border-t border-slate-200">
+                  <span>TOTAL BELANJA:</span>
+                  <span className="text-[#2563eb] text-sm">
+                    {formatRupiah(lastSaleData?.grand_total ?? successTotal ?? 0)}
+                  </span>
+                </div>
+              </div>
+
+              {/* Payment Details */}
+              <div className="border-t border-dashed border-[#cbd5e1] pt-1.5 space-y-0.5 text-[10px] text-[#64748b]">
+                <div className="flex justify-between">
+                  <span>Metode Pembayaran:</span>
+                  <span className="font-bold text-[#0b1220] uppercase">
+                    {lastSaleData?.payment_method === "bank"
+                      ? "QRIS / Transfer Bank"
+                      : lastSaleData?.payment_method === "credit"
+                      ? "Tempo Potong Gaji"
+                      : "Tunai (Cash)"}
+                  </span>
+                </div>
+                {lastSaleData?.payment_method === "cash" || !lastSaleData?.payment_method ? (
+                  <>
+                    <div className="flex justify-between">
+                      <span>Uang Diterima:</span>
+                      <span>{formatRupiah(lastSaleData?.paid_amount ?? successTotal ?? 0)}</span>
+                    </div>
+                    <div className="flex justify-between font-bold text-[#0b1220]">
+                      <span>Kembalian:</span>
+                      <span>{formatRupiah(lastSaleData?.change_amount ?? 0)}</span>
+                    </div>
+                  </>
+                ) : null}
+              </div>
+
+              {/* Footer */}
+              <div className="border-t border-dashed border-[#cbd5e1] pt-2 text-center text-[10px] space-y-0.5 text-[#64748b]">
+                <p className="font-bold text-emerald-600">LUNAS - TERIMA KASIH</p>
+                <p className="text-[9px]">Barang yang sudah dibeli</p>
+                <p className="text-[9px]">tidak dapat ditukar/dikembalikan</p>
               </div>
             </div>
 
-            <div className="flex gap-2">
+            {/* Print Styles */}
+            <style jsx global>{`
+              @media print {
+                body * {
+                  visibility: hidden;
+                }
+                #printable-receipt, #printable-receipt * {
+                  visibility: visible;
+                }
+                #printable-receipt {
+                  position: fixed;
+                  left: 0;
+                  top: 0;
+                  width: 100%;
+                  max-width: 80mm;
+                  margin: 0 auto;
+                  padding: 12px;
+                  font-size: 11px;
+                  background: white !important;
+                  border: none !important;
+                  box-shadow: none !important;
+                }
+              }
+            `}</style>
+
+            <div className="flex gap-2 pt-1">
               <button
                 type="button"
                 onClick={() => window.print()}
-                className="flex-1 inline-flex h-10 items-center justify-center gap-1.5 rounded-xl bg-[#2563eb] text-xs font-bold text-white hover:bg-[#1d4ed8]"
+                className="flex-1 inline-flex h-10 items-center justify-center gap-1.5 rounded-xl bg-[#2563eb] text-xs font-bold text-white hover:bg-[#1d4ed8] cursor-pointer shadow-xs"
               >
                 <Printer className="size-4" />
                 <span>Cetak Struk</span>
@@ -721,7 +843,7 @@ export function TokoKasirClientManager({
                   clearCart();
                   router.push("/toko/kasir");
                 }}
-                className="h-10 rounded-xl bg-[#f1f5f9] px-2 text-xs font-bold text-[#0b1220] hover:bg-[#e2e8f0]"
+                className="h-10 rounded-xl bg-[#f1f5f9] px-4 text-xs font-bold text-[#0b1220] hover:bg-[#e2e8f0] cursor-pointer"
               >
                 Selesai
               </button>

@@ -105,6 +105,20 @@ export default async function TokoKasirPage({ searchParams }: TokoKasirPageProps
     redirect("/login?error=Profil%20user%20belum%20dibuat.");
   }
 
+  let lastSaleData = null;
+  if (params.inv) {
+    const { data: sale } = await supabase
+      .from("toko_sales")
+      .select(`
+        *,
+        members(full_name, member_no),
+        toko_sale_items(*)
+      `)
+      .eq("invoice_no", params.inv)
+      .maybeSingle();
+    lastSaleData = sale;
+  }
+
   const products: TokoProductRow[] =
     dbProducts && dbProducts.length > 0
       ? (dbProducts as TokoProductRow[])
@@ -128,6 +142,8 @@ export default async function TokoKasirPage({ searchParams }: TokoKasirPageProps
               successInv={params.inv}
               successTotal={params.total ? Number(params.total) : undefined}
               cooperativeProfile={cooperativeProfile}
+              lastSaleData={lastSaleData}
+              cashierName={profile.full_name || "Kasir"}
             />
           </div>
         </section>
