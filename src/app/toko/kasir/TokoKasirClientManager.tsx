@@ -70,6 +70,7 @@ export function TokoKasirClientManager({
 
   const [search, setSearch] = useState("");
   const [cart, setCart] = useState<CartItem[]>([]);
+  const [customerSelected, setCustomerSelected] = useState<boolean>(false);
   const [customerType, setCustomerType] = useState<"general" | "member">("general");
   const [selectedMember, setSelectedMember] = useState<MemberOption | null>(null);
   const [paymentMethod, setPaymentMethod] = useState<"cash" | "bank" | "credit">("cash");
@@ -78,9 +79,9 @@ export function TokoKasirClientManager({
   const [notes, setNotes] = useState<string>("");
 
   const [showReceiptModal, setShowReceiptModal] = useState(!!successInv);
+  const [showCustomerModal, setShowCustomerModal] = useState(false);
 
   // Custom Searchable Member Picker State
-  const [isMemberDropdownOpen, setIsMemberDropdownOpen] = useState(false);
   const [memberSearch, setMemberSearch] = useState("");
 
   const formatThousand = (val: string | number) => {
@@ -111,8 +112,12 @@ export function TokoKasirClientManager({
     );
   });
 
-  // Add product to cart
+  // Add product to cart (Checks if customer is selected)
   const addToCart = (product: TokoProductRow) => {
+    if (!customerSelected) {
+      setShowCustomerModal(true);
+      return;
+    }
     setCart((prevCart) => {
       const existing = prevCart.find((item) => item.product_id === product.id);
       if (existing) {
@@ -159,10 +164,26 @@ export function TokoKasirClientManager({
     setCart([]);
     setSelectedMember(null);
     setCustomerType("general");
+    setCustomerSelected(false);
     setPaymentMethod("cash");
     setPaidAmountInput("");
     setDiscountInput("0");
     setNotes("");
+  };
+
+  const handleSelectGeneral = () => {
+    setCustomerType("general");
+    setSelectedMember(null);
+    setCustomerSelected(true);
+    setShowCustomerModal(false);
+    if (paymentMethod === "credit") setPaymentMethod("cash");
+  };
+
+  const handleSelectMember = (m: MemberOption) => {
+    setCustomerType("member");
+    setSelectedMember(m);
+    setCustomerSelected(true);
+    setShowCustomerModal(false);
   };
 
   // Calculate Subtotal & Totals based on member toggle
@@ -206,152 +227,147 @@ export function TokoKasirClientManager({
             </p>
           </div>
         </div>
-      </div>
 
-      {/* Customer Type Validation & Selection Bar */}
-      <div className="rounded-2xl bg-white p-3.5 shadow-sm ring-1 ring-[#dbe5f1] flex flex-col lg:flex-row items-start lg:items-center justify-between gap-3">
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="text-xs font-bold text-[#64748b]">Validasi Pembeli:</span>
-          <div className="inline-flex rounded-xl bg-[#f1f5f9] p-1 border border-[#dbe5f1]">
-            <button
-              type="button"
-              onClick={() => {
-                setCustomerType("general");
-                setSelectedMember(null);
-                if (paymentMethod === "credit") setPaymentMethod("cash");
-              }}
-              className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-black transition-all cursor-pointer ${
-                customerType === "general"
-                  ? "bg-white text-[#0b1220] shadow-sm"
-                  : "text-[#64748b] hover:text-[#0b1220]"
-              }`}
-            >
-              <User className="size-3.5" />
-              <span>Pembeli Umum (Non-Anggota)</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setCustomerType("member");
-                if (!selectedMember) setIsMemberDropdownOpen(true);
-              }}
-              className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-black transition-all cursor-pointer ${
-                customerType === "member"
-                  ? "bg-[#2563eb] text-white shadow-sm"
-                  : "text-[#64748b] hover:text-[#0b1220]"
-              }`}
-            >
-              <Sparkles className="size-3.5" />
-              <span>Anggota Koperasi (Harga Khusus)</span>
-            </button>
-          </div>
-        </div>
-
-        {/* Member Status / Selector */}
-        <div className="w-full lg:w-auto">
-          {customerType === "general" ? (
-            <div className="inline-flex items-center gap-2 rounded-xl bg-slate-50 px-3 py-1.5 border border-slate-200 text-xs font-bold text-[#64748b]">
-              <span>🛒 Status: <strong className="text-[#0b1220]">Harga Umum Reguler</strong></span>
-              <span className="rounded bg-slate-200 px-1.5 py-0.5 text-[10px] text-slate-700 font-semibold">
-                Potong Gaji Nonaktif
-              </span>
-            </div>
-          ) : selectedMember ? (
-            <div className="flex items-center gap-2 rounded-xl bg-[#eff6ff] px-3 py-1.5 border border-[#2563eb]">
-              <div className="grid size-6 place-items-center rounded-lg bg-[#2563eb] text-white">
-                <Sparkles className="size-3.5" />
+        {/* Active Customer Status Badge */}
+        <div>
+          {customerSelected ? (
+            <div className="flex items-center gap-2 rounded-xl bg-[#f8fbff] p-2 pr-3 border border-[#dbe5f1]">
+              <div className={`grid size-8 place-items-center rounded-lg text-white ${
+                isMember ? "bg-[#2563eb]" : "bg-[#475569]"
+              }`}>
+                {isMember ? <Sparkles className="size-4" /> : <User className="size-4" />}
               </div>
               <div className="text-xs">
-                <span className="font-black text-[#1d4ed8]">{selectedMember.full_name}</span>
-                <span className="text-[#2563eb] text-[11px] font-bold ml-1.5">({selectedMember.member_no})</span>
-                {selectedMember.department ? (
-                  <span className="text-[#64748b] text-[10px] ml-1">· {selectedMember.department}</span>
-                ) : null}
+                <p className="font-black text-[#0b1220]">
+                  {isMember ? selectedMember?.full_name : "Pembeli Umum / Non-Anggota"}
+                </p>
+                <p className="text-[10px] font-bold text-[#64748b]">
+                  {isMember ? `🌟 Harga Anggota (${selectedMember?.member_no})` : "🛒 Harga Reguler Standar"}
+                </p>
               </div>
               <button
                 type="button"
-                onClick={() => {
-                  setSelectedMember(null);
-                  setIsMemberDropdownOpen(true);
-                }}
-                className="text-[11px] font-bold text-[#2563eb] underline hover:text-[#1d4ed8] ml-2 cursor-pointer"
+                onClick={() => setShowCustomerModal(true)}
+                className="ml-2 rounded-lg bg-white px-2 py-1 text-[11px] font-black text-[#2563eb] border border-[#dbe5f1] hover:bg-slate-50 cursor-pointer shadow-2xs"
               >
-                Ganti
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setSelectedMember(null);
-                  setCustomerType("general");
-                  if (paymentMethod === "credit") setPaymentMethod("cash");
-                }}
-                className="rounded-lg p-0.5 text-[#2563eb] hover:bg-[#dbe5f1] cursor-pointer"
-                title="Batalkan Anggota"
-              >
-                <X className="size-3.5" />
+                Ganti Pelanggan
               </button>
             </div>
           ) : (
-            <div className="relative">
+            <button
+              type="button"
+              onClick={() => setShowCustomerModal(true)}
+              className="flex h-11 items-center gap-2 rounded-xl border-2 border-dashed border-[#2563eb] bg-[#eff6ff] px-4 text-xs font-black text-[#1d4ed8] hover:bg-[#dbeafe] transition-all cursor-pointer animate-pulse"
+            >
+              <UserCheck className="size-4 text-[#2563eb]" />
+              <span>👉 Pilih Pelanggan untuk Memulai Transaksi</span>
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Customer Selection Required Modal / Prompt */}
+      {(!customerSelected || showCustomerModal) ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
+          <div className="w-full max-w-xl rounded-2xl bg-white p-6 shadow-2xl space-y-5 animate-in fade-in duration-150">
+            <div className="flex items-start justify-between border-b border-[#f1f5f9] pb-3">
+              <div>
+                <h2 className="text-base font-black text-[#0b1220]">Pilih Tipe Pelanggan Transaksi</h2>
+                <p className="text-xs text-[#64748b] mt-0.5">
+                  Tentukan jenis pembeli sebelum memasukkan barang ke keranjang kasir.
+                </p>
+              </div>
+              {customerSelected ? (
+                <button
+                  type="button"
+                  onClick={() => setShowCustomerModal(false)}
+                  className="rounded-lg p-1 text-[#64748b] hover:bg-slate-100 cursor-pointer"
+                >
+                  <X className="size-4" />
+                </button>
+              ) : null}
+            </div>
+
+            {/* 2 Customer Selection Cards */}
+            <div className="grid gap-3 sm:grid-cols-2">
+              {/* Card 1: Pembeli Umum */}
               <button
                 type="button"
-                onClick={() => setIsMemberDropdownOpen(!isMemberDropdownOpen)}
-                className="flex h-9 items-center gap-2 rounded-xl border-2 border-dashed border-[#2563eb] bg-[#eff6ff] px-3 text-xs font-bold text-[#1d4ed8] hover:bg-[#dbeafe] transition-all cursor-pointer"
+                onClick={handleSelectGeneral}
+                className="group flex flex-col justify-between rounded-2xl border-2 border-[#e2e8f0] bg-white p-4 text-left hover:border-[#2563eb] hover:bg-[#eff6ff] transition-all cursor-pointer active:scale-[0.98]"
               >
-                <UserCheck className="size-4 text-[#2563eb]" />
-                <span>👉 Klik di sini untuk Cari & Pilih Anggota</span>
-                <ChevronDown className={`size-3.5 text-[#2563eb] transition-transform ${isMemberDropdownOpen ? "rotate-180" : ""}`} />
+                <div>
+                  <div className="grid size-11 place-items-center rounded-xl bg-slate-100 text-[#475569] group-hover:bg-[#2563eb] group-hover:text-white transition-colors">
+                    <User className="size-6" />
+                  </div>
+                  <h3 className="mt-3 text-sm font-black text-[#0b1220]">Pembeli Umum</h3>
+                  <p className="text-xs text-[#64748b] mt-1">
+                    Pelanggan reguler / non-anggota koperasi.
+                  </p>
+                </div>
+                <div className="mt-4 pt-3 border-t border-[#f1f5f9] text-[11px] font-bold text-[#64748b] space-y-0.5">
+                  <p className="text-[#0b1220]">✔️ Berlaku Harga Umum</p>
+                  <p className="text-slate-400">✖️ Potong Gaji Nonaktif</p>
+                </div>
               </button>
 
-              {/* Searchable Member Dropdown Menu */}
-              {isMemberDropdownOpen ? (
-                <div className="absolute right-0 z-50 mt-1.5 w-80 max-h-72 overflow-y-auto rounded-2xl border border-[#cbd5e1] bg-white p-2.5 shadow-xl">
-                  <div className="relative mb-2">
-                    <Search className="absolute left-3 top-2.5 size-3.5 text-[#94a3b8]" />
+              {/* Card 2: Anggota Koperasi */}
+              <div className="rounded-2xl border-2 border-[#2563eb] bg-[#f8fbff] p-4 flex flex-col justify-between shadow-xs">
+                <div>
+                  <div className="flex items-center justify-between">
+                    <div className="grid size-11 place-items-center rounded-xl bg-[#2563eb] text-white">
+                      <Sparkles className="size-6" />
+                    </div>
+                    <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-black text-emerald-800">
+                      🌟 Harga Khusus
+                    </span>
+                  </div>
+                  <h3 className="mt-3 text-sm font-black text-[#0b1220]">Anggota Koperasi</h3>
+                  <p className="text-xs text-[#64748b] mt-1">
+                    Cari & pilih nama anggota untuk mengaktifkan diskon & tempo potong gaji.
+                  </p>
+                </div>
+
+                {/* Member Search input inside card */}
+                <div className="mt-3 space-y-2">
+                  <div className="relative">
+                    <Search className="absolute left-2.5 top-2.5 size-3.5 text-[#94a3b8]" />
                     <input
                       type="text"
                       value={memberSearch}
                       onChange={(e) => setMemberSearch(e.target.value)}
-                      placeholder="Cari nama, NIK, atau No. Anggota..."
-                      className="h-9 w-full rounded-xl border border-[#e2e8f0] bg-[#f8fbff] pl-8 pr-3 text-xs font-bold outline-none focus:border-[#2563eb]"
-                      autoFocus
+                      placeholder="Ketik nama atau ID anggota..."
+                      className="h-8.5 w-full rounded-xl border border-[#cbd5e1] bg-white pl-8 pr-2 text-xs font-bold text-[#0b1220] outline-none focus:border-[#2563eb]"
                     />
                   </div>
 
-                  <div className="space-y-1">
+                  <div className="max-h-36 overflow-y-auto space-y-1 rounded-xl bg-white p-1 border border-[#e2e8f0]">
                     {filteredMembers.length ? (
-                      filteredMembers.map((m) => (
+                      filteredMembers.slice(0, 10).map((m) => (
                         <div
                           key={m.id}
-                          onClick={() => {
-                            setSelectedMember(m);
-                            setIsMemberDropdownOpen(false);
-                          }}
-                          className="flex cursor-pointer items-center justify-between rounded-xl p-2 hover:bg-[#eff6ff] transition-colors"
+                          onClick={() => handleSelectMember(m)}
+                          className="flex cursor-pointer items-center justify-between rounded-lg p-1.5 text-xs hover:bg-[#eff6ff] transition-colors"
                         >
-                          <div>
-                            <p className="font-black text-xs text-[#0b1220]">{m.full_name}</p>
-                            <p className="text-[10px] font-semibold text-[#64748b]">
-                              ID: {m.member_no} {m.department ? `· ${m.department}` : ""}
-                            </p>
+                          <div className="min-w-0 pr-2">
+                            <p className="font-bold text-[#0b1220] truncate">{m.full_name}</p>
+                            <p className="text-[10px] text-[#64748b]">ID: {m.member_no} {m.department ? `· ${m.department}` : ""}</p>
                           </div>
-                          <span className="rounded-md bg-[#eff6ff] px-2 py-0.5 text-[10px] font-bold text-[#2563eb]">
+                          <span className="shrink-0 rounded bg-[#2563eb] px-2 py-0.5 text-[10px] font-bold text-white">
                             Pilih
                           </span>
                         </div>
                       ))
                     ) : (
-                      <p className="p-3 text-center text-xs font-bold text-[#94a3b8]">
-                        Anggota tidak ditemukan.
-                      </p>
+                      <p className="p-2 text-center text-xs text-[#94a3b8]">Anggota tidak ditemukan.</p>
                     )}
                   </div>
                 </div>
-              ) : null}
+              </div>
             </div>
-          )}
+          </div>
         </div>
-      </div>
+      ) : null}
 
       {/* Main POS Screen (Grid 2 Column: Product Selector vs Cart) */}
       <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
