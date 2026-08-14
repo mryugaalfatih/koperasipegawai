@@ -174,7 +174,7 @@ export async function postCashTransaction(formData: FormData) {
       source_type: "cash_transactions",
       source_id: cashTransaction.id,
       created_by: profileId,
-      status: requiresApproval ? "pending_manager" : "approved",
+      status: requiresApproval ? "pending_manager" : "draft",
     })
     .select("id")
     .single();

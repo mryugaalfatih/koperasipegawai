@@ -119,6 +119,7 @@ export async function postCashTransaction(formData: FormData) {
       source_type: "cash_transactions",
       source_id: cashTransaction.id,
       created_by: profileId,
+      status: direction === "out" && amount > 1000000 ? "pending_manager" : "draft",
     })
     .select("id")
     .single();
@@ -176,6 +177,7 @@ export async function postManualJournal(formData: FormData) {
       memo,
       source_type: "manual_journal",
       created_by: profileId,
+      status: "draft",
     })
     .select("id")
     .single();
