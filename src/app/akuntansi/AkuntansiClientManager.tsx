@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { CrudModal } from "@/components/CrudModal";
 import { CustomSelect } from "@/components/CustomSelect";
+import { SearchableSelect } from "@/components/SearchableSelect";
 import { CurrencyInput } from "@/components/CurrencyInput";
 import { SubmitButton } from "@/components/SubmitButton";
 import { postManualJournal, approveJournal, rejectJournal, updateJournalLines } from "./actions";
@@ -630,49 +631,76 @@ export function AkuntansiClientManager({ accountRows, journalRows, businessUnits
         isOpen={!!editingJournal}
         onClose={() => setEditingJournal(null)}
         title={`Edit Jurnal: ${editingJournal?.entry_no ?? ""}`}
+        subtitle="Sesuaikan akun, nominal debit/kredit, atau tambah baris jurnal sebelum disetujui."
+        maxWidth="max-w-3xl"
       >
-        <form action={handleSaveEdit} className="space-y-4">
+        <form action={handleSaveEdit} className="space-y-5">
           <label className="block">
-            <span className="text-sm font-bold text-[#0b1220]">Keterangan / Memo</span>
+            <span className="text-xs font-bold uppercase tracking-wider text-[#475569]">Keterangan / Memo</span>
             <textarea
-              className="mt-2 min-h-16 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-2 py-2.5 text-sm font-semibold outline-none focus:border-[#2563eb]"
+              className="mt-1.5 min-h-16 w-full rounded-xl border border-[#dbe5f1] bg-[#f8fbff] px-3 py-2.5 text-xs font-semibold text-[#0b1220] outline-none focus:border-[#2563eb] focus:bg-white transition-all"
               value={editMemo}
               onChange={(e) => setEditMemo(e.target.value)}
+              placeholder="Keterangan jurnal..."
             />
           </label>
 
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-bold text-[#0b1220]">Baris Jurnal</span>
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <span className="text-xs font-bold uppercase tracking-wider text-[#475569]">Rincian Baris Jurnal (Double-Entry)</span>
+                <p className="text-[11px] text-[#64748b]">Pastikan akun yang dipilih tepat dan total Debit seimbang dengan Kredit.</p>
+              </div>
               <button
                 type="button"
                 onClick={addEditLine}
-                className="h-7 rounded-lg bg-[#eaf2ff] px-2 text-[11px] font-bold text-[#2563eb] hover:bg-[#dbeafe] cursor-pointer"
+                className="inline-flex h-8 items-center gap-1.5 rounded-xl bg-[#eaf2ff] px-3 text-xs font-bold text-[#2563eb] hover:bg-[#dbeafe] transition-all cursor-pointer shadow-sm"
               >
-                + Tambah Baris
+                <Plus className="size-3.5" />
+                <span>Tambah Baris</span>
               </button>
             </div>
 
-            <div className="space-y-2">
+            {/* Column Headers for Desktop */}
+            <div className="hidden sm:grid grid-cols-[1fr_140px_140px_36px] gap-2.5 px-2 text-[11px] font-bold text-[#64748b] uppercase">
+              <span>Akun Bagan (COA)</span>
+              <span className="text-right">Debit (Rp)</span>
+              <span className="text-right">Kredit (Rp)</span>
+              <span className="text-center">Aksi</span>
+            </div>
+
+            {/* Line Items List */}
+            <div className="space-y-2.5">
               {editLines.map((line, index) => (
-                <div key={index} className="flex items-center gap-2 rounded-xl bg-[#f8fbff] p-2 border border-[#e2e8f0]">
-                  <select
-                    className="flex-1 h-9 rounded-lg border border-[#dbe5f1] bg-white px-2 text-xs font-bold outline-none"
-                    value={line.account_id}
-                    onChange={(e) => updateEditLine(index, "account_id", e.target.value)}
-                  >
-                    <option value="">Pilih Akun</option>
-                    {accountRows.map((acc) => (
-                      <option key={acc.id} value={acc.id}>
-                        {acc.code} · {acc.name}
-                      </option>
-                    ))}
-                  </select>
-                  <div className="w-28">
+                <div
+                  key={index}
+                  className="flex flex-col sm:grid sm:grid-cols-[1fr_140px_140px_36px] gap-2.5 rounded-2xl bg-[#f8fbff] p-2.5 border border-[#e2e8f0] items-center"
+                >
+                  {/* COA Searchable Select */}
+                  <div className="w-full min-w-0">
+                    <SearchableSelect
+                      value={line.account_id}
+                      onChange={(e) => updateEditLine(index, "account_id", e.target.value)}
+                      placeholder="-- Pilih Akun COA --"
+                      searchPlaceholder="Ketik kode / nama akun..."
+                      className="h-10 text-xs"
+                      options={accountRows.map((acc) => ({
+                        value: acc.id,
+                        label: `${acc.code} · ${acc.name}`,
+                        sublabel: `Kategori: ${acc.category}`,
+                      }))}
+                    />
+                  </div>
+
+                  {/* Debit Input with Thousand Separator */}
+                  <div className="w-full relative">
+                    <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[10px] font-black text-[#2563eb] bg-blue-50 px-1 py-0.5 rounded border border-blue-200">
+                      Dr
+                    </span>
                     <input
                       type="text"
-                      className="w-full h-9 rounded-lg border border-[#dbe5f1] bg-white px-2 text-xs font-bold outline-none text-right font-mono focus:border-[#2563eb]"
-                      placeholder="0 (Debit)"
+                      className="w-full h-10 rounded-xl border border-[#dbe5f1] bg-white pl-8 pr-2.5 text-xs font-bold text-[#0b1220] outline-none text-right font-mono focus:border-[#2563eb] focus:ring-2 focus:ring-[#2563eb]/20"
+                      placeholder="0"
                       value={line.debit && Number(line.debit) > 0 ? Number(line.debit).toLocaleString("id-ID") : ""}
                       onChange={(e) => {
                         const raw = e.target.value.replace(/\D/g, "");
@@ -680,11 +708,16 @@ export function AkuntansiClientManager({ accountRows, journalRows, businessUnits
                       }}
                     />
                   </div>
-                  <div className="w-28">
+
+                  {/* Credit Input with Thousand Separator */}
+                  <div className="w-full relative">
+                    <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[10px] font-black text-amber-700 bg-amber-50 px-1 py-0.5 rounded border border-amber-200">
+                      Cr
+                    </span>
                     <input
                       type="text"
-                      className="w-full h-9 rounded-lg border border-[#dbe5f1] bg-white px-2 text-xs font-bold outline-none text-right font-mono focus:border-[#2563eb]"
-                      placeholder="0 (Kredit)"
+                      className="w-full h-10 rounded-xl border border-[#dbe5f1] bg-white pl-8 pr-2.5 text-xs font-bold text-[#0b1220] outline-none text-right font-mono focus:border-[#2563eb] focus:ring-2 focus:ring-[#2563eb]/20"
+                      placeholder="0"
                       value={line.credit && Number(line.credit) > 0 ? Number(line.credit).toLocaleString("id-ID") : ""}
                       onChange={(e) => {
                         const raw = e.target.value.replace(/\D/g, "");
@@ -692,29 +725,55 @@ export function AkuntansiClientManager({ accountRows, journalRows, businessUnits
                       }}
                     />
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => removeEditLine(index)}
-                    className="grid size-8 place-items-center rounded-lg text-rose-500 hover:bg-rose-50 cursor-pointer"
-                  >
-                    <X className="size-4" />
-                  </button>
+
+                  {/* Remove Button */}
+                  <div className="w-full sm:w-auto flex justify-end">
+                    <button
+                      type="button"
+                      onClick={() => removeEditLine(index)}
+                      className="grid size-9 place-items-center rounded-xl text-rose-500 bg-white border border-rose-200 hover:bg-rose-50 hover:text-rose-600 active:scale-95 transition-all cursor-pointer"
+                      title="Hapus baris ini"
+                    >
+                      <X className="size-4" />
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
 
-            {/* Balance indicator */}
-            <div className={`mt-3 rounded-xl p-3 text-xs font-bold ${isBalanced ? "bg-emerald-50 text-emerald-700" : "bg-rose-50 text-rose-700"}`}>
-              <div className="flex justify-between">
-                <span>Total Debit:</span>
-                <span>{currency.format(editTotalDebit)}</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Total Kredit:</span>
-                <span>{currency.format(editTotalCredit)}</span>
+            {/* Balance indicator Card */}
+            <div
+              className={`mt-3 rounded-2xl p-3.5 text-xs font-bold border transition-all ${
+                isBalanced
+                  ? "bg-emerald-50 text-emerald-800 border-emerald-200"
+                  : "bg-rose-50 text-rose-800 border-rose-200"
+              }`}
+            >
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="flex items-center gap-4 flex-wrap">
+                  <span>
+                    Total Debit: <span className="font-mono text-sm font-black">{currency.format(editTotalDebit)}</span>
+                  </span>
+                  <span>
+                    Total Kredit: <span className="font-mono text-sm font-black">{currency.format(editTotalCredit)}</span>
+                  </span>
+                </div>
+                <div>
+                  {isBalanced ? (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-1 text-[11px] font-black text-emerald-800 border border-emerald-300">
+                      <Check className="size-3" /> SEIMBANG (BALANCE)
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-rose-100 px-2.5 py-1 text-[11px] font-black text-rose-800 border border-rose-300">
+                      ⚠️ SELISIH: {currency.format(Math.abs(editTotalDebit - editTotalCredit))}
+                    </span>
+                  )}
+                </div>
               </div>
               {!isBalanced && (
-                <p className="mt-1 text-[11px]">⚠️ Debit dan Kredit harus balance sebelum simpan.</p>
+                <p className="mt-1.5 text-[11px] font-semibold text-rose-700">
+                  Total Debit dan Kredit wajib balance sebelum perubahan dapat disimpan ke pembukuan.
+                </p>
               )}
             </div>
           </div>
@@ -722,9 +781,13 @@ export function AkuntansiClientManager({ accountRows, journalRows, businessUnits
           <button
             type="submit"
             disabled={!isBalanced}
-            className={`h-12 w-full rounded-2xl text-sm font-bold text-white transition-all ${isBalanced ? "bg-[#2563eb] hover:bg-[#1d4ed8]" : "bg-[#94a3b8] cursor-not-allowed"}`}
+            className={`h-12 w-full rounded-2xl text-sm font-bold text-white transition-all shadow-sm ${
+              isBalanced
+                ? "bg-[#2563eb] hover:bg-[#1d4ed8] active:scale-[0.99] cursor-pointer"
+                : "bg-[#94a3b8] cursor-not-allowed opacity-70"
+            }`}
           >
-            Simpan Perubahan
+            Simpan Perubahan Jurnal
           </button>
         </form>
       </CrudModal>
