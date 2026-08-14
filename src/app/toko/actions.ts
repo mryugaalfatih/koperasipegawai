@@ -11,7 +11,10 @@ function clean(value: FormDataEntryValue | null) {
 
 function parseNum(value: FormDataEntryValue | null, defaultVal = 0): number {
   if (!value) return defaultVal;
-  const num = Number(value);
+  const str = String(value).trim();
+  // Handle formatted rupiah like 'Rp 15.000' or raw '15000'
+  const raw = str.replace(/[^\d.-]/g, "");
+  const num = Number(raw);
   return isNaN(num) ? defaultVal : num;
 }
 
@@ -118,6 +121,52 @@ export async function updateTokoProduct(productId: string, formData: FormData) {
 
   revalidatePath("/toko/produk");
   redirect("/toko/produk?saved=updated");
+}
+
+export async function toggleTokoProductStatus(productId: string) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect("/login");
+  }
+
+  const { data: prod } = await supabase
+    .from("toko_products")
+    .select("id, name, is_active")
+    .eq("id", productId)
+    .maybeSingle();
+
+  if (!prod) {
+    redirect("/toko/produk?error=Produk%20tidak%20ditemukan.");
+  }
+
+  const newStatus = !prod.is_active;
+
+  const { error } = await supabase
+    .from("toko_products")
+    .update({ is_active: newStatus })
+    .eq("id", productId);
+
+  if (error) {
+    redirect(`/toko/produk?error=${encodeURIComponent(error.message)}`);
+  }
+
+  await supabase.from("audit_logs").insert({
+    user_id: user.id,
+    action: newStatus ? "toko.product.activated" : "toko.product.deactivated",
+    details: `Status produk ${prod.name} diubah menjadi ${newStatus ? "Aktif" : "Nonaktif"}.`,
+    metadata: {
+      product_id: productId,
+      is_active: newStatus,
+    },
+  });
+
+  revalidatePath("/toko/produk");
+  revalidatePath("/toko/kasir");
+  redirect(`/toko/produk?saved=${newStatus ? "activated" : "deactivated"}`);
 }
 
 export async function adjustTokoStock(productId: string, formData: FormData) {

@@ -18,8 +18,9 @@ import {
 } from "lucide-react";
 import { CrudHeader } from "@/components/CrudHeader";
 import { CrudModal } from "@/components/CrudModal";
+import { CurrencyInput } from "@/components/CurrencyInput";
 import { SubmitButton } from "@/components/SubmitButton";
-import { createTokoProduct, updateTokoProduct, adjustTokoStock } from "../actions";
+import { createTokoProduct, updateTokoProduct, adjustTokoStock, toggleTokoProductStatus } from "../actions";
 
 import { TokoStockMutationRow } from "./page";
 
@@ -199,15 +200,24 @@ export function TokoProdukClientManager({
                         {formatRupiah(product.sell_price_member)}
                       </td>
                       <td className="px-2 py-2 text-center">
-                        <span
-                          className={`rounded-full px-2.5 py-0.5 text-[11px] font-bold ${
-                            product.is_active
-                              ? "bg-emerald-100 text-emerald-800"
-                              : "bg-slate-100 text-slate-600"
-                          }`}
-                        >
-                          {product.is_active ? "Aktif" : "Nonaktif"}
-                        </span>
+                        <form action={toggleTokoProductStatus.bind(null, product.id)}>
+                          <button
+                            type="submit"
+                            title={product.is_active ? "Klik untuk nonaktifkan produk" : "Klik untuk aktifkan produk"}
+                            className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-bold transition-all cursor-pointer shadow-xs active:scale-95 ${
+                              product.is_active
+                                ? "bg-emerald-100 text-emerald-800 hover:bg-rose-100 hover:text-rose-800 border border-emerald-300"
+                                : "bg-slate-100 text-slate-600 hover:bg-emerald-100 hover:text-emerald-800 border border-slate-300"
+                            }`}
+                          >
+                            <span
+                              className={`size-2 rounded-full ${
+                                product.is_active ? "bg-emerald-600" : "bg-slate-400"
+                              }`}
+                            />
+                            <span>{product.is_active ? "Aktif" : "Nonaktif"}</span>
+                          </button>
+                        </form>
                       </td>
                       <td className="px-2 py-2 text-center">
                         <button
@@ -391,34 +401,28 @@ export function TokoProdukClientManager({
             <div className="grid gap-3 sm:grid-cols-3">
               <label className="block">
                 <span className="text-xs font-bold uppercase text-[#475569]">HPP (Harga Modal)</span>
-                <input
-                  type="number"
-                  className="mt-1.5 h-11 w-full rounded-xl border border-[#dbe5f1] bg-[#f8fbff] px-2 text-xs font-bold outline-none"
+                <CurrencyInput
+                  className="mt-1.5 h-11 w-full rounded-xl border border-[#dbe5f1] bg-[#f8fbff] px-2.5 text-xs font-bold outline-none focus:border-[#2563eb]"
                   name="buy_price"
-                  placeholder="Rp 0"
-                  defaultValue="0"
+                  placeholder="0"
                 />
               </label>
 
               <label className="block">
                 <span className="text-xs font-bold uppercase text-[#475569]">Harga Jual Umum</span>
-                <input
-                  type="number"
-                  className="mt-1.5 h-11 w-full rounded-xl border border-[#dbe5f1] bg-[#f8fbff] px-2 text-xs font-bold outline-none"
+                <CurrencyInput
+                  className="mt-1.5 h-11 w-full rounded-xl border border-[#dbe5f1] bg-[#f8fbff] px-2.5 text-xs font-bold outline-none focus:border-[#2563eb]"
                   name="sell_price_general"
-                  placeholder="Rp 0"
-                  defaultValue="0"
+                  placeholder="0"
                 />
               </label>
 
               <label className="block">
                 <span className="text-xs font-bold uppercase text-[#2563eb]">Harga Anggota</span>
-                <input
-                  type="number"
-                  className="mt-1.5 h-11 w-full rounded-xl border border-[#2563eb] bg-[#eff6ff] px-2 text-xs font-bold outline-none text-[#1d4ed8]"
+                <CurrencyInput
+                  className="mt-1.5 h-11 w-full rounded-xl border border-[#2563eb] bg-[#eff6ff] px-2.5 text-xs font-bold outline-none text-[#1d4ed8] focus:ring-2 focus:ring-[#2563eb]/20"
                   name="sell_price_member"
-                  placeholder="Harga Khusus"
-                  defaultValue="0"
+                  placeholder="0"
                 />
               </label>
             </div>
@@ -498,37 +502,48 @@ export function TokoProdukClientManager({
             <div className="grid gap-3 sm:grid-cols-3">
               <label className="block">
                 <span className="text-xs font-bold uppercase text-[#475569]">HPP (Modal)</span>
-                <input
-                  type="number"
-                  className="mt-1.5 h-11 w-full rounded-xl border border-[#dbe5f1] bg-[#f8fbff] px-2 text-xs font-bold outline-none"
+                <CurrencyInput
+                  className="mt-1.5 h-11 w-full rounded-xl border border-[#dbe5f1] bg-[#f8fbff] px-2.5 text-xs font-bold outline-none focus:border-[#2563eb]"
                   name="buy_price"
                   defaultValue={selectedEditProduct.buy_price}
+                  placeholder="0"
                 />
               </label>
 
               <label className="block">
                 <span className="text-xs font-bold uppercase text-[#475569]">Harga Umum</span>
-                <input
-                  type="number"
-                  className="mt-1.5 h-11 w-full rounded-xl border border-[#dbe5f1] bg-[#f8fbff] px-2 text-xs font-bold outline-none"
+                <CurrencyInput
+                  className="mt-1.5 h-11 w-full rounded-xl border border-[#dbe5f1] bg-[#f8fbff] px-2.5 text-xs font-bold outline-none focus:border-[#2563eb]"
                   name="sell_price_general"
                   defaultValue={selectedEditProduct.sell_price_general}
+                  placeholder="0"
                 />
               </label>
 
               <label className="block">
                 <span className="text-xs font-bold uppercase text-[#2563eb]">Harga Anggota</span>
-                <input
-                  type="number"
-                  className="mt-1.5 h-11 w-full rounded-xl border border-[#2563eb] bg-[#eff6ff] px-2 text-xs font-bold outline-none text-[#1d4ed8]"
+                <CurrencyInput
+                  className="mt-1.5 h-11 w-full rounded-xl border border-[#2563eb] bg-[#eff6ff] px-2.5 text-xs font-bold outline-none text-[#1d4ed8] focus:ring-2 focus:ring-[#2563eb]/20"
                   name="sell_price_member"
                   defaultValue={selectedEditProduct.sell_price_member}
+                  placeholder="0"
                 />
               </label>
             </div>
 
+            <label className="block">
+              <span className="text-xs font-bold uppercase text-[#475569]">Status Produk</span>
+              <select
+                name="is_active"
+                defaultValue={String(selectedEditProduct.is_active)}
+                className="mt-1.5 h-11 w-full rounded-xl border border-[#dbe5f1] bg-[#f8fbff] px-2.5 text-xs font-bold text-[#0b1220] outline-none focus:border-[#2563eb]"
+              >
+                <option value="true">🟢 Aktif (Tersedia & Dijual di Kasir POS)</option>
+                <option value="false">⚪ Nonaktif (Disembunyikan dari Kasir POS)</option>
+              </select>
+            </label>
+
             <input type="hidden" name="stock_qty" value={selectedEditProduct.stock_qty} />
-            <input type="hidden" name="is_active" value="true" />
 
             <SubmitButton className="h-11 w-full rounded-xl bg-[#0b1220] text-xs font-bold text-white hover:bg-slate-800">
               Simpan Master Produk & Harga
