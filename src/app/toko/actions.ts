@@ -189,11 +189,13 @@ export async function adjustTokoStock(productId: string, formData: FormData) {
 
   const { data: prod } = await supabase
     .from("toko_products")
-    .select("name, stock_qty")
+    .select("name, stock_qty, buy_price, unit_name")
     .eq("id", productId)
-    .single();
+    .maybeSingle();
 
   const currentQty = Number(prod?.stock_qty ?? 0);
+  const buyPrice = Number(prod?.buy_price ?? 0);
+  const unitLabel = prod?.unit_name ?? "Pcs";
 
   let newQty = currentQty;
   let qtyIn = 0;
@@ -237,7 +239,7 @@ export async function adjustTokoStock(productId: string, formData: FormData) {
 
   const refNo = `STK-${type.toUpperCase()}-${Date.now().toString().slice(-6)}`;
 
-  // Insert Stock Mutation Record for Kartu Stok
+  // 1. Insert Stock Mutation Record for Kartu Stok
   await supabase.from("toko_stock_mutations").insert({
     product_id: productId,
     mutation_type: type,
@@ -249,26 +251,76 @@ export async function adjustTokoStock(productId: string, formData: FormData) {
     created_by: user.id,
   });
 
-  // If Barang Rusak, post automatic expense journal
-  if (type === "damage") {
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("branch_id")
-      .eq("id", user.id)
-      .single();
+  // 2. Fetch Profile & Branch for Automatic Journal Posting
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("branch_id")
+    .eq("id", user.id)
+    .maybeSingle();
 
+  let branchId = profile?.branch_id as string | null;
+  if (!branchId) {
+    const { data: branch } = await supabase.from("branches").select("id").order("created_at").limit(1).maybeSingle();
+    branchId = (branch?.id as string | undefined) ?? null;
+  }
+
+  const today = new Date().toISOString().slice(0, 10);
+  const totalValue = Math.round(buyPrice * qtyInput);
+
+  // A. Automatic Journal for Pasokan Masuk (Type 'in')
+  if (type === "in" && totalValue > 0) {
+    // Record Cash Out
+    await supabase.from("cash_transactions").insert({
+      branch_id: branchId,
+      transaction_date: today,
+      direction: "out",
+      category: "Pembelian Stok Toko",
+      unit_name: "Unit Toko Waserda",
+      amount: totalValue,
+      description: `[Unit Toko Waserda] Pembelian Stok Masuk: ${prod?.name ?? "Produk"} (${qtyInput} ${unitLabel}) ${notes ? '- ' + notes : ''}`,
+      created_by: user.id,
+    });
+
+    const { data: invAcc } = await supabase.from("accounts").select("id").eq("code", "1301").maybeSingle();
+    const { data: cashAcc } = await supabase.from("accounts").select("id").eq("code", "1001").maybeSingle();
+
+    if (invAcc && cashAcc) {
+      const { data: journal } = await supabase
+        .from("journal_entries")
+        .insert({
+          branch_id: branchId,
+          entry_no: `JRN-STK-${Date.now().toString().slice(-6)}`,
+          entry_date: today,
+          memo: `[Unit Toko Waserda] Pasokan Masuk: ${prod?.name ?? "Produk"} (${qtyInput} ${unitLabel}) ${notes ? '- ' + notes : ''}`,
+          source_type: "toko_stock_in",
+          status: "approved",
+          created_by: user.id,
+        })
+        .select("id")
+        .single();
+
+      if (journal) {
+        await supabase.from("journal_lines").insert([
+          { journal_entry_id: journal.id, account_id: invAcc.id, debit: totalValue, credit: 0 },
+          { journal_entry_id: journal.id, account_id: cashAcc.id, debit: 0, credit: totalValue },
+        ]);
+      }
+    }
+  }
+
+  // B. Automatic Journal for Barang Rusak / Kadaluarsa (Type 'damage')
+  else if (type === "damage" && totalValue > 0) {
     const { data: damageAcc } = await supabase.from("accounts").select("id").eq("code", "5201").maybeSingle();
     const { data: invAcc } = await supabase.from("accounts").select("id").eq("code", "1301").maybeSingle();
 
     if (damageAcc && invAcc) {
-      const today = new Date().toISOString().slice(0, 10);
       const { data: journal } = await supabase
         .from("journal_entries")
         .insert({
-          branch_id: profile?.branch_id,
+          branch_id: branchId,
           entry_no: `JRN-DMG-${Date.now().toString().slice(-6)}`,
           entry_date: today,
-          memo: `Kerugian Barang Rusak / Expired: ${prod?.name ?? "Produk Toko"} (${qtyInput} item)`,
+          memo: `[Unit Toko Waserda] Kerugian Barang Rusak: ${prod?.name ?? "Produk"} (${qtyInput} ${unitLabel}) ${notes ? '- ' + notes : ''}`,
           source_type: "toko_damage",
           status: "approved",
           created_by: user.id,
@@ -277,17 +329,55 @@ export async function adjustTokoStock(productId: string, formData: FormData) {
         .single();
 
       if (journal) {
-        const estLossValue = (prod as any)?.buy_price ? Number((prod as any).buy_price) * qtyInput : 0;
-        if (estLossValue > 0) {
-          await supabase.from("journal_lines").insert([
-            { journal_entry_id: journal.id, account_id: damageAcc.id, debit: estLossValue, credit: 0 },
-            { journal_entry_id: journal.id, account_id: invAcc.id, debit: 0, credit: estLossValue },
-          ]);
-        }
+        await supabase.from("journal_lines").insert([
+          { journal_entry_id: journal.id, account_id: damageAcc.id, debit: totalValue, credit: 0 },
+          { journal_entry_id: journal.id, account_id: invAcc.id, debit: 0, credit: totalValue },
+        ]);
       }
     }
   }
 
+  // C. Automatic Journal for Retur ke Supplier (Type 'retur_out')
+  else if (type === "retur_out" && totalValue > 0) {
+    await supabase.from("cash_transactions").insert({
+      branch_id: branchId,
+      transaction_date: today,
+      direction: "in",
+      category: "Pengembalian Retur Supplier",
+      unit_name: "Unit Toko Waserda",
+      amount: totalValue,
+      description: `[Unit Toko Waserda] Pengembalian Retur Supplier: ${prod?.name ?? "Produk"} (${qtyInput} ${unitLabel})`,
+      created_by: user.id,
+    });
+
+    const { data: cashAcc } = await supabase.from("accounts").select("id").eq("code", "1001").maybeSingle();
+    const { data: invAcc } = await supabase.from("accounts").select("id").eq("code", "1301").maybeSingle();
+
+    if (cashAcc && invAcc) {
+      const { data: journal } = await supabase
+        .from("journal_entries")
+        .insert({
+          branch_id: branchId,
+          entry_no: `JRN-RET-${Date.now().toString().slice(-6)}`,
+          entry_date: today,
+          memo: `[Unit Toko Waserda] Retur Barang ke Supplier: ${prod?.name ?? "Produk"} (${qtyInput} ${unitLabel})`,
+          source_type: "toko_retur_out",
+          status: "approved",
+          created_by: user.id,
+        })
+        .select("id")
+        .single();
+
+      if (journal) {
+        await supabase.from("journal_lines").insert([
+          { journal_entry_id: journal.id, account_id: cashAcc.id, debit: totalValue, credit: 0 },
+          { journal_entry_id: journal.id, account_id: invAcc.id, debit: 0, credit: totalValue },
+        ]);
+      }
+    }
+  }
+
+  // 3. Insert Audit Log
   await supabase.from("audit_logs").insert({
     user_id: user.id,
     action: "toko.stock.adjusted",
@@ -297,10 +387,18 @@ export async function adjustTokoStock(productId: string, formData: FormData) {
       old_qty: currentQty,
       new_qty: newQty,
       type,
+      total_value: totalValue,
+      unit_name: "Unit Toko Waserda",
     },
   });
 
   revalidatePath("/toko/produk");
+  revalidatePath("/toko/home");
+  revalidatePath("/akuntansi");
+  revalidatePath("/kas-jurnal");
+  revalidatePath("/kas");
+  revalidatePath("/laporan");
+
   redirect("/toko/produk?saved=stock_adjusted");
 }
 
