@@ -123,20 +123,20 @@ export default async function KasJurnalPage({ searchParams }: KasJurnalPageProps
   }
 
   const [{ data: profile }, { data: accounts }, { data: cashTransactions }, { data: journalEntries }, { data: businessUnits }] = await Promise.all([
-    supabase.from("profiles").select("id, branch_id").eq("id", user.id).single(),
+    supabase.from("profiles").select("id, branch_id").eq("id", user.id).maybeSingle(),
     supabase.from("accounts").select("id, code, name, category").order("code"),
     supabase
       .from("cash_transactions")
       .select("id, direction, amount, source_type, description, transaction_date")
       .order("transaction_date", { ascending: false })
       .order("created_at", { ascending: false })
-      .limit(500),
+      .limit(150),
     supabase
       .from("journal_entries")
       .select("id, entry_no, entry_date, memo, source_type, status, journal_lines(debit, credit, accounts(code, name, category))")
       .order("entry_date", { ascending: false })
       .order("created_at", { ascending: false })
-      .limit(500),
+      .limit(150),
     supabase.from("business_units").select("id, code, name").eq("is_active", true).order("code"),
   ]);
 

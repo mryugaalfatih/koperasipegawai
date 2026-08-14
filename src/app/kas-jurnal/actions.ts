@@ -53,7 +53,7 @@ async function requireProfile() {
     .from("profiles")
     .select("id, branch_id")
     .eq("id", user.id)
-    .single();
+    .maybeSingle();
 
   if (!profile) {
     redirect("/login?error=Profil%20user%20belum%20dibuat.");
@@ -62,7 +62,7 @@ async function requireProfile() {
   let branchId = profile.branch_id as string | null;
 
   if (!branchId) {
-    const { data: branch } = await supabase.from("branches").select("id").order("created_at").limit(1).single();
+    const { data: branch } = await supabase.from("branches").select("id").order("created_at").limit(1).maybeSingle();
     branchId = (branch?.id as string | undefined) ?? null;
   }
 
@@ -76,19 +76,23 @@ async function requireProfile() {
 export async function postCashTransaction(formData: FormData) {
   const { supabase, profileId, branchId } = await requireProfile();
   const direction = clean(formData.get("direction"));
+  const fundSource = clean(formData.get("fund_source")) ?? "kas";
   const amount = money(formData.get("amount"));
   const counterAccountId = clean(formData.get("counter_account_id"));
   const transactionDate = clean(formData.get("transaction_date")) ?? new Date().toISOString().slice(0, 10);
-  const description = clean(formData.get("description")) ?? "Transaksi kas manual";
+  const unitName = clean(formData.get("unit_name")) ?? "Pusat / Umum";
+  const rawDescription = clean(formData.get("description")) ?? "Transaksi kas manual";
+  const description = unitName !== "Pusat / Umum" ? `[${unitName}] ${rawDescription}` : rawDescription;
 
   if (!["in", "out"].includes(direction ?? "") || amount <= 0 || !counterAccountId) {
     redirect("/kas-jurnal?error=Jenis%20kas,%20akun%20lawan,%20dan%20nominal%20wajib%20valid.");
   }
 
-  const { data: cashAccount } = await supabase.from("accounts").select("id").eq("code", "1001").single();
+  const targetCode = fundSource === "bank" ? "1002" : "1001";
+  const { data: cashAccount } = await supabase.from("accounts").select("id").eq("code", targetCode).maybeSingle();
 
   if (!cashAccount) {
-    redirect("/kas-jurnal?error=Akun%20Kas%201001%20belum%20ada.%20Jalankan%20seed%20COA.");
+    redirect(`/kas-jurnal?error=Akun%20${fundSource === "bank" ? "Bank 1002" : "Kas 1001"}%20belum%20ada.%20Jalankan%20seed%20COA.`);
   }
 
   const { data: cashTransaction, error: cashError } = await supabase
