@@ -22,6 +22,8 @@ import {
   WalletCards,
   X,
   Layers,
+  LogOut,
+  Home,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { unitNavItems } from "@/lib/dashboardNavigation";
@@ -68,6 +70,17 @@ export function DashboardNavigation({ navItems: initialNavItems, mobileNavItems,
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const hoverTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleSignOut = async () => {
+    try {
+      const supabase = createClient();
+      await supabase.auth.signOut();
+      window.location.href = "/login";
+    } catch (err) {
+      console.error("Sign out error:", err);
+      window.location.href = "/login";
+    }
+  };
 
   type UnitProp = { id: string; code: string; name: string; is_active?: boolean };
   const [units, setUnits] = useState<UnitProp[]>(
@@ -367,8 +380,51 @@ export function DashboardNavigation({ navItems: initialNavItems, mobileNavItems,
         {/* Divider */}
         <div className="my-3 border-t border-[#e2e8f0]" />
 
-        {/* Nav Items */}
-        {isExpanded ? renderNavItems(currentNavItems) : renderIconRail(currentNavItems)}
+        {/* Nav Items (Scrollable) */}
+        <div className="flex-1 overflow-y-auto overflow-x-hidden space-y-0.5 pr-0.5">
+          {isExpanded ? renderNavItems(currentNavItems) : renderIconRail(currentNavItems)}
+        </div>
+
+        {/* Bottom Actions: Portal Utama & Logout */}
+        {isExpanded ? (
+          <div className="mt-auto pt-3 border-t border-[#e2e8f0] space-y-1">
+            <Link
+              href="/home"
+              className="flex h-9 w-full items-center gap-2.5 rounded-xl px-2.5 text-xs font-bold text-[#475569] hover:bg-white hover:text-[#0b1220] transition-all"
+            >
+              <Building2 className="size-4 text-[#2563eb] shrink-0" />
+              <span className="truncate">Portal Utama</span>
+            </Link>
+
+            <button
+              type="button"
+              onClick={handleSignOut}
+              className="flex h-9 w-full items-center gap-2.5 rounded-xl px-2.5 text-xs font-bold text-rose-600 hover:bg-rose-50 hover:text-rose-700 transition-all cursor-pointer"
+            >
+              <LogOut className="size-4 shrink-0" />
+              <span className="truncate">Keluar / Logout</span>
+            </button>
+          </div>
+        ) : (
+          <div className="mt-auto pt-3 border-t border-[#e2e8f0] space-y-1.5 flex flex-col items-center">
+            <Link
+              href="/home"
+              title="Portal Utama"
+              className="grid size-9 place-items-center rounded-xl text-[#475569] hover:bg-white hover:text-[#0b1220] transition-colors"
+            >
+              <Building2 className="size-4 text-[#2563eb]" />
+            </Link>
+
+            <button
+              type="button"
+              title="Keluar / Logout"
+              onClick={handleSignOut}
+              className="grid size-9 place-items-center rounded-xl text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+            >
+              <LogOut className="size-4" />
+            </button>
+          </div>
+        )}
       </aside>
 
       {/* ===== MOBILE BOTTOM BAR ===== */}
@@ -444,7 +500,28 @@ export function DashboardNavigation({ navItems: initialNavItems, mobileNavItems,
               {renderNavItems(currentNavItems, true)}
             </div>
 
-            <div className="h-8" />
+            {/* Mobile Bottom Actions */}
+            <div className="mt-4 pt-3 border-t border-[#e2e8f0] space-y-2">
+              <Link
+                href="/home"
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-white border border-[#dbe5f1] text-xs font-bold text-[#0b1220] shadow-2xs hover:bg-slate-50"
+              >
+                <Building2 className="size-4 text-[#2563eb]" />
+                <span>Kembali ke Portal Utama</span>
+              </Link>
+
+              <button
+                type="button"
+                onClick={handleSignOut}
+                className="flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-rose-50 border border-rose-200 text-xs font-bold text-rose-700 hover:bg-rose-100 cursor-pointer shadow-2xs"
+              >
+                <LogOut className="size-4" />
+                <span>Keluar dari Aplikasi (Logout)</span>
+              </button>
+            </div>
+
+            <div className="h-4" />
           </div>
         </div>
       )}
