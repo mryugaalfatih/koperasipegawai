@@ -24,6 +24,8 @@ import {
 } from "lucide-react";
 import { processPosSale } from "../actions";
 import { TokoProductRow } from "../produk/TokoProdukClientManager";
+import { defaultTokoPromos, TokoPromo } from "@/lib/tokoPromos";
+import { CrudModal } from "@/components/CrudModal";
 
 export type MemberOption = {
   id: string;
@@ -73,6 +75,7 @@ export function TokoKasirClientManager({
   const [isPending, startTransition] = useTransition();
 
   const [search, setSearch] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [cart, setCart] = useState<CartItem[]>([]);
   const [customerSelected, setCustomerSelected] = useState<boolean>(false);
   const [customerType, setCustomerType] = useState<"general" | "member">("general");
@@ -81,6 +84,11 @@ export function TokoKasirClientManager({
   const [paidAmountInput, setPaidAmountInput] = useState<string>("");
   const [discountInput, setDiscountInput] = useState<string>("0");
   const [notes, setNotes] = useState<string>("");
+
+  const [appliedPromo, setAppliedPromo] = useState<TokoPromo | null>(null);
+  const [showPromoModal, setShowPromoModal] = useState<boolean>(false);
+  const [promoCodeInput, setPromoCodeInput] = useState<string>("");
+  const [promoFeedback, setPromoFeedback] = useState<{ type: "success" | "error"; message: string } | null>(null);
 
   const [showReceiptModal, setShowReceiptModal] = useState(!!successInv);
   const [showCustomerModal, setShowCustomerModal] = useState(false);
@@ -95,6 +103,78 @@ export function TokoKasirClientManager({
 
   const parseThousand = (val: string | number) => Number(String(val ?? "").replace(/\D/g, "") || "0");
 
+  const isMember = customerType === "member" && !!selectedMember;
+
+  const subtotal = cart.reduce((sum, item) => {
+    const price = isMember ? item.sell_price_member : item.sell_price_general;
+    return sum + price * item.qty;
+  }, 0);
+
+  const discount = parseThousand(discountInput);
+  const grandTotal = Math.max(0, subtotal - discount);
+  const paidAmount = parseThousand(paidAmountInput);
+  const changeAmount = paymentMethod === "cash" ? Math.max(0, paidAmount - grandTotal) : 0;
+
+  // Apply Voucher Promo
+  const applyPromo = (promo: TokoPromo) => {
+    if (promo.min_spend > 0 && subtotal < promo.min_spend) {
+      setPromoFeedback({
+        type: "error",
+        message: `Minimal belanja Rp ${new Intl.NumberFormat("id-ID").format(promo.min_spend)} untuk menggunakan voucher ini.`,
+      });
+      return;
+    }
+
+    if (promo.is_member_only && !isMember) {
+      setPromoFeedback({
+        type: "error",
+        message: "Voucher ini khusus untuk Anggota Koperasi (Pilih tipe Anggota di awal transaksi).",
+      });
+      return;
+    }
+
+    let disc = 0;
+    if (promo.type === "discount_percent") {
+      disc = Math.round(subtotal * (promo.value / 100));
+    } else {
+      disc = Math.min(subtotal, promo.value);
+    }
+
+    setDiscountInput(formatThousand(disc));
+    setAppliedPromo(promo);
+    setPromoFeedback({
+      type: "success",
+      message: `Voucher ${promo.code} berhasil dipasang! Potongan diskon ${formatRupiah(disc)}.`,
+    });
+
+    setTimeout(() => {
+      setShowPromoModal(false);
+      setPromoFeedback(null);
+    }, 1000);
+  };
+
+  const handleApplyCustomCode = (e: React.FormEvent) => {
+    e.preventDefault();
+    const code = promoCodeInput.trim().toUpperCase();
+    if (!code) return;
+
+    const matched = defaultTokoPromos.find((p) => p.code.toUpperCase() === code && p.is_active);
+    if (!matched) {
+      setPromoFeedback({
+        type: "error",
+        message: `Kode voucher "${code}" tidak ditemukan atau sudah tidak aktif.`,
+      });
+      return;
+    }
+
+    applyPromo(matched);
+  };
+
+  const removeAppliedPromo = () => {
+    setAppliedPromo(null);
+    setDiscountInput("0");
+  };
+
   const filteredMembers = members.filter((m) => {
     if (!memberSearch.trim()) return true;
     const q = memberSearch.toLowerCase().trim();
@@ -105,8 +185,9 @@ export function TokoKasirClientManager({
     );
   });
 
-  // Filter product catalog by search / barcode
+  // Filter product catalog by search / barcode / category
   const filteredProducts = products.filter((p) => {
+    if (selectedCategory !== "all" && p.category !== selectedCategory) return false;
     if (!search.trim()) return true;
     const q = search.toLowerCase().trim();
     return (
@@ -172,6 +253,7 @@ export function TokoKasirClientManager({
     setPaymentMethod("cash");
     setPaidAmountInput("");
     setDiscountInput("0");
+    setAppliedPromo(null);
     setNotes("");
   };
 
@@ -189,18 +271,6 @@ export function TokoKasirClientManager({
     setCustomerSelected(true);
     setShowCustomerModal(false);
   };
-
-  // Calculate Subtotal & Totals based on member toggle
-  const isMember = customerType === "member" && !!selectedMember;
-  const subtotal = cart.reduce((sum, item) => {
-    const price = isMember ? item.sell_price_member : item.sell_price_general;
-    return sum + price * item.qty;
-  }, 0);
-
-  const discount = Math.max(0, parseThousand(discountInput));
-  const grandTotal = Math.max(0, subtotal - discount);
-  const paidAmount = parseThousand(paidAmountInput);
-  const changeAmount = paymentMethod === "cash" ? Math.max(0, paidAmount - grandTotal) : 0;
 
   // Prepare items JSON for server action submission
   const cartSubmissionItems = cart.map((item) => {
@@ -377,17 +447,44 @@ export function TokoKasirClientManager({
       <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
         {/* Left: Product Selector */}
         <section className="space-y-4 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-[#dbe5f1]">
-          {/* Search Box */}
-          <div className="relative">
-            <Search className="absolute left-3.5 top-3 size-4 text-[#94a3b8]" />
-            <input
-              type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Scan Barcode / Cari Nama Barang Sembako..."
-              className="h-10 w-full rounded-xl border border-[#dbe5f1] bg-[#f8fbff] pl-10 pr-4 text-xs font-bold outline-none focus:border-[#2563eb]"
-              autoFocus
-            />
+          {/* Search Box & Category Filter */}
+          <div className="space-y-2">
+            <div className="relative">
+              <Search className="absolute left-3.5 top-3 size-4 text-[#94a3b8]" />
+              <input
+                type="text"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Scan Barcode / Cari Nama Barang Sembako..."
+                className="h-10 w-full rounded-xl border border-[#dbe5f1] bg-[#f8fbff] pl-10 pr-4 text-xs font-bold outline-none focus:border-[#2563eb]"
+                autoFocus
+              />
+            </div>
+
+            {/* Category Filter Pills */}
+            <div className="flex flex-wrap items-center gap-1.5">
+              {[
+                { id: "all", label: "Semua Kategori" },
+                { id: "Sembako", label: "🌾 Sembako" },
+                { id: "Makanan", label: "🍜 Makanan" },
+                { id: "Minuman", label: "🧃 Minuman" },
+                { id: "Bumbu", label: "🧂 Bumbu" },
+                { id: "Paket Bundling", label: "🎁 Paket Bundling" },
+              ].map((cat) => (
+                <button
+                  key={cat.id}
+                  type="button"
+                  onClick={() => setSelectedCategory(cat.id)}
+                  className={`h-7 rounded-xl px-2.5 text-[11px] font-bold transition-all cursor-pointer ${
+                    selectedCategory === cat.id
+                      ? "bg-[#2563eb] text-white shadow-xs font-black"
+                      : "bg-[#f8fbff] text-[#64748b] ring-1 ring-[#dbe5f1] hover:bg-slate-100"
+                  }`}
+                >
+                  {cat.label}
+                </button>
+              ))}
+            </div>
           </div>
 
           {/* Product Grid */}
@@ -633,11 +730,45 @@ export function TokoKasirClientManager({
             ) : null}
 
             {/* Totals Summary */}
-            <div className="rounded-xl bg-[#0b1220] p-3 text-white space-y-1 text-xs">
+            <div className="rounded-xl bg-[#0b1220] p-3 text-white space-y-2 text-xs">
               <div className="flex justify-between text-[#94a3b8]">
                 <span>Subtotal ({cart.length} Jenis Item):</span>
                 <span>{formatRupiah(subtotal)}</span>
               </div>
+
+              {/* Voucher Applied Badge or Apply Voucher Button */}
+              {appliedPromo ? (
+                <div className="flex items-center justify-between rounded-lg bg-emerald-950/80 p-2 border border-emerald-500 text-xs">
+                  <div className="flex items-center gap-1.5 text-emerald-300">
+                    <Sparkles className="size-3.5 text-emerald-400 shrink-0" />
+                    <div>
+                      <p className="font-bold leading-tight">Voucher {appliedPromo.code} Aktif</p>
+                      <p className="text-[10px] text-emerald-400">{appliedPromo.title}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="font-black text-emerald-300">-{formatRupiah(discount)}</span>
+                    <button
+                      type="button"
+                      onClick={removeAppliedPromo}
+                      className="grid size-5 place-items-center rounded bg-emerald-800 text-white hover:bg-emerald-700 cursor-pointer"
+                      title="Hapus Voucher"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setShowPromoModal(true)}
+                  className="w-full flex items-center justify-center gap-1.5 rounded-lg border border-dashed border-slate-600 bg-slate-800/80 py-2 text-[11px] font-bold text-amber-300 hover:bg-slate-800 hover:border-amber-400 cursor-pointer transition-all"
+                >
+                  <Tag className="size-3.5" />
+                  <span>🎟️ Pasang Kupon / Voucher Promo</span>
+                </button>
+              )}
+
               {isMember ? (
                 <div className="flex justify-between text-emerald-400 font-bold">
                   <span>Status Diskon Anggota:</span>
@@ -649,7 +780,8 @@ export function TokoKasirClientManager({
                   <span>Umum / Reguler</span>
                 </div>
               )}
-              <div className="flex justify-between pt-1 border-t border-slate-700 text-sm font-black">
+
+              <div className="flex justify-between pt-1.5 border-t border-slate-700 text-sm font-black">
                 <span>TOTAL BAYAR:</span>
                 <span className="text-[#38bdf8] text-base">{formatRupiah(grandTotal)}</span>
               </div>
@@ -675,6 +807,113 @@ export function TokoKasirClientManager({
           </div>
         </section>
       </div>
+
+      {/* Modal Pilih Kupon / Voucher Promo */}
+      {showPromoModal ? (
+        <CrudModal
+          isOpen={true}
+          maxWidth="max-w-md"
+          title="Kupon & Voucher Promo Toko"
+          onClose={() => {
+            setShowPromoModal(false);
+            setPromoFeedback(null);
+          }}
+        >
+          <div className="space-y-4 text-xs">
+            {/* Feedback Alert */}
+            {promoFeedback ? (
+              <div
+                className={`p-3 rounded-xl border text-xs font-bold ${
+                  promoFeedback.type === "success"
+                    ? "bg-emerald-50 text-emerald-800 border-emerald-200"
+                    : "bg-rose-50 text-rose-800 border-rose-200"
+                }`}
+              >
+                {promoFeedback.message}
+              </div>
+            ) : null}
+
+            {/* Custom Code Input */}
+            <form onSubmit={handleApplyCustomCode} className="flex gap-2">
+              <input
+                type="text"
+                placeholder="Masukkan Kode Voucher (misal: SEMBAKO10)"
+                value={promoCodeInput}
+                onChange={(e) => setPromoCodeInput(e.target.value.toUpperCase())}
+                className="h-10 flex-1 rounded-xl border border-[#dbe5f1] bg-[#f8fbff] px-3 font-mono text-xs font-black uppercase outline-none focus:border-[#2563eb]"
+              />
+              <button
+                type="submit"
+                className="h-10 rounded-xl bg-[#2563eb] px-4 font-bold text-white hover:bg-[#1d4ed8] cursor-pointer"
+              >
+                Pakai
+              </button>
+            </form>
+
+            {/* Active Promo List */}
+            <div className="space-y-2">
+              <p className="font-bold text-[#0b1220]">Pilih Promo Aktif Tersedia:</p>
+              <div className="max-h-60 overflow-y-auto space-y-2 pr-1">
+                {defaultTokoPromos
+                  .filter((p) => p.is_active)
+                  .map((p) => {
+                    const isPercent = p.type === "discount_percent";
+                    const isEligibleMember = !p.is_member_only || isMember;
+                    const isEligibleSpend = subtotal >= p.min_spend;
+
+                    return (
+                      <div
+                        key={p.id}
+                        onClick={() => applyPromo(p)}
+                        className={`rounded-xl border p-3 cursor-pointer transition-all ${
+                          appliedPromo?.id === p.id
+                            ? "border-emerald-500 bg-emerald-50 ring-1 ring-emerald-500"
+                            : "border-[#dbe5f1] bg-[#f8fbff] hover:bg-white hover:border-[#2563eb]"
+                        }`}
+                      >
+                        <div className="flex items-start justify-between gap-2">
+                          <div>
+                            <div className="flex items-center gap-1.5">
+                              <span className="font-mono text-xs font-black text-[#2563eb] uppercase">
+                                {p.code}
+                              </span>
+                              {p.is_member_only ? (
+                                <span className="rounded bg-amber-100 px-1.5 py-0.5 text-[9px] font-bold text-amber-800">
+                                  ⭐ Khusus Anggota
+                                </span>
+                              ) : null}
+                            </div>
+                            <h4 className="mt-0.5 font-bold text-[#0b1220]">{p.title}</h4>
+                            <p className="text-[10px] text-[#64748b] mt-0.5">{p.description}</p>
+                          </div>
+
+                          <div className="text-right shrink-0">
+                            <span className="font-black text-[#0b1220] text-xs">
+                              {isPercent ? `${p.value}%` : formatRupiah(p.value)}
+                            </span>
+                            <p className="text-[9px] text-[#64748b]">
+                              Min: {p.min_spend > 0 ? formatRupiah(p.min_spend) : "Tanpa Min"}
+                            </p>
+                          </div>
+                        </div>
+
+                        {!isEligibleMember ? (
+                          <p className="mt-1.5 text-[10px] text-amber-700 font-semibold">
+                            ⚠️ Khusus untuk Anggota Koperasi (Pilih anggota di awal)
+                          </p>
+                        ) : !isEligibleSpend ? (
+                          <p className="mt-1.5 text-[10px] text-slate-500 italic">
+                            Belanja kurang {formatRupiah(p.min_spend - subtotal)} lagi untuk voucher ini.
+                          </p>
+                        ) : null}
+                      </div>
+                    );
+                  })}
+              </div>
+            </div>
+          </div>
+        </CrudModal>
+      ) : null}
 
       {/* Thermal Receipt Modal */}
       {showReceiptModal && successInv ? (

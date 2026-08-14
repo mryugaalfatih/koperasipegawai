@@ -1,8 +1,9 @@
 import { redirect } from "next/navigation";
-import { TokoPromoClientManager, TokoPromoRow } from "./TokoPromoClientManager";
+import { TokoPromoClientManager } from "./TokoPromoClientManager";
 import { DashboardNavigation } from "@/components/DashboardNavigation";
 import { ToastNotification } from "@/components/ToastNotification";
 import { mobileNavItems, navItems } from "@/lib/dashboardNavigation";
+import { defaultTokoPromos } from "@/lib/tokoPromos";
 import { createClient } from "@/lib/supabase/server";
 
 type TokoPromoPageProps = {
@@ -11,42 +12,6 @@ type TokoPromoPageProps = {
     error?: string;
   }>;
 };
-
-const initialPromos: TokoPromoRow[] = [
-  {
-    id: "promo_1",
-    title: "Paket Sembako Berkah Ramadan 5kg + 2L",
-    code: "RAMADAN52",
-    type: "bundling",
-    value: 5000,
-    startDate: "2026-08-01",
-    endDate: "2026-08-31",
-    isActive: true,
-    description: "Beli Beras Ramos 5kg + Minyak Goreng 2L potongan hemat Rp 5.000.",
-  },
-  {
-    id: "promo_2",
-    title: "Diskon Khusus Anggota Koperasi 5%",
-    code: "MEMBER5",
-    type: "discount_percent",
-    value: 5,
-    startDate: "2026-08-01",
-    endDate: "2026-12-31",
-    isActive: true,
-    description: "Diskon tambahan 5% untuk setiap transaksi pembelian umum anggota.",
-  },
-  {
-    id: "promo_3",
-    title: "Voucher Belanja Sembako Rp 10.000",
-    code: "SEMBAKO10",
-    type: "discount_flat",
-    value: 10000,
-    startDate: "2026-08-10",
-    endDate: "2026-08-25",
-    isActive: true,
-    description: "Potongan Rp 10.000 dengan minimal belanja toko Rp 200.000.",
-  },
-];
 
 export default async function TokoPromoPage({ searchParams }: TokoPromoPageProps) {
   const supabase = await createClient();
@@ -79,7 +44,7 @@ export default async function TokoPromoPage({ searchParams }: TokoPromoPageProps
 
         <section className="min-w-0 pb-20 lg:pb-8">
           <div className="px-2 py-2 md:px-2 md:py-2">
-            <TokoPromoClientManager promos={initialPromos} />
+            <TokoPromoClientManager initialPromos={defaultTokoPromos} />
           </div>
         </section>
       </div>
