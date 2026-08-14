@@ -516,27 +516,6 @@ export function AkuntansiClientManager({ accountRows, journalRows, businessUnits
                 </div>
               )}
             </section>
-
-            {/* Chart of Accounts */}
-            <section className="rounded-xl bg-white p-4 shadow-sm ring-1 ring-[#dbe5f1] md:p-5">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs font-bold uppercase tracking-wider text-[#64748b]">Master Akun</p>
-                  <h2 className="text-base font-bold text-[#0b1220]">Bagan Akun (Chart of Accounts / CoA)</h2>
-                </div>
-                <Calculator className="size-5 text-[#2563eb]" />
-              </div>
-
-              <div className="mt-4 grid gap-2 sm:grid-cols-2 md:grid-cols-3">
-                {accountRows.map((acc) => (
-                  <div className="rounded-2xl bg-[#f4f7fb] p-3.5" key={acc.id}>
-                    <p className="text-xs font-bold text-[#2563eb]">{acc.code}</p>
-                    <p className="text-sm font-bold text-[#0b1220]">{acc.name}</p>
-                    <p className="mt-0.5 text-[11px] font-semibold text-[#64748b] capitalize">{acc.category}</p>
-                  </div>
-                ))}
-              </div>
-            </section>
           </div>
 
           {/* Sidebar: Form Posting Jurnal Manual */}
@@ -682,10 +661,10 @@ export function AkuntansiClientManager({ accountRows, journalRows, businessUnits
                   </div>
 
                   {/* Debit Input */}
-                  <div className="w-32 shrink-0">
+                  <div className="w-28 shrink-0">
                     <input
                       type="text"
-                      className="w-full h-10 rounded-xl border border-[#dbe5f1] bg-white px-2.5 text-xs font-bold text-[#0b1220] outline-none text-right font-mono focus:border-[#2563eb] focus:ring-1 focus:ring-[#2563eb]"
+                      className="w-full h-10 rounded-xl border border-[#dbe5f1] bg-white px-2 text-xs font-bold text-[#0b1220] outline-none text-right font-mono focus:border-[#2563eb] focus:ring-1 focus:ring-[#2563eb]"
                       placeholder="0 (Debit)"
                       value={line.debit && Number(line.debit) > 0 ? Number(line.debit).toLocaleString("id-ID") : ""}
                       onChange={(e) => {
@@ -696,10 +675,10 @@ export function AkuntansiClientManager({ accountRows, journalRows, businessUnits
                   </div>
 
                   {/* Credit Input */}
-                  <div className="w-32 shrink-0">
+                  <div className="w-28 shrink-0">
                     <input
                       type="text"
-                      className="w-full h-10 rounded-xl border border-[#dbe5f1] bg-white px-2.5 text-xs font-bold text-[#0b1220] outline-none text-right font-mono focus:border-[#2563eb] focus:ring-1 focus:ring-[#2563eb]"
+                      className="w-full h-10 rounded-xl border border-[#dbe5f1] bg-white px-2 text-xs font-bold text-[#0b1220] outline-none text-right font-mono focus:border-[#2563eb] focus:ring-1 focus:ring-[#2563eb]"
                       placeholder="0 (Kredit)"
                       value={line.credit && Number(line.credit) > 0 ? Number(line.credit).toLocaleString("id-ID") : ""}
                       onChange={(e) => {
