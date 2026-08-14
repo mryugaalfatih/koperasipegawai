@@ -231,8 +231,8 @@ export async function adjustTokoStock(productId: string, formData: FormData) {
         const estLossValue = (prod as any)?.buy_price ? Number((prod as any).buy_price) * qtyInput : 0;
         if (estLossValue > 0) {
           await supabase.from("journal_lines").insert([
-            { journal_id: journal.id, account_id: damageAcc.id, debit: estLossValue, credit: 0 },
-            { journal_id: journal.id, account_id: invAcc.id, debit: 0, credit: estLossValue },
+            { journal_entry_id: journal.id, account_id: damageAcc.id, debit: estLossValue, credit: 0 },
+            { journal_entry_id: journal.id, account_id: invAcc.id, debit: 0, credit: estLossValue },
           ]);
         }
       }
@@ -428,13 +428,13 @@ export async function processPosSale(formData: FormData) {
     if (journal) {
       await supabase.from("journal_lines").insert([
         {
-          journal_id: journal.id,
+          journal_entry_id: journal.id,
           account_id: cashAccount.id,
           debit: grandTotal,
           credit: 0,
         },
         {
-          journal_id: journal.id,
+          journal_entry_id: journal.id,
           account_id: revenueAccount.id,
           debit: 0,
           credit: grandTotal,
@@ -465,8 +465,8 @@ export async function processPosSale(formData: FormData) {
 
           if (hppJournal) {
             await supabase.from("journal_lines").insert([
-              { journal_id: hppJournal.id, account_id: hppAcc.id, debit: totalHpp, credit: 0 },
-              { journal_id: hppJournal.id, account_id: invAcc.id, debit: 0, credit: totalHpp },
+              { journal_entry_id: hppJournal.id, account_id: hppAcc.id, debit: totalHpp, credit: 0 },
+              { journal_entry_id: hppJournal.id, account_id: invAcc.id, debit: 0, credit: totalHpp },
             ]);
           }
         }
@@ -708,8 +708,8 @@ export async function receivePurchaseOrder(poId: string) {
 
     if (journal) {
       await supabase.from("journal_lines").insert([
-        { journal_id: journal.id, account_id: invAcc.id, debit: totalAmount, credit: 0 },
-        { journal_id: journal.id, account_id: cashAcc.id, debit: 0, credit: totalAmount },
+        { journal_entry_id: journal.id, account_id: invAcc.id, debit: totalAmount, credit: 0 },
+        { journal_entry_id: journal.id, account_id: cashAcc.id, debit: 0, credit: totalAmount },
       ]);
     }
   }

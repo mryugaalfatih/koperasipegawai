@@ -201,8 +201,8 @@ export async function processAparRefillComplete(orderId: string) {
 
     if (journal) {
       await supabase.from("journal_lines").insert([
-        { journal_id: journal.id, account_id: cashAcc.id, debit: totalAmount, credit: 0 },
-        { journal_id: journal.id, account_id: revAcc.id, debit: 0, credit: totalAmount },
+        { journal_entry_id: journal.id, account_id: cashAcc.id, debit: totalAmount, credit: 0 },
+        { journal_entry_id: journal.id, account_id: revAcc.id, debit: 0, credit: totalAmount },
       ]);
     }
   }
