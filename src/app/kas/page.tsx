@@ -121,7 +121,7 @@ export default async function KasPage({ searchParams }: KasPageProps) {
   }));
 
   const pendingManagerRows = allJournals
-    .filter((j) => ["pending_manager", "draft"].includes(j.status ?? ""))
+    .filter((j) => j.status === "pending_manager")
     .map((j) => ({
       id: j.id,
       entry_no: j.entry_no,
