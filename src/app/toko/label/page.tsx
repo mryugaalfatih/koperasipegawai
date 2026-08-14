@@ -25,9 +25,10 @@ export default async function TokoLabelPage({ searchParams }: TokoLabelPageProps
     redirect("/login");
   }
 
-  const [{ data: profile }, { data: dbProducts }] = await Promise.all([
+  const [{ data: profile }, { data: dbProducts }, { data: cooperativeProfile }] = await Promise.all([
     supabase.from("profiles").select("branch_id, role, full_name").eq("id", user.id).single(),
     supabase.from("toko_products").select("*").eq("is_active", true).order("name"),
+    supabase.from("cooperative_profiles").select("name, address, phone").order("created_at").limit(1).maybeSingle(),
   ]);
 
   if (!profile) {
@@ -49,7 +50,10 @@ export default async function TokoLabelPage({ searchParams }: TokoLabelPageProps
 
         <section className="min-w-0 pb-20 lg:pb-8">
           <div className="px-2 py-2 md:px-2 md:py-2">
-            <TokoLabelClientManager products={products} />
+            <TokoLabelClientManager
+              products={products}
+              cooperativeProfile={cooperativeProfile}
+            />
           </div>
         </section>
       </div>
