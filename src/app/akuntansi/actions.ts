@@ -76,7 +76,9 @@ async function requireProfile() {
 export async function postManualJournal(formData: FormData) {
   const { supabase, profileId, branchId } = await requireProfile();
   const entryDate = clean(formData.get("entry_date")) ?? new Date().toISOString().slice(0, 10);
-  const memo = clean(formData.get("memo")) ?? "Jurnal umum manual";
+  const rawMemo = clean(formData.get("memo")) ?? "Jurnal umum manual";
+  const unitName = clean(formData.get("unit_name")) ?? "Pusat / Umum";
+  const memo = unitName && unitName !== "Pusat / Umum" ? `[${unitName}] ${rawMemo}` : rawMemo;
   const debitAccountId = clean(formData.get("debit_account_id"));
   const creditAccountId = clean(formData.get("credit_account_id"));
   const amount = money(formData.get("amount"));

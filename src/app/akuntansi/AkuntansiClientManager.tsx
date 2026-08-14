@@ -53,9 +53,16 @@ type JournalRow = {
   journal_lines: JournalLineRow[];
 };
 
+type BusinessUnitOption = {
+  id: string;
+  code: string;
+  name: string;
+};
+
 type AkuntansiClientManagerProps = {
   accountRows: AccountRow[];
   journalRows: JournalRow[];
+  businessUnits?: BusinessUnitOption[];
 };
 
 const currency = new Intl.NumberFormat("id-ID", {
@@ -88,7 +95,7 @@ function getEndOfMonth(d = new Date()) {
   return new Date(d.getFullYear(), d.getMonth() + 1, 0).toISOString().slice(0, 10);
 }
 
-export function AkuntansiClientManager({ accountRows, journalRows }: AkuntansiClientManagerProps) {
+export function AkuntansiClientManager({ accountRows, journalRows, businessUnits = [] }: AkuntansiClientManagerProps) {
   const [tab, setTab] = useState<"draft" | "all">("draft");
   const [periodPreset, setPeriodPreset] = useState<"this_month" | "all" | "today" | "last_month" | "this_year" | "custom">("this_month");
   const [startDate, setStartDate] = useState<string>(getStartOfMonth());
@@ -547,6 +554,18 @@ export function AkuntansiClientManager({ accountRows, journalRows }: AkuntansiCl
 
             <form action={postManualJournal} className="mt-5 space-y-4">
               <label className="block">
+                <span className="text-xs font-bold uppercase text-[#475569]">Unit Usaha Terkait</span>
+                <CustomSelect name="unit_name" className="mt-1.5 h-11">
+                  <option value="Pusat / Umum">🏢 Kantor Pusat / Umum</option>
+                  {businessUnits.map((u) => (
+                    <option key={u.id} value={u.name}>
+                      {u.code} · {u.name}
+                    </option>
+                  ))}
+                </CustomSelect>
+              </label>
+
+              <label className="block">
                 <span className="text-xs font-bold uppercase text-[#475569]">Akun Debit (Dr)</span>
                 <CustomSelect name="debit_account_id" required className="mt-1.5 h-11">
                   <option value="">-- Pilih Akun Debit --</option>
@@ -649,20 +668,30 @@ export function AkuntansiClientManager({ accountRows, journalRows }: AkuntansiCl
                       </option>
                     ))}
                   </select>
-                  <input
-                    type="number"
-                    className="w-24 h-9 rounded-lg border border-[#dbe5f1] bg-white px-2 text-xs font-bold outline-none text-right"
-                    placeholder="Debit"
-                    value={line.debit}
-                    onChange={(e) => updateEditLine(index, "debit", e.target.value)}
-                  />
-                  <input
-                    type="number"
-                    className="w-24 h-9 rounded-lg border border-[#dbe5f1] bg-white px-2 text-xs font-bold outline-none text-right"
-                    placeholder="Kredit"
-                    value={line.credit}
-                    onChange={(e) => updateEditLine(index, "credit", e.target.value)}
-                  />
+                  <div className="w-28">
+                    <input
+                      type="text"
+                      className="w-full h-9 rounded-lg border border-[#dbe5f1] bg-white px-2 text-xs font-bold outline-none text-right font-mono focus:border-[#2563eb]"
+                      placeholder="0 (Debit)"
+                      value={line.debit && Number(line.debit) > 0 ? Number(line.debit).toLocaleString("id-ID") : ""}
+                      onChange={(e) => {
+                        const raw = e.target.value.replace(/\D/g, "");
+                        updateEditLine(index, "debit", raw);
+                      }}
+                    />
+                  </div>
+                  <div className="w-28">
+                    <input
+                      type="text"
+                      className="w-full h-9 rounded-lg border border-[#dbe5f1] bg-white px-2 text-xs font-bold outline-none text-right font-mono focus:border-[#2563eb]"
+                      placeholder="0 (Kredit)"
+                      value={line.credit && Number(line.credit) > 0 ? Number(line.credit).toLocaleString("id-ID") : ""}
+                      onChange={(e) => {
+                        const raw = e.target.value.replace(/\D/g, "");
+                        updateEditLine(index, "credit", raw);
+                      }}
+                    />
+                  </div>
                   <button
                     type="button"
                     onClick={() => removeEditLine(index)}

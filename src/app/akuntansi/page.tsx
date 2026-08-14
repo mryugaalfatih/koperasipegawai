@@ -56,7 +56,7 @@ export default async function AkuntansiPage({ searchParams }: AkuntansiPageProps
     redirect("/login");
   }
 
-  const [{ data: profile }, { data: accounts }, { data: journalEntries }] = await Promise.all([
+  const [{ data: profile }, { data: accounts }, { data: journalEntries }, { data: businessUnits }] = await Promise.all([
     supabase.from("profiles").select("id").eq("id", user.id).single(),
     supabase.from("accounts").select("id, code, name, category").order("code"),
     supabase
@@ -65,6 +65,7 @@ export default async function AkuntansiPage({ searchParams }: AkuntansiPageProps
       .order("entry_date", { ascending: false })
       .order("created_at", { ascending: false })
       .limit(500),
+    supabase.from("business_units").select("id, code, name").eq("is_active", true).order("code"),
   ]);
 
   if (!profile) {
@@ -73,6 +74,7 @@ export default async function AkuntansiPage({ searchParams }: AkuntansiPageProps
 
   const accountRows = (accounts ?? []) as AccountRow[];
   const journalRows = (journalEntries ?? []) as unknown as JournalRow[];
+  const businessUnitRows = (businessUnits ?? []) as { id: string; code: string; name: string }[];
 
   return (
     <main className="min-h-screen bg-[#f4f7fb] text-[#0b1220]">
@@ -104,6 +106,7 @@ export default async function AkuntansiPage({ searchParams }: AkuntansiPageProps
           <AkuntansiClientManager
             accountRows={accountRows}
             journalRows={journalRows}
+            businessUnits={businessUnitRows}
           />
         </div>
       </div>
