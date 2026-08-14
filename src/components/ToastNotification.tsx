@@ -30,6 +30,7 @@ export function ToastNotification({ error, saved }: ToastProps) {
       if (saved === "closing") text = "Closing Kas Sore & Cash Opname berhasil diposting.";
       if (saved === "reopened") text = "🔒 Sesi Closing Kas berhasil dibuka kembali (Reopened).";
       if (saved === "jurnal") text = "Jurnal umum berhasil disimpan.";
+      if (saved === "exchange_success") text = "🔄 Retur tukar barang expire/rusak berhasil diproses. Stok & jurnal kerugian telah diupdate.";
 
       setMessage(text);
       setType("success");

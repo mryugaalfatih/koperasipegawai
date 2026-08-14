@@ -902,3 +902,130 @@ export async function receivePurchaseOrder(poId: string) {
 
   redirect("/toko/pembelian?saved=po_received");
 }
+
+export async function processItemExchangeReturn(formData: FormData) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect("/login");
+  }
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("branch_id, role")
+    .eq("id", user.id)
+    .single();
+
+  if (!profile) {
+    redirect("/login?error=Profil%20user%20belum%20dibuat.");
+  }
+
+  const saleId = String(formData.get("sale_id") || "").trim();
+  const invoiceNo = String(formData.get("invoice_no") || "").trim();
+  const productId = String(formData.get("product_id") || "").trim();
+  const productName = String(formData.get("product_name") || "").trim();
+  const qtyExchange = Math.max(1, Number(formData.get("qty") || 1));
+  const reason = String(formData.get("reason") || "Barang Kadaluarsa / Expired").trim();
+  const notes = String(formData.get("notes") || "").trim();
+
+  if (!productName) {
+    redirect("/toko/penjualan?error=Data%20barang%20retur%20tidak%20valid.");
+  }
+
+  const branchId = profile.branch_id;
+  const today = new Date().toISOString().slice(0, 10);
+  const retNo = `RET-TOKO-${Date.now().toString().slice(-6)}`;
+
+  // 1. Lookup Product info to get buy_price & update physical stock
+  let productRow = null;
+  if (productId) {
+    const { data: prod } = await supabase.from("toko_products").select("*").eq("id", productId).maybeSingle();
+    productRow = prod;
+  }
+  if (!productRow) {
+    const { data: prod } = await supabase.from("toko_products").select("*").ilike("name", productName).maybeSingle();
+    productRow = prod;
+  }
+
+  const buyPrice = productRow ? Number(productRow.buy_price || 0) : 0;
+  const unitName = productRow?.unit_name || "Pcs";
+  const totalLossValue = buyPrice * qtyExchange;
+
+  // 2. Reduce stock for the fresh replacement item given to customer
+  if (productRow) {
+    const newStock = Math.max(0, Number(productRow.stock_qty || 0) - qtyExchange);
+    await supabase.from("toko_products").update({ stock_qty: newStock }).eq("id", productRow.id);
+
+    // Insert Stock Mutation for Expired Loss / Exchange
+    await supabase.from("toko_stock_mutations").insert({
+      product_id: productRow.id,
+      mutation_type: "damage",
+      qty: qtyExchange,
+      notes: `[Retur Tukar Barang ${reason}] Faktur #${invoiceNo} (${qtyExchange} ${unitName}): ${notes}`,
+      created_by: user.id,
+    });
+  }
+
+  // 3. Post Automatic Journal for Loss of Expired Goods (Status: Draft)
+  // Debit: 5202 (Beban Kerugian Barang Rusak/Kadaluarsa) / 5201 fallback
+  // Credit: 1301 (Persediaan Barang Dagang Toko Waserda)
+  let { data: lossAcc } = await supabase.from("accounts").select("id").eq("code", "5202").maybeSingle();
+  if (!lossAcc) {
+    const { data: fallbackLoss } = await supabase.from("accounts").select("id").eq("code", "5201").maybeSingle();
+    lossAcc = fallbackLoss;
+  }
+  const { data: invAcc } = await supabase.from("accounts").select("id").eq("code", "1301").maybeSingle();
+
+  if (lossAcc && invAcc && totalLossValue > 0) {
+    const { data: journal } = await supabase
+      .from("journal_entries")
+      .insert({
+        branch_id: branchId,
+        entry_no: `JRN-RET-${Date.now().toString().slice(-6)}`,
+        entry_date: today,
+        memo: `[Unit Toko Waserda] Kerugian Retur Tukar Barang Expire/Rusak (${retNo}) - Faktur #${invoiceNo} (${productName} ${qtyExchange} ${unitName})`,
+        source_type: "toko_exchange_return",
+        source_id: saleId || undefined,
+        status: "draft",
+        created_by: user.id,
+      })
+      .select("id")
+      .single();
+
+    if (journal) {
+      await supabase.from("journal_lines").insert([
+        { journal_entry_id: journal.id, account_id: lossAcc.id, debit: totalLossValue, credit: 0 },
+        { journal_entry_id: journal.id, account_id: invAcc.id, debit: 0, credit: totalLossValue },
+      ]);
+    }
+  }
+
+  // 4. Audit Log
+  await supabase.from("audit_logs").insert({
+    user_id: user.id,
+    action: "toko.sale.exchange_return",
+    details: `Retur tukar barang ${qtyExchange} ${unitName} ${productName} (Faktur #${invoiceNo}) berhasil diproses. Alasan: ${reason}.`,
+    metadata: {
+      ret_no: retNo,
+      invoice_no: invoiceNo,
+      product_name: productName,
+      qty: qtyExchange,
+      reason,
+      total_loss: totalLossValue,
+      unit_name: "Unit Toko Waserda",
+    },
+  });
+
+  revalidatePath("/toko/penjualan");
+  revalidatePath("/toko/produk");
+  revalidatePath("/toko/laporan");
+  revalidatePath("/toko/home");
+  revalidatePath("/akuntansi");
+  revalidatePath("/kas-jurnal");
+  revalidatePath("/laporan");
+
+  redirect(`/toko/penjualan?saved=exchange_success&ret_no=${encodeURIComponent(retNo)}&item=${encodeURIComponent(productName)}`);
+}

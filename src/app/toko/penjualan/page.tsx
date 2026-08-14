@@ -7,7 +7,10 @@ import { createClient } from "@/lib/supabase/server";
 
 type TokoPenjualanPageProps = {
   searchParams: Promise<{
+    saved?: string;
     error?: string;
+    ret_no?: string;
+    item?: string;
   }>;
 };
 
@@ -87,6 +90,7 @@ export default async function TokoPenjualanPage({ searchParams }: TokoPenjualanP
 
   return (
     <main className="min-h-screen bg-[#f4f7fb] text-[#0b1220]">
+      {params.saved ? <ToastNotification saved={params.saved} /> : null}
       {params.error ? <ToastNotification error={params.error} /> : null}
 
       <div className="lg:grid lg:min-h-screen lg:grid-cols-[auto_1fr]">

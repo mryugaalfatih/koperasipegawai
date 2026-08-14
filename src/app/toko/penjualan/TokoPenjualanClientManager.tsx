@@ -16,7 +16,14 @@ import {
   Sparkles,
   User,
   CheckCircle2,
+  RefreshCw,
+  AlertTriangle,
+  PackageX,
 } from "lucide-react";
+import { CrudModal } from "@/components/CrudModal";
+import { CustomSelect } from "@/components/CustomSelect";
+import { SubmitButton } from "@/components/SubmitButton";
+import { processItemExchangeReturn } from "../actions";
 
 export type TokoSaleRow = {
   id: string;
@@ -83,6 +90,9 @@ export function TokoPenjualanClientManager({
   const [customerFilter, setCustomerFilter] = useState<"all" | "member" | "general">("all");
   const [paymentFilter, setPaymentFilter] = useState<string>("all");
   const [selectedSale, setSelectedSale] = useState<TokoSaleRow | null>(null);
+  const [returnExchangeSale, setReturnExchangeSale] = useState<TokoSaleRow | null>(null);
+  const [selectedItemName, setSelectedItemName] = useState<string>("");
+  const [exchangeQty, setExchangeQty] = useState<number>(1);
 
   // Handle Preset Date changes
   const handlePresetChange = (preset: "this_month" | "all" | "today" | "last_month" | "this_year" | "custom") => {
@@ -437,14 +447,29 @@ export function TokoPenjualanClientManager({
                         {formatRupiah(sale.grand_total)}
                       </td>
                       <td className="px-3 py-2.5 text-center">
-                        <button
-                          type="button"
-                          onClick={() => setSelectedSale(sale)}
-                          className="inline-flex h-7.5 items-center gap-1 rounded-xl bg-[#f1f5f9] px-2.5 text-xs font-bold text-[#0b1220] hover:bg-[#dbe5f1] transition-all cursor-pointer shadow-2xs"
-                        >
-                          <Eye className="size-3.5 text-[#2563eb]" />
-                          <span>Struk / Detail</span>
-                        </button>
+                        <div className="flex items-center justify-center gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => setSelectedSale(sale)}
+                            className="inline-flex h-7.5 items-center gap-1 rounded-xl bg-[#f1f5f9] px-2.5 text-xs font-bold text-[#0b1220] hover:bg-[#dbe5f1] transition-all cursor-pointer shadow-2xs"
+                          >
+                            <Eye className="size-3.5 text-[#2563eb]" />
+                            <span>Struk</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setReturnExchangeSale(sale);
+                              setSelectedItemName(sale.toko_sale_items?.[0]?.product_name ?? "");
+                              setExchangeQty(1);
+                            }}
+                            className="inline-flex h-7.5 items-center gap-1 rounded-xl bg-amber-50 px-2.5 text-xs font-bold text-amber-800 border border-amber-200 hover:bg-amber-100 transition-all cursor-pointer shadow-2xs"
+                            title="Tukar Barang (Retur Expire / Rusak)"
+                          >
+                            <RefreshCw className="size-3 text-amber-700" />
+                            <span>Tukar Barang</span>
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   );
@@ -593,25 +618,179 @@ export function TokoPenjualanClientManager({
               }
             `}</style>
 
-            <div className="flex gap-2 pt-1">
+            <div className="flex flex-col gap-2 pt-1">
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => window.print()}
+                  className="flex-1 inline-flex h-10 items-center justify-center gap-1.5 rounded-xl bg-[#2563eb] text-xs font-bold text-white hover:bg-[#1d4ed8] cursor-pointer shadow-xs"
+                >
+                  <Printer className="size-4" />
+                  <span>Cetak Ulang</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSelectedSale(null)}
+                  className="h-10 rounded-xl bg-[#f1f5f9] px-4 text-xs font-bold text-[#0b1220] hover:bg-[#e2e8f0] cursor-pointer"
+                >
+                  Tutup
+                </button>
+              </div>
+
               <button
                 type="button"
-                onClick={() => window.print()}
-                className="flex-1 inline-flex h-10 items-center justify-center gap-1.5 rounded-xl bg-[#2563eb] text-xs font-bold text-white hover:bg-[#1d4ed8] cursor-pointer shadow-xs"
+                onClick={() => {
+                  const s = selectedSale;
+                  setSelectedSale(null);
+                  setReturnExchangeSale(s);
+                  setSelectedItemName(s.toko_sale_items?.[0]?.product_name ?? "");
+                  setExchangeQty(1);
+                }}
+                className="w-full inline-flex h-9 items-center justify-center gap-1.5 rounded-xl bg-amber-50 text-xs font-bold text-amber-800 border border-amber-200 hover:bg-amber-100 cursor-pointer"
               >
-                <Printer className="size-4" />
-                <span>Cetak Ulang Struk</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setSelectedSale(null)}
-                className="h-10 rounded-xl bg-[#f1f5f9] px-4 text-xs font-bold text-[#0b1220] hover:bg-[#e2e8f0] cursor-pointer"
-              >
-                Tutup
+                <RefreshCw className="size-3.5 text-amber-700" />
+                <span>Tukar Barang Baru (Retur Expire/Rusak)</span>
               </button>
             </div>
           </div>
         </div>
+      ) : null}
+
+      {/* Modal Tukar Barang (Retur Expire / Rusak) */}
+      {returnExchangeSale ? (
+        <CrudModal
+          isOpen={true}
+          maxWidth="max-w-lg"
+          title={`Tukar Barang Baru (Retur Expire / Rusak)`}
+          onClose={() => setReturnExchangeSale(null)}
+        >
+          <form action={processItemExchangeReturn} className="space-y-4 text-xs">
+            <input type="hidden" name="sale_id" value={returnExchangeSale.id} />
+            <input type="hidden" name="invoice_no" value={returnExchangeSale.invoice_no} />
+
+            {/* Info Faktur */}
+            <div className="rounded-xl bg-[#f8fbff] p-3 border border-[#dbe5f1] space-y-1 text-xs">
+              <div className="flex justify-between">
+                <span className="text-[#64748b] font-semibold">No. Faktur Asal:</span>
+                <span className="font-bold text-[#2563eb]">{returnExchangeSale.invoice_no}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-[#64748b] font-semibold">Pelanggan:</span>
+                <span className="font-bold text-[#0b1220]">
+                  {returnExchangeSale.members
+                    ? `${returnExchangeSale.members.full_name} (${returnExchangeSale.members.member_no})`
+                    : "Pembeli Umum"}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-[#64748b] font-semibold">Tanggal Belanja:</span>
+                <span className="font-semibold text-[#0b1220]">{returnExchangeSale.sale_date}</span>
+              </div>
+            </div>
+
+            {/* Pilih Barang yang Ditukar */}
+            <div className="space-y-1.5">
+              <label className="block font-bold text-[#0b1220]">
+                Pilih Barang yang Dikembalikan (Expire / Rusak): *
+              </label>
+              <div className="space-y-1.5 max-h-48 overflow-y-auto pr-1">
+                {returnExchangeSale.toko_sale_items?.map((item, idx) => (
+                  <label
+                    key={idx}
+                    className={`flex items-center justify-between p-2.5 rounded-xl border cursor-pointer transition-all ${
+                      selectedItemName === item.product_name
+                        ? "border-[#2563eb] bg-[#eff6ff] text-[#0b1220] ring-1 ring-[#2563eb]"
+                        : "border-[#e2e8f0] bg-white hover:bg-slate-50"
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="radio"
+                        name="product_name"
+                        value={item.product_name}
+                        checked={selectedItemName === item.product_name}
+                        onChange={() => setSelectedItemName(item.product_name)}
+                        className="size-4 text-[#2563eb]"
+                      />
+                      <div>
+                        <p className="font-bold">{item.product_name}</p>
+                        <p className="text-[10px] text-[#64748b]">Dibeli: {item.qty} {item.unit_name ?? "Pcs"} @ {formatRupiah(item.sell_price)}</p>
+                      </div>
+                    </div>
+                    <span className="font-bold text-[#2563eb]">{formatRupiah(item.subtotal)}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            <div className="grid gap-3 sm:grid-cols-2">
+              {/* Jumlah Qty */}
+              <label className="block">
+                <span className="font-bold text-[#475569]">Jumlah Unit yang Ditukar (Qty) *</span>
+                <input
+                  type="number"
+                  name="qty"
+                  min="1"
+                  required
+                  value={exchangeQty}
+                  onChange={(e) => setExchangeQty(Math.max(1, Number(e.target.value) || 1))}
+                  className="mt-1 h-11 w-full rounded-xl border border-[#dbe5f1] bg-[#f8fbff] px-3 text-xs font-bold outline-none focus:border-[#2563eb]"
+                />
+              </label>
+
+              {/* Alasan Retur */}
+              <label className="block">
+                <span className="font-bold text-[#475569]">Alasan Retur / Kondisi *</span>
+                <select
+                  name="reason"
+                  required
+                  className="mt-1 h-11 w-full rounded-xl border border-[#dbe5f1] bg-[#f8fbff] px-2.5 text-xs font-bold outline-none focus:border-[#2563eb]"
+                >
+                  <option value="Barang Kadaluarsa / Expired">Barang Kadaluarsa / Expired</option>
+                  <option value="Kemasan Bocor / Pecah / Rusak">Kemasan Bocor / Pecah / Rusak</option>
+                  <option value="Cacat Fisik / Basi / Kualitas Buruk">Cacat Fisik / Basi / Kualitas Buruk</option>
+                  <option value="Lainnya">Alasan Lainnya</option>
+                </select>
+              </label>
+            </div>
+
+            <label className="block">
+              <span className="font-bold text-[#475569]">Catatan / Keterangan Penukaran</span>
+              <input
+                type="text"
+                name="notes"
+                placeholder="Contoh: Ditukar langsung di kasir dengan exp date baru"
+                className="mt-1 h-11 w-full rounded-xl border border-[#dbe5f1] bg-[#f8fbff] px-3 text-xs font-bold outline-none focus:border-[#2563eb]"
+              />
+            </label>
+
+            {/* Mekanisme Notice Box */}
+            <div className="rounded-xl bg-amber-50 p-3 border border-amber-200 text-[11px] text-amber-900 space-y-1">
+              <div className="flex items-center gap-1.5 font-bold">
+                <AlertTriangle className="size-4 text-amber-600 shrink-0" />
+                <span>Mekanisme Pencatatan Sistem:</span>
+              </div>
+              <ul className="list-disc list-inside space-y-0.5 text-amber-800 text-[10px] pl-1">
+                <li>Kasir menyerahkan <strong>{exchangeQty} unit barang baru</strong> yang masih bagus dari rak.</li>
+                <li>Stok fisik barang toko otomatis <strong>berkurang {exchangeQty} unit</strong>.</li>
+                <li>Barang expired otomatis dicatat sebagai <strong>Beban Kerugian Barang Rusak (Akun 5202)</strong> berstatus <em>Draft</em> di Akuntansi.</li>
+              </ul>
+            </div>
+
+            <div className="flex gap-2 pt-2">
+              <SubmitButton className="flex-1 h-11 rounded-xl bg-amber-600 text-xs font-black text-white hover:bg-amber-700 shadow-sm cursor-pointer">
+                Konfirmasi Tukar Barang Baru
+              </SubmitButton>
+              <button
+                type="button"
+                onClick={() => setReturnExchangeSale(null)}
+                className="h-11 rounded-xl bg-[#f1f5f9] px-4 text-xs font-bold text-[#0b1220] hover:bg-[#e2e8f0] cursor-pointer"
+              >
+                Batal
+              </button>
+            </div>
+          </form>
+        </CrudModal>
       ) : null}
     </div>
   );
