@@ -228,3 +228,77 @@ export async function updateJournalLines(journalId: string, formData: FormData) 
   revalidatePath("/laporan");
   redirect("/akuntansi?saved=updated");
 }
+
+export async function postOpeningBalance(formData: FormData) {
+  const { supabase, profileId, branchId } = await requireProfile();
+  const entryDate = clean(formData.get("entry_date")) ?? new Date().toISOString().slice(0, 10);
+  const memo = clean(formData.get("memo")) ?? "Saldo Awal Pembukuan Koperasi & Unit Usaha";
+  const linesJson = clean(formData.get("lines"));
+
+  if (!linesJson) {
+    redirect("/akuntansi?error=Rincian%20saldo%20awal%20wajib%20diisi.");
+  }
+
+  let lines: { account_id: string; debit: number; credit: number }[];
+  try {
+    lines = JSON.parse(linesJson);
+  } catch {
+    redirect("/akuntansi?error=Format%20data%20saldo%20awal%20tidak%20valid.");
+  }
+
+  const validLines = lines.filter((l) => Number(l.debit || 0) > 0 || Number(l.credit || 0) > 0);
+
+  if (!validLines.length) {
+    redirect("/akuntansi?error=Minimal%20isi%20satu%20akun%20debit%20dan%20kredit%20saldo%20awal.");
+  }
+
+  const totalDebit = validLines.reduce((s, l) => s + Number(l.debit || 0), 0);
+  const totalCredit = validLines.reduce((s, l) => s + Number(l.credit || 0), 0);
+
+  if (Math.abs(totalDebit - totalCredit) > 1) {
+    redirect("/akuntansi?error=Total%20debit%20dan%20kredit%20saldo%20awal%20harus%20balance.");
+  }
+
+  // Insert journal entry directly with status 'approved' so opening balance takes effect immediately
+  const { data: journal, error: journalError } = await supabase
+    .from("journal_entries")
+    .insert({
+      branch_id: branchId,
+      entry_no: makeEntryNo("SA"),
+      entry_date: entryDate,
+      memo: `[SALDO AWAL] ${memo}`,
+      source_type: "manual",
+      created_by: profileId,
+      status: "approved",
+    })
+    .select("id")
+    .single();
+
+  if (journalError || !journal) {
+    redirect(`/akuntansi?error=${encodeURIComponent(journalError?.message ?? "Gagal menyimpan saldo awal.")}`);
+  }
+
+  const { error: linesError } = await supabase.from("journal_lines").insert(
+    validLines.map((l) => ({
+      journal_entry_id: journal.id,
+      account_id: l.account_id,
+      debit: Number(l.debit || 0),
+      credit: Number(l.credit || 0),
+    }))
+  );
+
+  if (linesError) {
+    redirect(`/akuntansi?error=${encodeURIComponent(linesError.message)}`);
+  }
+
+  await writeAuditLog(supabase, profileId, "journal.opening_balance.posted", "journal_entries", journal.id, {
+    entry_date: entryDate,
+    total_debit: totalDebit,
+    account_count: validLines.length,
+  });
+
+  revalidatePath("/akuntansi");
+  revalidatePath("/kas-jurnal");
+  revalidatePath("/laporan");
+  redirect("/akuntansi?saved=opening_balance_success");
+}

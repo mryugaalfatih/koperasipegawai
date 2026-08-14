@@ -25,13 +25,22 @@ import {
   PiggyBank,
   ArrowUpRight,
   ArrowDownLeft,
+  Sparkles,
+  Zap,
+  HelpCircle,
 } from "lucide-react";
 import { CrudModal } from "@/components/CrudModal";
 import { CustomSelect } from "@/components/CustomSelect";
 import { SearchableSelect } from "@/components/SearchableSelect";
 import { CurrencyInput } from "@/components/CurrencyInput";
 import { SubmitButton } from "@/components/SubmitButton";
-import { postManualJournal, approveJournal, rejectJournal, updateJournalLines } from "./actions";
+import {
+  postManualJournal,
+  approveJournal,
+  rejectJournal,
+  updateJournalLines,
+  postOpeningBalance,
+} from "./actions";
 
 type AccountRow = {
   id: string;
@@ -137,9 +146,22 @@ export function AkuntansiClientManager({
     accountRows[0]?.id ?? ""
   );
 
+  // Edit Journal Modal State
   const [editingJournal, setEditingJournal] = useState<JournalRow | null>(null);
   const [editMemo, setEditMemo] = useState("");
   const [editLines, setEditLines] = useState<{ account_id: string; debit: string; credit: string }[]>([]);
+
+  // Opening Balance Wizard Modal State
+  const [isOpeningBalanceModalOpen, setIsOpeningBalanceModalOpen] = useState(false);
+  const [openingBalanceDate, setOpeningBalanceDate] = useState<string>(
+    new Date(new Date().getFullYear(), 0, 1).toISOString().slice(0, 10)
+  );
+  const [openingBalanceMemo, setOpeningBalanceMemo] = useState(
+    `Saldo Awal Pembukuan Koperasi Per 01/01/${new Date().getFullYear()}`
+  );
+  const [openingBalanceData, setOpeningBalanceData] = useState<
+    Record<string, { debit: string; credit: string }>
+  >({});
 
   const isMatchUnit = (text: string | null | undefined, unitFilter: string) => {
     if (!unitFilter) return true;
@@ -348,6 +370,65 @@ export function AkuntansiClientManager({
     };
   }, [journalRows, selectedAccount, isDebitNormal, startDate, endDate]);
 
+  // =========================================================================
+  // OPENING BALANCE WIZARD HELPERS
+  // =========================================================================
+  const handleOpeningBalanceChange = (
+    accountId: string,
+    field: "debit" | "credit",
+    value: string
+  ) => {
+    setOpeningBalanceData((prev) => ({
+      ...prev,
+      [accountId]: {
+        debit: field === "debit" ? value : prev[accountId]?.debit || "0",
+        credit: field === "credit" ? value : prev[accountId]?.credit || "0",
+      },
+    }));
+  };
+
+  const { obTotalDebit, obTotalCredit, obIsBalanced, obLineCount } = useMemo(() => {
+    let deb = 0;
+    let cred = 0;
+    let count = 0;
+
+    Object.values(openingBalanceData).forEach((row) => {
+      const d = Number(row.debit || 0);
+      const c = Number(row.credit || 0);
+      if (d > 0 || c > 0) {
+        deb += d;
+        cred += c;
+        count++;
+      }
+    });
+
+    return {
+      obTotalDebit: deb,
+      obTotalCredit: cred,
+      obIsBalanced: count > 0 && Math.abs(deb - cred) < 1,
+      obLineCount: count,
+    };
+  }, [openingBalanceData]);
+
+  const handleSaveOpeningBalance = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const lines = Object.entries(openingBalanceData)
+      .map(([accountId, val]) => ({
+        account_id: accountId,
+        debit: Number(val.debit || 0),
+        credit: Number(val.credit || 0),
+      }))
+      .filter((l) => l.debit > 0 || l.credit > 0);
+
+    const formData = new FormData();
+    formData.set("entry_date", openingBalanceDate);
+    formData.set("memo", openingBalanceMemo);
+    formData.set("lines", JSON.stringify(lines));
+
+    await postOpeningBalance(formData);
+  };
+
+  // Edit Single Journal Modal Handlers
   const openEdit = (journal: JournalRow) => {
     setEditingJournal(journal);
     setEditMemo(journal.memo ?? "");
@@ -648,51 +729,63 @@ export function AkuntansiClientManager({
         </div>
 
         {/* ============================================================ */}
-        {/* TAB SELECTOR: DRAFT vs SEMUA JURNAL vs BUKU BESAR             */}
+        {/* TAB SELECTOR & WIZARD SALDO AWAL BUTTON                      */}
         {/* ============================================================ */}
-        <div className="flex items-center gap-2 print:hidden">
-          <button
-            type="button"
-            onClick={() => setTab("draft")}
-            className={`h-9 rounded-xl px-3.5 text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
-              tab === "draft"
-                ? "bg-[#0b1220] text-white shadow-sm"
-                : "bg-white text-[#64748b] ring-1 ring-[#dbe5f1] hover:bg-slate-50"
-            }`}
-          >
-            <Clock className="size-3.5" />
-            <span>Menunggu Review</span>
-            {draftCountTotal > 0 ? (
-              <span className="rounded-full bg-amber-500 px-1.5 py-0.2 text-[10px] font-black text-white">
-                {draftCountTotal}
-              </span>
-            ) : null}
-          </button>
+        <div className="flex flex-wrap items-center justify-between gap-3 print:hidden">
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setTab("draft")}
+              className={`h-9 rounded-xl px-3.5 text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                tab === "draft"
+                  ? "bg-[#0b1220] text-white shadow-sm"
+                  : "bg-white text-[#64748b] ring-1 ring-[#dbe5f1] hover:bg-slate-50"
+              }`}
+            >
+              <Clock className="size-3.5" />
+              <span>Menunggu Review</span>
+              {draftCountTotal > 0 ? (
+                <span className="rounded-full bg-amber-500 px-1.5 py-0.2 text-[10px] font-black text-white">
+                  {draftCountTotal}
+                </span>
+              ) : null}
+            </button>
 
-          <button
-            type="button"
-            onClick={() => setTab("all")}
-            className={`h-9 rounded-xl px-3.5 text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
-              tab === "all"
-                ? "bg-[#0b1220] text-white shadow-sm"
-                : "bg-white text-[#64748b] ring-1 ring-[#dbe5f1] hover:bg-slate-50"
-            }`}
-          >
-            <BookOpenCheck className="size-3.5" />
-            <span>Semua Jurnal ({journalRows.length})</span>
-          </button>
+            <button
+              type="button"
+              onClick={() => setTab("all")}
+              className={`h-9 rounded-xl px-3.5 text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                tab === "all"
+                  ? "bg-[#0b1220] text-white shadow-sm"
+                  : "bg-white text-[#64748b] ring-1 ring-[#dbe5f1] hover:bg-slate-50"
+              }`}
+            >
+              <BookOpenCheck className="size-3.5" />
+              <span>Semua Jurnal ({journalRows.length})</span>
+            </button>
 
+            <button
+              type="button"
+              onClick={() => setTab("ledger")}
+              className={`h-9 rounded-xl px-3.5 text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                tab === "ledger"
+                  ? "bg-[#2563eb] text-white shadow-sm"
+                  : "bg-white text-[#2563eb] ring-1 ring-[#bfdbfe] hover:bg-blue-50"
+              }`}
+            >
+              <Scale className="size-3.5" />
+              <span>📖 Buku Besar (General Ledger)</span>
+            </button>
+          </div>
+
+          {/* Opening Balance Wizard Trigger */}
           <button
             type="button"
-            onClick={() => setTab("ledger")}
-            className={`h-9 rounded-xl px-3.5 text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
-              tab === "ledger"
-                ? "bg-[#2563eb] text-white shadow-sm"
-                : "bg-white text-[#2563eb] ring-1 ring-[#bfdbfe] hover:bg-blue-50"
-            }`}
+            onClick={() => setIsOpeningBalanceModalOpen(true)}
+            className="inline-flex h-9 items-center gap-2 rounded-xl bg-amber-500 hover:bg-amber-600 px-4 text-xs font-black text-white shadow-sm transition-all cursor-pointer"
           >
-            <Scale className="size-3.5" />
-            <span>📖 Buku Besar (General Ledger)</span>
+            <Zap className="size-4" />
+            <span>⚡ INPUT SALDO AWAL PEMBUKUAN</span>
           </button>
         </div>
 
@@ -803,7 +896,7 @@ export function AkuntansiClientManager({
           </div>
         ) : (
           /* ============================================================ */
-          /* VIEW 3: BUKU BESAR (GENERAL LEDGER PER AKUN)                 */
+          /* VIEW 3: BUKU BESAR (GENERAL LEDGER PER AKUN - LANDSCAPE)     */
           /* ============================================================ */
           <div className="space-y-4">
             {/* Account Selector & Print Bar */}
@@ -840,7 +933,7 @@ export function AkuntansiClientManager({
                     className="inline-flex h-11 items-center gap-2 rounded-xl bg-[#2563eb] px-4 text-xs font-bold text-white shadow-sm hover:bg-[#1d4ed8] cursor-pointer"
                   >
                     <Printer className="size-4" />
-                    <span>Cetak Buku Besar</span>
+                    <span>🖨️ Cetak Buku Besar (Landscape)</span>
                   </button>
                 </div>
               </div>
@@ -897,20 +990,20 @@ export function AkuntansiClientManager({
               </div>
             </div>
 
-            {/* General Ledger Table */}
+            {/* General Ledger Table (Landscape Ready) */}
             <div id="printable-ledger-sheet" className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-[#dbe5f1] space-y-4 print:p-0 print:ring-0 print:shadow-none">
-              {/* Header on Printable Sheet */}
-              <div className="border-b border-[#cbd5e1] pb-3 hidden print:block">
+              {/* Header on Printable Sheet (Landscape) */}
+              <div className="border-b-2 border-black pb-3 hidden print:block">
                 <div className="flex justify-between items-start">
                   <div>
                     <h2 className="text-base font-black text-black uppercase">{cooperativeProfile?.name || "KOPERASI PEGAWAI REPUBLIK INDONESIA"}</h2>
-                    <p className="text-xs font-semibold text-slate-600">{cooperativeProfile?.address || "Jl. Raya Pusat No. 123"}</p>
-                    <p className="text-xs font-semibold text-slate-600">Badan Hukum: {cooperativeProfile?.legal_number || "AHU-001928.AH.01.26"}</p>
+                    <p className="text-xs font-semibold text-slate-700">{cooperativeProfile?.address || "Jl. Raya Utama Pusat No. 123"}</p>
+                    <p className="text-xs font-semibold text-slate-700">Badan Hukum: {cooperativeProfile?.legal_number || "AHU-001928.AH.01.26"}</p>
                   </div>
                   <div className="text-right">
-                    <h3 className="text-sm font-black text-black">BUKU BESAR (GENERAL LEDGER)</h3>
-                    <p className="text-xs font-bold text-slate-700">Akun: {selectedAccount?.code} - {selectedAccount?.name}</p>
-                    <p className="text-[11px] text-slate-600">Periode: {startDate || "Awal"} s/d {endDate || "Sekarang"}</p>
+                    <h3 className="text-base font-black text-black tracking-wide">BUKU BESAR (GENERAL LEDGER)</h3>
+                    <p className="text-xs font-bold text-slate-800">Akun: <span className="font-mono">{selectedAccount?.code}</span> - {selectedAccount?.name} ({selectedAccount?.category.toUpperCase()})</p>
+                    <p className="text-[11px] font-semibold text-slate-700">Periode: {startDate || "Awal"} s/d {endDate || "Sekarang"}</p>
                   </div>
                 </div>
               </div>
@@ -930,30 +1023,30 @@ export function AkuntansiClientManager({
               </div>
 
               {/* Mutasi Table */}
-              <div className="overflow-x-auto rounded-xl border border-[#dbe5f1]">
+              <div className="overflow-x-auto rounded-xl border border-[#dbe5f1] print:border-black">
                 <table className="w-full text-left text-xs">
-                  <thead className="bg-[#f8fbff] text-[#475569] border-b border-[#dbe5f1]">
+                  <thead className="bg-[#f8fbff] text-[#475569] border-b border-[#dbe5f1] print:bg-slate-100 print:text-black print:border-black">
                     <tr>
                       <th className="px-3 py-2.5 font-bold w-24">Tanggal</th>
-                      <th className="px-3 py-2.5 font-bold w-32">No. Jurnal</th>
-                      <th className="px-3 py-2.5 font-bold">Keterangan / Memo</th>
+                      <th className="px-3 py-2.5 font-bold w-36">No. Jurnal</th>
+                      <th className="px-3 py-2.5 font-bold">Keterangan / Memo Jurnal</th>
                       <th className="px-3 py-2.5 font-bold w-28">Sumber</th>
-                      <th className="px-3 py-2.5 font-bold text-right w-32 text-emerald-700">Debit</th>
-                      <th className="px-3 py-2.5 font-bold text-right w-32 text-rose-700">Kredit</th>
-                      <th className="px-3 py-2.5 font-bold text-right w-36 text-[#2563eb]">Saldo Berjalan</th>
+                      <th className="px-3 py-2.5 font-bold text-right w-36 text-emerald-700 print:text-black">Debit (Rp)</th>
+                      <th className="px-3 py-2.5 font-bold text-right w-36 text-rose-700 print:text-black">Kredit (Rp)</th>
+                      <th className="px-3 py-2.5 font-bold text-right w-40 text-[#2563eb] print:text-black">Saldo Berjalan (Rp)</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-[#e2e8f0]">
+                  <tbody className="divide-y divide-[#e2e8f0] print:divide-black">
                     {/* Row 1: Saldo Awal */}
-                    <tr className="bg-slate-50/80 font-bold">
-                      <td className="px-3 py-2 text-slate-500">{startDate || "-"}</td>
-                      <td className="px-3 py-2 text-slate-500 font-mono">SALDO-AWAL</td>
-                      <td className="px-3 py-2 text-[#0b1220]" colSpan={2}>
+                    <tr className="bg-slate-50 font-bold print:bg-slate-50">
+                      <td className="px-3 py-2 text-slate-500 print:text-black">{startDate || "-"}</td>
+                      <td className="px-3 py-2 text-slate-500 font-mono print:text-black">SALDO-AWAL</td>
+                      <td className="px-3 py-2 text-[#0b1220] print:text-black" colSpan={2}>
                         Saldo Awal Periode Buku
                       </td>
                       <td className="px-3 py-2 text-right font-mono text-slate-400">-</td>
                       <td className="px-3 py-2 text-right font-mono text-slate-400">-</td>
-                      <td className="px-3 py-2 text-right font-mono font-black text-[#0b1220]">
+                      <td className="px-3 py-2 text-right font-mono font-black text-[#0b1220] print:text-black">
                         {currency.format(ledgerData.openingBalance)}
                       </td>
                     </tr>
@@ -962,21 +1055,21 @@ export function AkuntansiClientManager({
                     {ledgerData.lines.length ? (
                       ledgerData.lines.map((row, idx) => (
                         <tr key={idx} className="hover:bg-[#f8fbff] transition-colors">
-                          <td className="px-3 py-2 font-medium text-[#475569]">{row.entry_date}</td>
-                          <td className="px-3 py-2 font-mono font-bold text-[#2563eb]">{row.entry_no}</td>
-                          <td className="px-3 py-2 font-medium text-[#0b1220]">{row.memo}</td>
+                          <td className="px-3 py-2 font-medium text-[#475569] print:text-black">{row.entry_date}</td>
+                          <td className="px-3 py-2 font-mono font-bold text-[#2563eb] print:text-black">{row.entry_no}</td>
+                          <td className="px-3 py-2 font-medium text-[#0b1220] print:text-black">{row.memo}</td>
                           <td className="px-3 py-2">
-                            <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-[#475569]">
+                            <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-[#475569] print:border print:border-black">
                               {sourceLabels[row.source_type]?.label ?? row.source_type}
                             </span>
                           </td>
-                          <td className="px-3 py-2 text-right font-mono font-bold text-emerald-700">
+                          <td className="px-3 py-2 text-right font-mono font-bold text-emerald-700 print:text-black">
                             {row.debit > 0 ? currency.format(row.debit) : "-"}
                           </td>
-                          <td className="px-3 py-2 text-right font-mono font-bold text-rose-700">
+                          <td className="px-3 py-2 text-right font-mono font-bold text-rose-700 print:text-black">
                             {row.credit > 0 ? currency.format(row.credit) : "-"}
                           </td>
-                          <td className="px-3 py-2 text-right font-mono font-black text-[#0b1220]">
+                          <td className="px-3 py-2 text-right font-mono font-black text-[#0b1220] print:text-black">
                             {currency.format(row.balance)}
                           </td>
                         </tr>
@@ -990,18 +1083,18 @@ export function AkuntansiClientManager({
                     )}
                   </tbody>
                   {/* Table Footer */}
-                  <tfoot className="bg-[#f8fbff] font-bold border-t-2 border-[#cbd5e1]">
+                  <tfoot className="bg-[#f8fbff] font-bold border-t-2 border-black print:bg-slate-100">
                     <tr>
-                      <td colSpan={4} className="px-3 py-2.5 text-right font-black uppercase text-[#0b1220]">
+                      <td colSpan={4} className="px-3 py-2.5 text-right font-black uppercase text-[#0b1220] print:text-black">
                         TOTAL MUTASI & SALDO AKHIR:
                       </td>
-                      <td className="px-3 py-2.5 text-right font-mono font-black text-emerald-700">
+                      <td className="px-3 py-2.5 text-right font-mono font-black text-emerald-700 print:text-black">
                         {currency.format(ledgerData.periodDebit)}
                       </td>
-                      <td className="px-3 py-2.5 text-right font-mono font-black text-rose-700">
+                      <td className="px-3 py-2.5 text-right font-mono font-black text-rose-700 print:text-black">
                         {currency.format(ledgerData.periodCredit)}
                       </td>
-                      <td className="px-3 py-2.5 text-right font-mono font-black text-[#2563eb]">
+                      <td className="px-3 py-2.5 text-right font-mono font-black text-[#2563eb] print:text-black">
                         {currency.format(ledgerData.endingBalance)}
                       </td>
                     </tr>
@@ -1009,8 +1102,8 @@ export function AkuntansiClientManager({
                 </table>
               </div>
 
-              {/* Signatures on Print Sheet */}
-              <div className="mt-8 pt-6 border-t border-slate-300 hidden print:grid print:grid-cols-2 text-center text-xs">
+              {/* Signatures on Print Sheet (Landscape Layout) */}
+              <div className="mt-8 pt-6 border-t border-black hidden print:grid print:grid-cols-3 text-center text-xs">
                 <div>
                   <p className="font-bold">Dibuat Oleh,</p>
                   <p className="font-semibold text-slate-600 mt-1">Bagian Pembukuan / Akuntan</p>
@@ -1018,17 +1111,27 @@ export function AkuntansiClientManager({
                   <p className="font-bold border-b border-black inline-block px-8">( ........................................ )</p>
                 </div>
                 <div>
+                  <p className="font-bold">Diperiksa Oleh,</p>
+                  <p className="font-semibold text-slate-600 mt-1">Manager Keuangan / Bendahara</p>
+                  <div className="h-16" />
+                  <p className="font-bold border-b border-black inline-block px-8">( ........................................ )</p>
+                </div>
+                <div>
                   <p className="font-bold">Mengetahui & Menyetujui,</p>
-                  <p className="font-semibold text-slate-600 mt-1">Ketua / Pengurus Koperasi</p>
+                  <p className="font-semibold text-slate-600 mt-1">Ketua Pengurus Koperasi</p>
                   <div className="h-16" />
                   <p className="font-bold border-b border-black inline-block px-8">( ........................................ )</p>
                 </div>
               </div>
             </div>
 
-            {/* Global Print Stylesheet for General Ledger */}
+            {/* Global Print Stylesheet for General Ledger (FORCED LANDSCAPE) */}
             <style jsx global>{`
               @media print {
+                @page {
+                  size: A4 landscape !important;
+                  margin: 8mm !important;
+                }
                 body * {
                   visibility: hidden;
                 }
@@ -1041,12 +1144,8 @@ export function AkuntansiClientManager({
                   top: 0;
                   width: 100%;
                   margin: 0;
-                  padding: 8mm;
+                  padding: 4mm;
                   background: white !important;
-                }
-                @page {
-                  size: A4 portrait;
-                  margin: 8mm;
                 }
               }
             `}</style>
@@ -1055,7 +1154,175 @@ export function AkuntansiClientManager({
       </div>
 
       {/* ============================================================ */}
-      {/* MODAL EDIT JURNAL                                             */}
+      {/* MODAL 1: WIZARD INPUT SALDO AWAL PEMBUKUAN (BATCH)           */}
+      {/* ============================================================ */}
+      <CrudModal
+        isOpen={isOpeningBalanceModalOpen}
+        onClose={() => setIsOpeningBalanceModalOpen(false)}
+        title="⚡ Form Input Saldo Awal Pembukuan Koperasi"
+      >
+        <form onSubmit={handleSaveOpeningBalance} className="space-y-4 text-xs">
+          <div className="rounded-xl bg-amber-50 p-3 text-amber-900 border border-amber-200">
+            <p className="font-bold flex items-center gap-1.5">
+              <Sparkles className="size-4 text-amber-600" />
+              <span>Panduan Setup Saldo Awal (Opening Balance)</span>
+            </p>
+            <p className="text-[11px] text-amber-800 mt-1 leading-relaxed">
+              Ketik nominal saldo awal pada rekening-rekening terkait (Kas, Bank, Piutang Pinjaman, Persediaan Stok, Simpanan Pokok, Simpanan Wajib, Modal/Cadangan). 
+              Pastikan **Total Debit** sama persis dengan **Total Kredit** *(SEIMBANG/BALANCE)*.
+            </p>
+          </div>
+
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div>
+              <label className="text-[11px] font-bold text-[#475569] uppercase block mb-1">
+                Tanggal Mulai Buku Saldo Awal:
+              </label>
+              <input
+                type="date"
+                value={openingBalanceDate}
+                onChange={(e) => setOpeningBalanceDate(e.target.value)}
+                className="h-10 w-full rounded-xl border border-[#cbd5e1] bg-[#f8fbff] px-3 text-xs font-bold text-[#0b1220] outline-none focus:border-[#2563eb]"
+                required
+              />
+            </div>
+            <div>
+              <label className="text-[11px] font-bold text-[#475569] uppercase block mb-1">
+                Keterangan / Memo Jurnal:
+              </label>
+              <input
+                type="text"
+                value={openingBalanceMemo}
+                onChange={(e) => setOpeningBalanceMemo(e.target.value)}
+                className="h-10 w-full rounded-xl border border-[#cbd5e1] bg-[#f8fbff] px-3 text-xs font-bold text-[#0b1220] outline-none focus:border-[#2563eb]"
+                required
+              />
+            </div>
+          </div>
+
+          {/* Account Table Input */}
+          <div className="space-y-1">
+            <div className="flex items-center justify-between pb-1">
+              <label className="text-[11px] font-black text-[#475569] uppercase">
+                Daftar Rekening Akun (Ketik Nominal Pada Akun Yang Ada Saldo Awal):
+              </label>
+              <span className="text-[10px] font-bold text-[#2563eb]">
+                {obLineCount} Akun Terisi
+              </span>
+            </div>
+
+            <div className="max-h-[380px] overflow-y-auto rounded-xl border border-[#dbe5f1] divide-y divide-[#e2e8f0]">
+              <table className="w-full text-left text-xs">
+                <thead className="bg-[#f8fbff] text-[#475569] sticky top-0 z-10 border-b border-[#dbe5f1]">
+                  <tr>
+                    <th className="px-3 py-2 font-bold">Kode & Nama Akun</th>
+                    <th className="px-3 py-2 font-bold w-24">Kategori</th>
+                    <th className="px-3 py-2 font-bold text-right w-36 text-emerald-700">Saldo Debit (Rp)</th>
+                    <th className="px-3 py-2 font-bold text-right w-36 text-rose-700">Saldo Kredit (Rp)</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[#f1f5f9] bg-white">
+                  {accountRows.map((a) => {
+                    const isDebit = ["aset", "aktiva", "beban", "biaya", "hpp"].some((c) =>
+                      a.category.toLowerCase().includes(c)
+                    );
+                    const currentVal = openingBalanceData[a.id] || { debit: "", credit: "" };
+
+                    return (
+                      <tr key={a.id} className="hover:bg-[#f8fbff]">
+                        <td className="px-3 py-1.5 font-bold text-[#0b1220]">
+                          <span className="font-mono text-[#2563eb] mr-1.5">{a.code}</span>
+                          <span>{a.name}</span>
+                        </td>
+                        <td className="px-3 py-1.5 text-[10px] font-bold text-[#64748b]">
+                          <span className={`px-2 py-0.5 rounded-full ${isDebit ? "bg-blue-50 text-blue-700" : "bg-emerald-50 text-emerald-700"}`}>
+                            {a.category}
+                          </span>
+                        </td>
+                        <td className="px-3 py-1.5 text-right">
+                          <input
+                            type="number"
+                            min="0"
+                            placeholder="0"
+                            value={currentVal.debit}
+                            onChange={(e) => handleOpeningBalanceChange(a.id, "debit", e.target.value)}
+                            className={`h-8 w-full rounded-lg border px-2 text-right text-xs font-bold transition-all ${
+                              Number(currentVal.debit) > 0
+                                ? "border-emerald-500 bg-emerald-50 text-emerald-900"
+                                : "border-[#cbd5e1] bg-white text-slate-700"
+                            }`}
+                          />
+                        </td>
+                        <td className="px-3 py-1.5 text-right">
+                          <input
+                            type="number"
+                            min="0"
+                            placeholder="0"
+                            value={currentVal.credit}
+                            onChange={(e) => handleOpeningBalanceChange(a.id, "credit", e.target.value)}
+                            className={`h-8 w-full rounded-lg border px-2 text-right text-xs font-bold transition-all ${
+                              Number(currentVal.credit) > 0
+                                ? "border-rose-500 bg-rose-50 text-rose-900"
+                                : "border-[#cbd5e1] bg-white text-slate-700"
+                            }`}
+                          />
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Balance Indicator Box */}
+          <div className="rounded-xl bg-slate-900 p-3.5 text-white">
+            <div className="flex flex-wrap items-center justify-between gap-3 text-xs">
+              <div className="flex items-center gap-5 flex-wrap">
+                <div>
+                  <span className="text-[10px] font-bold uppercase text-slate-400 block">TOTAL DEBIT</span>
+                  <span className="font-mono text-sm font-black text-emerald-400">
+                    {currency.format(obTotalDebit)}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-[10px] font-bold uppercase text-slate-400 block">TOTAL KREDIT</span>
+                  <span className="font-mono text-sm font-black text-rose-400">
+                    {currency.format(obTotalCredit)}
+                  </span>
+                </div>
+              </div>
+
+              <div>
+                {obIsBalanced ? (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500 px-3 py-1 text-xs font-black text-white shadow-xs animate-in zoom-in-90">
+                    <Check className="size-3.5" /> SEIMBANG (BALANCE)
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-rose-500 px-3 py-1 text-xs font-black text-white shadow-xs">
+                    ⚠️ SELISIH: {currency.format(Math.abs(obTotalDebit - obTotalCredit))}
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            disabled={!obIsBalanced}
+            className={`h-12 w-full rounded-2xl text-sm font-black text-white transition-all shadow-sm ${
+              obIsBalanced
+                ? "bg-[#2563eb] hover:bg-[#1d4ed8] active:scale-[0.99] cursor-pointer"
+                : "bg-slate-400 cursor-not-allowed opacity-60"
+            }`}
+          >
+            💾 POSTING SALDO AWAL SEKARANG ({obLineCount} REKENING)
+          </button>
+        </form>
+      </CrudModal>
+
+      {/* ============================================================ */}
+      {/* MODAL 2: EDIT SINGLE JURNAL                                   */}
       {/* ============================================================ */}
       <CrudModal
         isOpen={Boolean(editingJournal)}
