@@ -767,16 +767,26 @@ export async function receivePurchaseOrder(poId: string) {
     .from("profiles")
     .select("branch_id")
     .eq("id", user.id)
-    .single();
+    .maybeSingle();
+
+  let branchId = profile?.branch_id as string | null;
+  if (!branchId) {
+    const { data: branch } = await supabase.from("branches").select("id").order("created_at").limit(1).maybeSingle();
+    branchId = (branch?.id as string | undefined) ?? null;
+  }
 
   const { data: po } = await supabase
     .from("toko_purchase_orders")
-    .select("id, po_no, supplier_name, total_amount, payment_type, toko_purchase_order_items(product_id, product_name, qty_ordered, unit_name, buy_price)")
+    .select("id, po_no, supplier_name, status, total_amount, payment_type, toko_purchase_order_items(product_id, product_name, qty_ordered, unit_name, buy_price)")
     .eq("id", poId)
-    .single();
+    .maybeSingle();
 
   if (!po) {
     redirect("/toko/pembelian?error=Surat%20Pesanan%20PO%20tidak%20ditemukan.");
+  }
+
+  if (po.status === "received") {
+    redirect("/toko/pembelian?error=Surat%20Pesanan%20PO%20ini%20sudah%20diterima%20sebelumnya.");
   }
 
   // 1. Update PO Status to 'received'
@@ -794,7 +804,7 @@ export async function receivePurchaseOrder(poId: string) {
         .from("toko_products")
         .select("stock_qty")
         .eq("id", item.product_id)
-        .single();
+        .maybeSingle();
 
       if (prod) {
         const currentStock = Number(prod.stock_qty ?? 0);
@@ -822,13 +832,13 @@ export async function receivePurchaseOrder(poId: string) {
 
   if (po.payment_type === "cash" && totalAmount > 0) {
     await supabase.from("cash_transactions").insert({
-      branch_id: profile?.branch_id,
+      branch_id: branchId,
       transaction_date: today,
       direction: "out",
       category: "Pembelian Barang Toko",
       unit_name: "Unit Toko Waserda",
       amount: totalAmount,
-      description: `Pembelian Pasokan Sembako (PO #${po.po_no} - Supplier ${po.supplier_name})`,
+      description: `[Unit Toko Waserda] Pembelian Pasokan Sembako (PO #${po.po_no} - Supplier ${po.supplier_name})`,
       created_by: user.id,
     });
   }
@@ -841,10 +851,10 @@ export async function receivePurchaseOrder(poId: string) {
     const { data: journal } = await supabase
       .from("journal_entries")
       .insert({
-        branch_id: profile?.branch_id,
+        branch_id: branchId,
         entry_no: `JRN-PO-${Date.now().toString().slice(-6)}`,
         entry_date: today,
-        memo: `Penerimaan Barang PO Toko #${po.po_no} (${po.supplier_name})`,
+        memo: `[Unit Toko Waserda] Penerimaan Barang PO #${po.po_no} (${po.supplier_name})`,
         source_type: "toko_po",
         source_id: poId,
         status: "approved",
@@ -869,13 +879,17 @@ export async function receivePurchaseOrder(poId: string) {
       po_no: po.po_no,
       supplier_name: po.supplier_name,
       total_amount: totalAmount,
+      unit_name: "Unit Toko Waserda",
     },
   });
 
   revalidatePath("/toko/pembelian");
   revalidatePath("/toko/produk");
+  revalidatePath("/toko/home");
   revalidatePath("/kas");
   revalidatePath("/akuntansi");
+  revalidatePath("/kas-jurnal");
+  revalidatePath("/laporan");
 
   redirect("/toko/pembelian?saved=po_received");
 }

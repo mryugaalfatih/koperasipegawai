@@ -16,9 +16,11 @@ import {
   ChevronDown,
   Tag,
   Boxes,
+  Printer,
 } from "lucide-react";
 import { CrudHeader } from "@/components/CrudHeader";
 import { CrudModal } from "@/components/CrudModal";
+import { CustomSelect } from "@/components/CustomSelect";
 import { SubmitButton } from "@/components/SubmitButton";
 import { createPurchaseOrder, receivePurchaseOrder } from "../actions";
 import { TokoProductRow } from "../produk/TokoProdukClientManager";
@@ -73,6 +75,28 @@ export function TokoPembelianClientManager({
   const [statusFilter, setStatusFilter] = useState("");
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [selectedPo, setSelectedPo] = useState<TokoPoRow | null>(null);
+  const [isReceiving, setIsReceiving] = useState(false);
+
+  const handleReceivePo = async (po: TokoPoRow) => {
+    if (isReceiving || po.status === "received") return;
+    if (
+      !confirm(
+        `Konfirmasi penerimaan barang untuk PO #${po.po_no} dari ${po.supplier_name}?\n\nStok fisik toko akan otomatis bertambah dan langsung terjurnal di akuntansi & kas.`
+      )
+    ) {
+      return;
+    }
+    setIsReceiving(true);
+    const poId = po.id;
+    setSelectedPo(null);
+    try {
+      await receivePurchaseOrder(poId);
+    } catch (err) {
+      console.error("Gagal memproses PO:", err);
+    } finally {
+      setIsReceiving(false);
+    }
+  };
 
   // Form states for creating PO with Custom Product Picker
   const [prodSearch, setProdSearch] = useState("");
@@ -280,13 +304,15 @@ export function TokoPembelianClientManager({
             <div className="grid gap-3 sm:grid-cols-2">
               <label className="block">
                 <span className="text-xs font-bold uppercase text-[#475569]">Jenis Pembayaran</span>
-                <select
+                <CustomSelect
                   name="payment_type"
-                  className="mt-1.5 h-11 w-full rounded-xl border border-[#dbe5f1] bg-[#f8fbff] px-2 text-xs font-bold outline-none"
-                >
-                  <option value="cash">Tunai (Langsung Bayar)</option>
-                  <option value="tempo">Tempo (Kredit Supplier 14-30 Hari)</option>
-                </select>
+                  defaultValue="cash"
+                  className="mt-1.5 h-11"
+                  options={[
+                    { value: "cash", label: "💵 Tunai (Langsung Bayar)" },
+                    { value: "tempo", label: "📅 Tempo (Kredit Supplier 14-30 Hari)" },
+                  ]}
+                />
               </label>
 
               <label className="block">
@@ -294,7 +320,7 @@ export function TokoPembelianClientManager({
                 <input
                   type="date"
                   name="due_date"
-                  className="mt-1.5 h-11 w-full rounded-xl border border-[#dbe5f1] bg-[#f8fbff] px-2 text-xs font-bold outline-none"
+                  className="mt-1.5 h-11 w-full rounded-xl border border-[#dbe5f1] bg-[#f8fbff] px-2 text-xs font-bold outline-none focus:border-[#2563eb] focus:bg-white"
                 />
               </label>
             </div>
@@ -485,10 +511,21 @@ export function TokoPembelianClientManager({
           onClose={() => setSelectedPo(null)}
         >
           <div className="space-y-4 text-xs">
-            <div className="rounded-xl bg-[#f8fbff] p-3.5 border border-[#dbe5f1] space-y-1.5">
+            {/* Printable Header (Visible on Print) */}
+            <div className="hidden print:block border-b-2 border-slate-900 pb-3 text-center">
+              <h2 className="text-base font-black uppercase text-slate-900">KOPERASI PEGAWAI REPUBLIK INDONESIA</h2>
+              <p className="text-xs font-bold text-slate-700">UNIT USAHA WASERDA / TOKO SEMBAKO</p>
+              <p className="text-[11px] font-semibold text-slate-500">SURAT PESANAN BARANG (PURCHASE ORDER)</p>
+            </div>
+
+            <div className="rounded-xl bg-[#f8fbff] p-3.5 border border-[#dbe5f1] space-y-1.5 print:bg-white print:border-slate-300">
+              <div className="flex justify-between">
+                <span className="text-[#64748b] font-semibold">No. Dokumen PO:</span>
+                <span className="font-bold text-[#2563eb] print:text-black">{selectedPo.po_no}</span>
+              </div>
               <div className="flex justify-between">
                 <span className="text-[#64748b] font-semibold">Distributor / Supplier:</span>
-                <span className="font-bold text-[#0b1220]">{selectedPo.supplier_name}</span>
+                <span className="font-bold text-[#0b1220]">{selectedPo.supplier_name} {selectedPo.supplier_phone ? `(${selectedPo.supplier_phone})` : ""}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-[#64748b] font-semibold">Tanggal Pesan:</span>
@@ -497,25 +534,31 @@ export function TokoPembelianClientManager({
               <div className="flex justify-between">
                 <span className="text-[#64748b] font-semibold">Jenis Pembayaran:</span>
                 <span className="font-bold">
-                  {selectedPo.payment_type === "tempo" ? "Tempo (Kredit)" : "Tunai / Cash"}
+                  {selectedPo.payment_type === "tempo" ? `Tempo (Jatuh Tempo: ${selectedPo.due_date ?? "-"})` : "Tunai / Cash"}
                 </span>
               </div>
-              <div className="flex justify-between">
+              <div className="flex justify-between print:hidden">
                 <span className="text-[#64748b] font-semibold">Status Penerimaan:</span>
                 <span
                   className={`font-bold ${
                     selectedPo.status === "received" ? "text-emerald-600" : "text-amber-600"
                   }`}
                 >
-                  {selectedPo.status === "received" ? "Sudah Diterima (Stok Bertambah)" : "Belum Diterima (Pesanan Dikirim)"}
+                  {selectedPo.status === "received" ? "✅ Sudah Diterima (Stok Bertambah & Terjurnal)" : "⏳ Belum Diterima (Pesanan Dikirim)"}
                 </span>
               </div>
+              {selectedPo.notes ? (
+                <div className="flex justify-between">
+                  <span className="text-[#64748b] font-semibold">Catatan:</span>
+                  <span className="font-medium text-slate-700">{selectedPo.notes}</span>
+                </div>
+              ) : null}
             </div>
 
             {/* Items Table */}
-            <div className="rounded-xl border border-[#dbe5f1] overflow-hidden">
+            <div className="rounded-xl border border-[#dbe5f1] overflow-hidden print:border-slate-300">
               <table className="w-full text-left text-[11px]">
-                <thead className="bg-[#f8fbff] text-[#475569] border-b border-[#dbe5f1]">
+                <thead className="bg-[#f8fbff] text-[#475569] border-b border-[#dbe5f1] print:bg-slate-100 print:text-black">
                   <tr>
                     <th className="px-2 py-2 font-bold">Barang Sembako</th>
                     <th className="px-2 py-2 font-bold text-center">Qty Pesanan</th>
@@ -538,31 +581,56 @@ export function TokoPembelianClientManager({
               </table>
             </div>
 
-            <div className="rounded-xl bg-[#0b1220] p-3 text-white flex justify-between items-center font-black">
+            <div className="rounded-xl bg-[#0b1220] p-3 text-white flex justify-between items-center font-black print:bg-slate-100 print:text-black print:border print:border-slate-300">
               <span>TOTAL VALUE PO:</span>
-              <span className="text-emerald-400 text-sm">{formatRupiah(selectedPo.total_amount)}</span>
+              <span className="text-emerald-400 text-sm print:text-black">{formatRupiah(selectedPo.total_amount)}</span>
             </div>
 
-            <div className="flex gap-2 pt-2">
+            {/* Print Signatures (Visible on Print Only) */}
+            <div className="hidden print:grid grid-cols-2 gap-8 pt-8 text-center text-xs">
+              <div>
+                <p className="font-semibold text-slate-600">Dipesan Oleh (Admin Toko):</p>
+                <div className="h-16"></div>
+                <p className="font-bold border-t border-slate-400 pt-1">( ........................................ )</p>
+              </div>
+              <div>
+                <p className="font-semibold text-slate-600">Diterima / Disetujui (Supplier):</p>
+                <div className="h-16"></div>
+                <p className="font-bold border-t border-slate-400 pt-1">{selectedPo.supplier_name}</p>
+              </div>
+            </div>
+
+            {/* Screen Action Buttons */}
+            <div className="flex flex-wrap gap-2 pt-2 print:hidden">
               {selectedPo.status !== "received" ? (
                 <button
                   type="button"
-                  onClick={() => {
-                    if (confirm("Proses penerimaan barang? Stok fisik toko akan otomatis bertambah.")) {
-                      receivePurchaseOrder(selectedPo.id);
-                    }
-                  }}
-                  className="flex-1 inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-emerald-600 text-xs font-black text-white hover:bg-emerald-700 shadow-sm"
+                  disabled={isReceiving}
+                  onClick={() => handleReceivePo(selectedPo)}
+                  className="flex-1 inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-emerald-600 px-3 text-xs font-black text-white hover:bg-emerald-700 shadow-sm disabled:opacity-50 cursor-pointer"
                 >
                   <CheckCircle2 className="size-4" />
-                  <span>PROSES PENERIMAAN BARANG (STOCK MASUK)</span>
+                  <span>{isReceiving ? "Memproses Penerimaan..." : "PROSES PENERIMAAN BARANG (STOCK MASUK)"}</span>
                 </button>
-              ) : null}
+              ) : (
+                <div className="flex-1 rounded-xl bg-emerald-50 p-2.5 text-center font-bold text-emerald-800 border border-emerald-300">
+                  ✅ Barang Pesanan Telah Diterima & Terjurnal
+                </div>
+              )}
+
+              <button
+                type="button"
+                onClick={() => window.print()}
+                className="inline-flex h-11 items-center gap-1.5 rounded-xl border border-[#dbe5f1] bg-white px-3 text-xs font-bold text-[#0b1220] hover:bg-slate-50 shadow-sm cursor-pointer"
+              >
+                <Printer className="size-4 text-[#2563eb]" />
+                <span>Cetak PO</span>
+              </button>
 
               <button
                 type="button"
                 onClick={() => setSelectedPo(null)}
-                className="h-11 rounded-xl bg-[#f1f5f9] px-2 text-xs font-bold text-[#0b1220] hover:bg-[#e2e8f0]"
+                className="h-11 rounded-xl bg-[#f1f5f9] px-3 text-xs font-bold text-[#0b1220] hover:bg-[#e2e8f0] cursor-pointer"
               >
                 Tutup
               </button>
