@@ -56,7 +56,7 @@ export default async function AkuntansiPage({ searchParams }: AkuntansiPageProps
     redirect("/login");
   }
 
-  const [{ data: profile }, { data: accounts }, { data: journalEntries }, { data: businessUnits }] = await Promise.all([
+  const [{ data: profile }, { data: accounts }, { data: journalEntries }, { data: businessUnits }, { data: cooperativeProfile }] = await Promise.all([
     supabase.from("profiles").select("id").eq("id", user.id).single(),
     supabase.from("accounts").select("id, code, name, category").order("code"),
     supabase
@@ -64,8 +64,9 @@ export default async function AkuntansiPage({ searchParams }: AkuntansiPageProps
       .select("id, entry_no, entry_date, memo, source_type, status, journal_lines(debit, credit, accounts(id, code, name))")
       .order("entry_date", { ascending: false })
       .order("created_at", { ascending: false })
-      .limit(500),
+      .limit(1000),
     supabase.from("business_units").select("id, code, name").eq("is_active", true).order("code"),
+    supabase.from("cooperative_profiles").select("name, legal_number, address, phone, email").order("created_at").limit(1).maybeSingle(),
   ]);
 
   if (!profile) {
@@ -89,7 +90,7 @@ export default async function AkuntansiPage({ searchParams }: AkuntansiPageProps
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div>
                 <p className="text-xs font-bold uppercase tracking-wider text-[#64748b]">Modul Pembukuan</p>
-                <h1 className="text-xl font-bold text-[#0b1220]">Akuntansi & Jurnal Umum</h1>
+                <h1 className="text-xl font-bold text-[#0b1220]">Akuntansi, Jurnal & Buku Besar</h1>
               </div>
               <div className="flex items-center gap-2">
                 <Link
@@ -107,6 +108,7 @@ export default async function AkuntansiPage({ searchParams }: AkuntansiPageProps
             accountRows={accountRows}
             journalRows={journalRows}
             businessUnits={businessUnitRows}
+            cooperativeProfile={cooperativeProfile}
           />
         </div>
       </div>
