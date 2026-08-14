@@ -86,10 +86,11 @@ export default async function TokoPembelianPage({ searchParams }: TokoPembelianP
     redirect("/login");
   }
 
-  const [{ data: profile }, { data: dbPos }, { data: dbProducts }] = await Promise.all([
+  const [{ data: profile }, { data: dbPos }, { data: dbProducts }, { data: cooperativeProfile }] = await Promise.all([
     supabase.from("profiles").select("branch_id, role, full_name").eq("id", user.id).single(),
     supabase.from("toko_purchase_orders").select("*, toko_purchase_order_items(*)").order("created_at", { ascending: false }),
     supabase.from("toko_products").select("*").eq("is_active", true).order("name"),
+    supabase.from("cooperative_profiles").select("name, legal_number, address, phone, email").order("created_at").limit(1).maybeSingle(),
   ]);
 
   if (!profile) {
@@ -123,6 +124,7 @@ export default async function TokoPembelianPage({ searchParams }: TokoPembelianP
               poRows={poRows}
               products={products}
               totalPoCount={poRows.length}
+              cooperativeProfile={cooperativeProfile}
             />
           </div>
         </section>

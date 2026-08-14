@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react";
 import {
   BookOpenCheck,
+  Building2,
   Calculator,
   Calendar,
   Check,
@@ -97,7 +98,8 @@ function getEndOfMonth(d = new Date()) {
 }
 
 export function AkuntansiClientManager({ accountRows, journalRows, businessUnits = [] }: AkuntansiClientManagerProps) {
-  const [tab, setTab] = useState<"draft" | "all">("draft");
+  const [tab, setTab] = useState<"draft" | "all">("all");
+  const [selectedUnit, setSelectedUnit] = useState("");
   const [periodPreset, setPeriodPreset] = useState<"this_month" | "all" | "today" | "last_month" | "this_year" | "custom">("this_month");
   const [startDate, setStartDate] = useState<string>(getStartOfMonth());
   const [endDate, setEndDate] = useState<string>(getEndOfMonth());
@@ -107,6 +109,24 @@ export function AkuntansiClientManager({ accountRows, journalRows, businessUnits
   const [editingJournal, setEditingJournal] = useState<JournalRow | null>(null);
   const [editMemo, setEditMemo] = useState("");
   const [editLines, setEditLines] = useState<{ account_id: string; debit: string; credit: string }[]>([]);
+
+  const isMatchUnit = (text: string | null | undefined, unitFilter: string) => {
+    if (!unitFilter) return true;
+    if (!text) return false;
+    const t = text.toLowerCase();
+    const u = unitFilter.toLowerCase();
+    if (t.includes(u)) return true;
+    if (u.includes("toko") || u.includes("waserda")) {
+      return t.includes("toko") || t.includes("waserda") || t.includes("sembako");
+    }
+    if (u.includes("simpan") || u.includes("pinjam") || u.includes("usp")) {
+      return t.includes("simpan") || t.includes("pinjam") || t.includes("usp") || t.includes("angsuran");
+    }
+    if (u.includes("apar")) {
+      return t.includes("apar") || t.includes("tabung") || t.includes("refill");
+    }
+    return false;
+  };
 
   // Apply preset dates
   const handlePresetChange = (preset: "this_month" | "all" | "today" | "last_month" | "this_year" | "custom") => {
@@ -135,6 +155,7 @@ export function AkuntansiClientManager({ accountRows, journalRows, businessUnits
 
   const resetFilters = () => {
     handlePresetChange("this_month");
+    setSelectedUnit("");
     setSearchQuery("");
     setStatusFilter("all");
   };
@@ -153,7 +174,12 @@ export function AkuntansiClientManager({ accountRows, journalRows, businessUnits
         return false;
       }
 
-      // 3. Date range filter
+      // 3. Unit filter
+      if (selectedUnit && !isMatchUnit(j.memo, selectedUnit)) {
+        return false;
+      }
+
+      // 4. Date range filter
       if (startDate && j.entry_date < startDate) {
         return false;
       }
@@ -161,7 +187,7 @@ export function AkuntansiClientManager({ accountRows, journalRows, businessUnits
         return false;
       }
 
-      // 4. Search query (no, memo, account)
+      // 5. Search query (no, memo, account)
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase().trim();
         const matchNo = j.entry_no.toLowerCase().includes(q);
@@ -177,7 +203,7 @@ export function AkuntansiClientManager({ accountRows, journalRows, businessUnits
 
       return true;
     });
-  }, [journalRows, tab, statusFilter, startDate, endDate, searchQuery]);
+  }, [journalRows, tab, statusFilter, selectedUnit, startDate, endDate, searchQuery]);
 
   // Total calculations for the filtered journals
   const { totalDebit, totalCredit, countPending, countApproved } = useMemo(() => {
@@ -380,7 +406,7 @@ export function AkuntansiClientManager({ accountRows, journalRows, businessUnits
             </div>
 
             {/* Reset Button */}
-            {(startDate || endDate || searchQuery || statusFilter !== "all" || periodPreset !== "this_month") && (
+            {(startDate || endDate || searchQuery || statusFilter !== "all" || selectedUnit || periodPreset !== "this_month") && (
               <button
                 type="button"
                 onClick={resetFilters}
@@ -390,6 +416,42 @@ export function AkuntansiClientManager({ accountRows, journalRows, businessUnits
                 <span>Reset Filter</span>
               </button>
             )}
+          </div>
+
+          {/* Unit Usaha Filter Buttons */}
+          <div className="flex flex-wrap items-center gap-1.5 pt-1 border-t border-[#f1f5f9]">
+            <span className="text-xs font-bold text-[#64748b] mr-1 flex items-center gap-1">
+              <Building2 className="size-3.5 text-[#2563eb]" /> Unit:
+            </span>
+            <button
+              type="button"
+              onClick={() => setSelectedUnit("")}
+              className={`h-7.5 rounded-xl px-2.5 text-xs font-bold transition-all cursor-pointer ${
+                !selectedUnit
+                  ? "bg-[#0b1220] text-white shadow-sm"
+                  : "bg-[#f8fbff] text-[#64748b] ring-1 ring-[#dbe5f1] hover:bg-slate-100"
+              }`}
+            >
+              Semua Unit ({journalRows.length})
+            </button>
+            {businessUnits.map((u) => {
+              const isActive = selectedUnit === u.name;
+              const count = journalRows.filter((j) => isMatchUnit(j.memo, u.name)).length;
+              return (
+                <button
+                  key={u.id}
+                  type="button"
+                  onClick={() => setSelectedUnit(u.name)}
+                  className={`h-7.5 rounded-xl px-2.5 text-xs font-bold transition-all cursor-pointer ${
+                    isActive
+                      ? "bg-[#2563eb] text-white shadow-sm"
+                      : "bg-[#f8fbff] text-[#64748b] ring-1 ring-[#dbe5f1] hover:bg-slate-100"
+                  }`}
+                >
+                  {u.name} ({count})
+                </button>
+              );
+            })}
           </div>
 
           {/* Date Picker Inputs (Visible always or when custom) */}

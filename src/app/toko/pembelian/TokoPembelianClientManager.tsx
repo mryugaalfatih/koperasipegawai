@@ -51,6 +51,13 @@ type TokoPembelianClientManagerProps = {
   products: TokoProductRow[];
   totalPoCount: number;
   pendingPoCount: number;
+  cooperativeProfile?: {
+    name: string;
+    legal_number: string | null;
+    address: string | null;
+    phone: string | null;
+    email: string | null;
+  } | null;
 };
 
 const formatRupiah = (val: number) =>
@@ -70,6 +77,7 @@ export function TokoPembelianClientManager({
   products,
   totalPoCount,
   pendingPoCount,
+  cooperativeProfile,
 }: TokoPembelianClientManagerProps) {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
@@ -512,10 +520,24 @@ export function TokoPembelianClientManager({
         >
           <div className="space-y-4 text-xs">
             {/* Printable Header (Visible on Print) */}
-            <div className="hidden print:block border-b-2 border-slate-900 pb-3 text-center">
-              <h2 className="text-base font-black uppercase text-slate-900">KOPERASI PEGAWAI REPUBLIK INDONESIA</h2>
-              <p className="text-xs font-bold text-slate-700">UNIT USAHA WASERDA / TOKO SEMBAKO</p>
-              <p className="text-[11px] font-semibold text-slate-500">SURAT PESANAN BARANG (PURCHASE ORDER)</p>
+            <div className="hidden print:block border-b-2 border-slate-900 pb-3 text-center mb-3">
+              <h2 className="text-base font-black uppercase text-slate-900">
+                {cooperativeProfile?.name || "KOPERASI PEGAWAI REPUBLIK INDONESIA"}
+              </h2>
+              {cooperativeProfile?.legal_number ? (
+                <p className="text-[11px] font-semibold text-slate-600">Badan Hukum No: {cooperativeProfile.legal_number}</p>
+              ) : null}
+              <p className="text-xs font-bold text-slate-800">UNIT USAHA WASERDA / TOKO SEMBAKO</p>
+              {cooperativeProfile?.address ? (
+                <p className="text-[11px] text-slate-600">
+                  {cooperativeProfile.address}
+                  {cooperativeProfile.phone ? ` · Telp: ${cooperativeProfile.phone}` : ""}
+                  {cooperativeProfile.email ? ` · Email: ${cooperativeProfile.email}` : ""}
+                </p>
+              ) : null}
+              <div className="mt-2 border-t border-slate-300 pt-1">
+                <p className="text-xs font-black uppercase tracking-wider text-slate-900">SURAT PESANAN BARANG (PURCHASE ORDER)</p>
+              </div>
             </div>
 
             <div className="rounded-xl bg-[#f8fbff] p-3.5 border border-[#dbe5f1] space-y-1.5 print:bg-white print:border-slate-300">

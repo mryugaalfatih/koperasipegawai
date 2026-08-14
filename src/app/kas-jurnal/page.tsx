@@ -149,15 +149,33 @@ export default async function KasJurnalPage({ searchParams }: KasJurnalPageProps
   const rawJournalRows = (journalEntries ?? []) as unknown as JournalRow[];
   const unitList = (businessUnits ?? []) as { id: string; code: string; name: string }[];
 
+  const isMatchUnit = (text: string | null | undefined, unitFilter: string) => {
+    if (!unitFilter) return true;
+    if (!text) return false;
+    const t = text.toLowerCase();
+    const u = unitFilter.toLowerCase();
+    if (t.includes(u)) return true;
+    if (u.includes("toko") || u.includes("waserda")) {
+      return t.includes("toko") || t.includes("waserda") || t.includes("sembako");
+    }
+    if (u.includes("simpan") || u.includes("pinjam") || u.includes("usp")) {
+      return t.includes("simpan") || t.includes("pinjam") || t.includes("usp") || t.includes("angsuran");
+    }
+    if (u.includes("apar")) {
+      return t.includes("apar") || t.includes("tabung") || t.includes("refill");
+    }
+    return false;
+  };
+
   const cashRows = rawCashRows.filter((item) => {
-    if (selectedUnit && !item.description?.toLowerCase().includes(selectedUnit.toLowerCase())) return false;
+    if (!isMatchUnit(item.description, selectedUnit)) return false;
     if (startDate && item.transaction_date < startDate) return false;
     if (endDate && item.transaction_date > endDate) return false;
     return true;
   });
 
   const journalRows = rawJournalRows.filter((item) => {
-    if (selectedUnit && !item.memo?.toLowerCase().includes(selectedUnit.toLowerCase())) return false;
+    if (!isMatchUnit(item.memo, selectedUnit)) return false;
     if (startDate && item.entry_date < startDate) return false;
     if (endDate && item.entry_date > endDate) return false;
     return true;
