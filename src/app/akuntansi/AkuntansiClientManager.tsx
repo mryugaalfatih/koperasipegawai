@@ -632,7 +632,7 @@ export function AkuntansiClientManager({ accountRows, journalRows, businessUnits
         onClose={() => setEditingJournal(null)}
         title={`Edit Jurnal: ${editingJournal?.entry_no ?? ""}`}
         subtitle="Sesuaikan akun, nominal debit/kredit, atau tambah baris jurnal sebelum disetujui."
-        maxWidth="max-w-3xl"
+        maxWidth="max-w-5xl"
       >
         <form action={handleSaveEdit} className="space-y-5">
           <label className="block">
