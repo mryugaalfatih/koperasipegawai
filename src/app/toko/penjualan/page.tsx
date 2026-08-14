@@ -64,13 +64,14 @@ export default async function TokoPenjualanPage({ searchParams }: TokoPenjualanP
     redirect("/login");
   }
 
-  const [{ data: profile }, { data: dbSales }] = await Promise.all([
+  const [{ data: profile }, { data: dbSales }, { data: cooperativeProfile }] = await Promise.all([
     supabase.from("profiles").select("branch_id, role, full_name").eq("id", user.id).single(),
     supabase
       .from("toko_sales")
       .select("id, invoice_no, sale_date, payment_method, total_amount, discount_amount, grand_total, paid_amount, change_amount, notes, created_at, members(full_name, member_no), toko_sale_items(product_name, qty, unit_name, sell_price, subtotal)")
       .order("created_at", { ascending: false })
-      .limit(100),
+      .limit(300),
+    supabase.from("cooperative_profiles").select("name, legal_number, address, phone, email").order("created_at").limit(1).maybeSingle(),
   ]);
 
   if (!profile) {
@@ -97,6 +98,7 @@ export default async function TokoPenjualanPage({ searchParams }: TokoPenjualanP
               salesRows={salesRows}
               totalOmset={totalOmset}
               totalSalesCount={salesRows.length}
+              cooperativeProfile={cooperativeProfile}
             />
           </div>
         </section>

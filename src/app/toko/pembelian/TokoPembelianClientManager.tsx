@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import {
   FileText,
   Plus,
@@ -17,6 +17,11 @@ import {
   Tag,
   Boxes,
   Printer,
+  Calendar,
+  RotateCcw,
+  Banknote,
+  CreditCard,
+  Building2,
 } from "lucide-react";
 import { CrudHeader } from "@/components/CrudHeader";
 import { CrudModal } from "@/components/CrudModal";
@@ -72,18 +77,66 @@ type CartPoItem = {
   subtotal: number;
 };
 
+function getStartOfMonth(d = new Date()) {
+  return new Date(d.getFullYear(), d.getMonth(), 1).toISOString().slice(0, 10);
+}
+function getEndOfMonth(d = new Date()) {
+  return new Date(d.getFullYear(), d.getMonth() + 1, 0).toISOString().slice(0, 10);
+}
+
 export function TokoPembelianClientManager({
   poRows,
   products,
-  totalPoCount,
-  pendingPoCount,
   cooperativeProfile,
 }: TokoPembelianClientManagerProps) {
+  const [periodPreset, setPeriodPreset] = useState<"this_month" | "all" | "today" | "last_month" | "this_year" | "custom">("this_month");
+  const [startDate, setStartDate] = useState<string>(getStartOfMonth());
+  const [endDate, setEndDate] = useState<string>(getEndOfMonth());
   const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [paymentFilter, setPaymentFilter] = useState<string>("all");
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [selectedPo, setSelectedPo] = useState<TokoPoRow | null>(null);
   const [isReceiving, setIsReceiving] = useState(false);
+
+  // Form states for creating PO with Custom Product Picker
+  const [prodSearch, setProdSearch] = useState("");
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [selectedProd, setSelectedProd] = useState<TokoProductRow | null>(null);
+  const [orderQty, setOrderQty] = useState("10");
+  const [poCart, setPoCart] = useState<CartPoItem[]>([]);
+
+  // Apply preset dates
+  const handlePresetChange = (preset: "this_month" | "all" | "today" | "last_month" | "this_year" | "custom") => {
+    setPeriodPreset(preset);
+    const now = new Date();
+
+    if (preset === "today") {
+      const todayStr = now.toISOString().slice(0, 10);
+      setStartDate(todayStr);
+      setEndDate(todayStr);
+    } else if (preset === "this_month") {
+      setStartDate(getStartOfMonth(now));
+      setEndDate(getEndOfMonth(now));
+    } else if (preset === "last_month") {
+      const lastMonthDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+      setStartDate(getStartOfMonth(lastMonthDate));
+      setEndDate(getEndOfMonth(lastMonthDate));
+    } else if (preset === "this_year") {
+      setStartDate(`${now.getFullYear()}-01-01`);
+      setEndDate(`${now.getFullYear()}-12-31`);
+    } else if (preset === "all") {
+      setStartDate("");
+      setEndDate("");
+    }
+  };
+
+  const resetFilters = () => {
+    handlePresetChange("this_month");
+    setSearch("");
+    setStatusFilter("all");
+    setPaymentFilter("all");
+  };
 
   const handleReceivePo = async (po: TokoPoRow) => {
     if (isReceiving || po.status === "received") return;
@@ -105,13 +158,6 @@ export function TokoPembelianClientManager({
       setIsReceiving(false);
     }
   };
-
-  // Form states for creating PO with Custom Product Picker
-  const [prodSearch, setProdSearch] = useState("");
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [selectedProd, setSelectedProd] = useState<TokoProductRow | null>(null);
-  const [orderQty, setOrderQty] = useState("10");
-  const [poCart, setPoCart] = useState<CartPoItem[]>([]);
 
   const filteredCatalog = products.filter(
     (p) =>
@@ -162,117 +208,368 @@ export function TokoPembelianClientManager({
     setPoCart((prev) => prev.filter((item) => item.product_id !== prodId));
   };
 
-  const filteredPo = poRows.filter((p) => {
-    const matchesSearch =
-      !search ||
-      p.po_no.toLowerCase().includes(search.toLowerCase()) ||
-      p.supplier_name.toLowerCase().includes(search.toLowerCase());
+  // Filtered PO Logic
+  const filteredPo = useMemo(() => {
+    return poRows.filter((p) => {
+      // 1. Date filter
+      if (startDate && p.order_date < startDate) return false;
+      if (endDate && p.order_date > endDate) return false;
 
-    const matchesStatus = !statusFilter || p.status === statusFilter;
+      // 2. Status filter
+      if (statusFilter !== "all" && p.status !== statusFilter) return false;
 
-    return matchesSearch && matchesStatus;
-  });
+      // 3. Payment type filter
+      if (paymentFilter !== "all" && p.payment_type !== paymentFilter) return false;
+
+      // 4. Search text (PO No, Supplier Name, Item Name)
+      if (search.trim()) {
+        const q = search.toLowerCase().trim();
+        const matchPo = p.po_no.toLowerCase().includes(q);
+        const matchSupplier = p.supplier_name.toLowerCase().includes(q) || (p.supplier_phone ?? "").includes(q);
+        const matchNotes = (p.notes ?? "").toLowerCase().includes(q);
+        const matchItem = (p.toko_purchase_order_items ?? []).some((item) =>
+          item.product_name.toLowerCase().includes(q)
+        );
+        if (!matchPo && !matchSupplier && !matchNotes && !matchItem) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+  }, [poRows, startDate, endDate, statusFilter, paymentFilter, search]);
+
+  // Totals calculations
+  const { totalFilteredAmount, pendingCount, receivedCount, tempoAmount } = useMemo(() => {
+    let total = 0;
+    let pending = 0;
+    let received = 0;
+    let tempo = 0;
+
+    for (const p of filteredPo) {
+      const amt = Number(p.total_amount ?? 0);
+      total += amt;
+      if (p.status === "ordered") pending++;
+      if (p.status === "received") received++;
+      if (p.payment_type === "tempo") tempo += amt;
+    }
+
+    return {
+      totalFilteredAmount: total,
+      pendingCount: pending,
+      receivedCount: received,
+      tempoAmount: tempo,
+    };
+  }, [filteredPo]);
 
   const cartTotal = poCart.reduce((sum, item) => sum + item.subtotal, 0);
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <CrudHeader
-        title="Surat Pesanan & Pembelian Supplier (PO)"
-        subtitle="Kelola pemesanan barang sembako ke Distributor/Supplier & proses penerimaan barang masuk."
-        countBadge={`${totalPoCount} Surat PO`}
-        addButtonLabel="Buat Surat Pesanan (PO)"
-        onAddClick={() => setIsAddModalOpen(true)}
-        searchValue={search}
-        onSearchChange={setSearch}
-        statusFilterValue={statusFilter}
-        onStatusFilterChange={setStatusFilter}
-        statusOptions={[
-          { value: "ordered", label: "Pesanan Dikirim (Pending)" },
-          { value: "received", label: "Sudah Diterima (Complete)" },
-        ]}
-      />
+    <div className="space-y-4">
+      {/* Top Header Card */}
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-[#dbe5f1]">
+        <div className="flex items-center gap-3">
+          <div className="grid size-11 place-items-center rounded-2xl bg-[#2563eb] text-white shadow-sm">
+            <Truck className="size-6" />
+          </div>
+          <div>
+            <h1 className="text-base font-black text-[#0b1220]">Surat Pesanan & Pembelian Supplier (PO)</h1>
+            <p className="text-xs font-bold text-[#64748b]">
+              Kelola pemesanan kulakan barang sembako ke Supplier, cetak dokumen PO resmi, dan proses penerimaan stok.
+            </p>
+          </div>
+        </div>
 
-      {/* KPI Cards */}
-      <section className="grid gap-3 sm:grid-cols-3">
+        <button
+          type="button"
+          onClick={() => setIsAddModalOpen(true)}
+          className="inline-flex h-11 items-center gap-2 rounded-xl bg-[#2563eb] px-4 text-xs font-black text-white hover:bg-[#1d4ed8] shadow-sm transition-all cursor-pointer"
+        >
+          <Plus className="size-4" />
+          <span>Buat Surat Pesanan (PO)</span>
+        </button>
+      </div>
+
+      {/* Filter Toolbar */}
+      <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-[#dbe5f1] space-y-3">
+        {/* 1. Periode Preset Buttons & Reset */}
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-wrap items-center gap-1.5">
+            <span className="text-xs font-bold text-[#64748b] mr-1 flex items-center gap-1">
+              <Calendar className="size-3.5 text-[#2563eb]" /> Periode:
+            </span>
+            {(
+              [
+                { id: "this_month", label: "Bulan Ini" },
+                { id: "today", label: "Hari Ini" },
+                { id: "last_month", label: "Bulan Lalu" },
+                { id: "this_year", label: "Tahun Ini" },
+                { id: "all", label: "Semua" },
+                { id: "custom", label: "Kustom" },
+              ] as const
+            ).map((preset) => (
+              <button
+                key={preset.id}
+                type="button"
+                onClick={() => handlePresetChange(preset.id)}
+                className={`h-7.5 rounded-xl px-2.5 text-xs font-bold transition-all cursor-pointer ${
+                  periodPreset === preset.id
+                    ? "bg-[#2563eb] text-white shadow-sm"
+                    : "bg-[#f8fbff] text-[#64748b] ring-1 ring-[#dbe5f1] hover:bg-slate-100"
+                }`}
+              >
+                {preset.label}
+              </button>
+            ))}
+          </div>
+
+          {(startDate || endDate || search || statusFilter !== "all" || paymentFilter !== "all" || periodPreset !== "this_month") && (
+            <button
+              type="button"
+              onClick={resetFilters}
+              className="inline-flex h-7.5 items-center gap-1 rounded-xl bg-slate-100 px-2.5 text-xs font-semibold text-[#64748b] hover:bg-slate-200 transition-all cursor-pointer"
+            >
+              <RotateCcw className="size-3" />
+              <span>Reset Filter</span>
+            </button>
+          )}
+        </div>
+
+        {/* 2. Status PO & Payment Type Quick Filters */}
+        <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-[#f1f5f9]">
+          <span className="text-xs font-bold text-[#64748b] mr-1 flex items-center gap-1">
+            <PackageCheck className="size-3.5 text-[#2563eb]" /> Status PO:
+          </span>
+          {[
+            { id: "all", label: "Semua Status" },
+            { id: "ordered", label: "⏳ Menunggu Barang (Ordered)" },
+            { id: "received", label: "✅ Sudah Diterima (Received)" },
+          ].map((s) => (
+            <button
+              key={s.id}
+              type="button"
+              onClick={() => setStatusFilter(s.id)}
+              className={`h-7.5 rounded-xl px-2.5 text-xs font-bold transition-all cursor-pointer ${
+                statusFilter === s.id
+                  ? "bg-[#0b1220] text-white shadow-sm"
+                  : "bg-[#f8fbff] text-[#64748b] ring-1 ring-[#dbe5f1] hover:bg-slate-100"
+              }`}
+            >
+              {s.label}
+            </button>
+          ))}
+
+          <span className="text-xs font-bold text-[#64748b] ml-2 mr-1 flex items-center gap-1">
+            <Banknote className="size-3.5 text-[#2563eb]" /> Jenis Bayar:
+          </span>
+          {[
+            { id: "all", label: "Semua Jenis" },
+            { id: "cash", label: "💵 Tunai / Cash" },
+            { id: "tempo", label: "⏳ Tempo / Hutang" },
+          ].map((p) => (
+            <button
+              key={p.id}
+              type="button"
+              onClick={() => setPaymentFilter(p.id)}
+              className={`h-7.5 rounded-xl px-2.5 text-xs font-bold transition-all cursor-pointer ${
+                paymentFilter === p.id
+                  ? "bg-[#2563eb] text-white shadow-sm"
+                  : "bg-[#f8fbff] text-[#64748b] ring-1 ring-[#dbe5f1] hover:bg-slate-100"
+              }`}
+            >
+              {p.label}
+            </button>
+          ))}
+        </div>
+
+        {/* 3. Search & Date Pickers */}
+        <div className="grid gap-2.5 sm:grid-cols-2 md:grid-cols-4 pt-2 border-t border-[#f1f5f9]">
+          <div className="md:col-span-2">
+            <label className="text-[11px] font-bold text-[#64748b] uppercase block mb-1">Cari No. PO / Supplier / Nama Barang</label>
+            <div className="relative">
+              <Search className="absolute left-2.5 top-2.5 size-3.5 text-[#94a3b8]" />
+              <input
+                type="text"
+                placeholder="No PO / Nama Distributor Supplier / Item Barang..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="h-8.5 w-full rounded-xl border border-[#dbe5f1] bg-[#f8fbff] pl-8 pr-2 text-xs font-bold text-[#0b1220] outline-none focus:border-[#2563eb]"
+              />
+            </div>
+          </div>
+          <div>
+            <label className="text-[11px] font-bold text-[#64748b] uppercase block mb-1">Dari Tanggal</label>
+            <input
+              type="date"
+              value={startDate}
+              onChange={(e) => {
+                setStartDate(e.target.value);
+                setPeriodPreset("custom");
+              }}
+              className="h-8.5 w-full rounded-xl border border-[#dbe5f1] bg-[#f8fbff] px-2 text-xs font-bold text-[#0b1220] outline-none focus:border-[#2563eb]"
+            />
+          </div>
+          <div>
+            <label className="text-[11px] font-bold text-[#64748b] uppercase block mb-1">Sampai Tanggal</label>
+            <input
+              type="date"
+              value={endDate}
+              onChange={(e) => {
+                setEndDate(e.target.value);
+                setPeriodPreset("custom");
+              }}
+              className="h-8.5 w-full rounded-xl border border-[#dbe5f1] bg-[#f8fbff] px-2 text-xs font-bold text-[#0b1220] outline-none focus:border-[#2563eb]"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* KPI Stats Cards */}
+      <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <article className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-[#dbe5f1]">
-          <FileText className="size-5 text-[#2563eb]" />
-          <p className="mt-3 text-xs font-bold text-[#64748b]">Total Surat Pesanan PO</p>
-          <p className="mt-0.5 text-xl font-black text-[#0b1220]">{totalPoCount} PO</p>
+          <div className="flex items-center justify-between">
+            <FileText className="size-5 text-[#2563eb]" />
+            <span className="text-[10px] font-bold text-[#64748b]">Total Surat PO</span>
+          </div>
+          <p className="mt-2 text-xl font-black text-[#0b1220]">{filteredPo.length} Surat</p>
+          <p className="text-[11px] text-[#64748b] mt-0.5">{receivedCount} sudah diterima</p>
         </article>
 
         <article className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-[#dbe5f1]">
-          <Clock className={`size-5 ${pendingPoCount > 0 ? "text-amber-500" : "text-emerald-500"}`} />
-          <p className="mt-3 text-xs font-bold text-[#64748b]">Menunggu Penerimaan Barang</p>
-          <p className="mt-0.5 text-xl font-black text-[#0b1220]">{pendingPoCount} Surat</p>
+          <div className="flex items-center justify-between">
+            <Clock className={`size-5 ${pendingCount > 0 ? "text-amber-500" : "text-emerald-500"}`} />
+            <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
+              pendingCount > 0 ? "bg-amber-50 text-amber-700" : "bg-emerald-50 text-emerald-700"
+            }`}>
+              Menunggu Barang
+            </span>
+          </div>
+          <p className="mt-2 text-xl font-black text-[#0b1220]">{pendingCount} PO Pending</p>
+          <p className="text-[11px] text-[#64748b] mt-0.5">Belum masuk stok fisik</p>
         </article>
 
         <article className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-[#dbe5f1]">
-          <Truck className="size-5 text-[#2563eb]" />
-          <p className="mt-3 text-xs font-bold text-[#64748b]">Data Ditampilkan</p>
-          <p className="mt-0.5 text-xl font-black text-[#0b1220]">{filteredPo.length} Surat</p>
+          <div className="flex items-center justify-between">
+            <Store className="size-5 text-emerald-600" />
+            <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">Total Pembelian</span>
+          </div>
+          <p className="mt-2 text-xl font-black text-emerald-600">{formatRupiah(totalFilteredAmount)}</p>
+          <p className="text-[11px] text-[#64748b] mt-0.5">Nilai barang kulakan</p>
+        </article>
+
+        <article className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-[#dbe5f1]">
+          <div className="flex items-center justify-between">
+            <CreditCard className="size-5 text-amber-600" />
+            <span className="text-[10px] font-bold text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded">Hutang Tempo</span>
+          </div>
+          <p className="mt-2 text-xl font-black text-amber-600">{formatRupiah(tempoAmount)}</p>
+          <p className="text-[11px] text-[#64748b] mt-0.5">Kewajiban supplier</p>
         </article>
       </section>
 
-      {/* PO Table */}
+      {/* PO Transactions Table */}
       <section className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-[#dbe5f1]">
         <div className="overflow-x-auto rounded-xl border border-[#dbe5f1]">
           <table className="w-full text-left text-xs">
             <thead className="bg-[#f8fbff] text-[#475569] border-b border-[#dbe5f1]">
               <tr>
-                <th className="px-2 py-2 font-bold">No. Surat PO</th>
-                <th className="px-2 py-2 font-bold">Tanggal Pesan</th>
-                <th className="px-2 py-2 font-bold">Distributor / Supplier</th>
-                <th className="px-2 py-2 font-bold">Jenis Pembayaran</th>
-                <th className="px-2 py-2 font-bold text-right">Total Nilai PO</th>
-                <th className="px-2 py-2 font-bold text-center">Status PO</th>
-                <th className="px-2 py-2 font-bold text-center">Aksi</th>
+                <th className="px-3 py-2.5 font-bold">No. PO</th>
+                <th className="px-3 py-2.5 font-bold">Tanggal Pesan</th>
+                <th className="px-3 py-2.5 font-bold">Distributor / Supplier</th>
+                <th className="px-3 py-2.5 font-bold">Rincian Barang</th>
+                <th className="px-3 py-2.5 font-bold">Jenis Bayar</th>
+                <th className="px-3 py-2.5 font-bold">Status</th>
+                <th className="px-3 py-2.5 font-bold text-right">Total Nilai PO</th>
+                <th className="px-3 py-2.5 font-bold text-center">Aksi</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#e2e8f0]">
               {filteredPo.length ? (
-                filteredPo.map((po) => (
-                  <tr key={po.id} className="hover:bg-[#f8fbff] transition-colors">
-                    <td className="px-2 py-2 font-bold text-[#2563eb]">{po.po_no}</td>
-                    <td className="px-2 py-2 font-semibold text-[#64748b]">{po.order_date}</td>
-                    <td className="px-2 py-2 font-bold text-[#0b1220]">{po.supplier_name}</td>
-                    <td className="px-2 py-2">
-                      <span className="rounded-full bg-[#f1f5f9] px-2.5 py-1 text-[11px] font-bold text-[#475569]">
-                        {po.payment_type === "tempo" ? "Tempo (Kredit Supplier)" : "Tunai / Cash"}
-                      </span>
-                    </td>
-                    <td className="px-2 py-2 font-black text-right text-[#0b1220]">
-                      {formatRupiah(po.total_amount)}
-                    </td>
-                    <td className="px-2 py-2 text-center">
-                      <span
-                        className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-bold ${
-                          po.status === "received"
-                            ? "bg-emerald-100 text-emerald-800 border border-emerald-300"
-                            : "bg-amber-100 text-amber-800 border border-amber-300"
-                        }`}
-                      >
-                        {po.status === "received" ? <CheckCircle2 className="size-3" /> : <Clock className="size-3" />}
-                        {po.status === "received" ? "Sudah Diterima" : "Pesanan Dikirim"}
-                      </span>
-                    </td>
-                    <td className="px-2 py-2 text-center">
-                      <button
-                        type="button"
-                        onClick={() => setSelectedPo(po)}
-                        className="inline-flex h-8 items-center gap-1 rounded-xl bg-[#f1f5f9] px-2.5 text-xs font-bold text-[#0b1220] hover:bg-[#e2e8f0]"
-                      >
-                        <Eye className="size-3 text-[#2563eb]" />
-                        <span>Detail PO</span>
-                      </button>
-                    </td>
-                  </tr>
-                ))
+                filteredPo.map((po) => {
+                  const itemCount = po.toko_purchase_order_items?.length ?? 0;
+                  const firstItem = po.toko_purchase_order_items?.[0]?.product_name ?? "";
+                  const otherCount = itemCount > 1 ? ` +${itemCount - 1} barang lainnya` : "";
+
+                  return (
+                    <tr key={po.id} className="hover:bg-[#f8fbff] transition-colors">
+                      <td className="px-3 py-2.5 font-mono font-bold text-[#2563eb]">
+                        {po.po_no}
+                      </td>
+                      <td className="px-3 py-2.5 font-semibold text-[#64748b]">
+                        {po.order_date}
+                      </td>
+                      <td className="px-3 py-2.5 font-bold text-[#0b1220]">
+                        <div>{po.supplier_name}</div>
+                        {po.supplier_phone ? (
+                          <div className="text-[10px] text-[#64748b] font-normal">{po.supplier_phone}</div>
+                        ) : null}
+                      </td>
+                      <td className="px-3 py-2.5 text-xs text-[#0b1220] max-w-[200px] truncate">
+                        {firstItem ? (
+                          <span title={po.toko_purchase_order_items?.map((i) => `${i.product_name} (${i.qty_ordered} ${i.unit_name})`).join(", ")}>
+                            {firstItem}{otherCount}
+                          </span>
+                        ) : (
+                          <span className="text-[#94a3b8] italic">Tidak ada item</span>
+                        )}
+                      </td>
+                      <td className="px-3 py-2.5">
+                        <span
+                          className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[10px] font-bold ${
+                            po.payment_type === "cash"
+                              ? "bg-emerald-100 text-emerald-800"
+                              : "bg-amber-100 text-amber-800"
+                          }`}
+                        >
+                          {po.payment_type === "cash" ? "💵 Tunai / Cash" : "⏳ Tempo"}
+                        </span>
+                      </td>
+                      <td className="px-3 py-2.5">
+                        <span
+                          className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[10px] font-bold ${
+                            po.status === "received"
+                              ? "bg-emerald-100 text-emerald-800"
+                              : "bg-amber-100 text-amber-800"
+                          }`}
+                        >
+                          {po.status === "received" ? "✅ Diterima" : "⏳ Menunggu"}
+                        </span>
+                      </td>
+                      <td className="px-3 py-2.5 font-black text-right text-[#0b1220]">
+                        {formatRupiah(po.total_amount)}
+                      </td>
+                      <td className="px-3 py-2.5 text-center">
+                        <div className="flex items-center justify-center gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => setSelectedPo(po)}
+                            className="inline-flex h-7.5 items-center gap-1 rounded-xl bg-[#f1f5f9] px-2.5 text-xs font-bold text-[#0b1220] hover:bg-[#dbe5f1] transition-all cursor-pointer shadow-2xs"
+                          >
+                            <Eye className="size-3.5 text-[#2563eb]" />
+                            <span>Detail & Cetak</span>
+                          </button>
+
+                          {po.status !== "received" ? (
+                            <button
+                              type="button"
+                              disabled={isReceiving}
+                              onClick={() => handleReceivePo(po)}
+                              className="inline-flex h-7.5 items-center gap-1 rounded-xl bg-emerald-600 px-2.5 text-xs font-bold text-white hover:bg-emerald-700 shadow-2xs transition-all cursor-pointer disabled:opacity-50"
+                              title="Konfirmasi Penerimaan Barang Masuk"
+                            >
+                              <PackageCheck className="size-3.5" />
+                              <span>Terima</span>
+                            </button>
+                          ) : null}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
               ) : (
                 <tr>
-                  <td colSpan={7} className="p-8 text-center font-bold text-[#64748b]">
-                    Belum ada dokumen Surat Pesanan (PO). Klik "+ Buat Surat Pesanan (PO)" untuk memesan barang.
+                  <td colSpan={8} className="p-8 text-center font-bold text-[#64748b]">
+                    Tidak ada surat pesanan PO yang cocok dengan filter.
                   </td>
                 </tr>
               )}
@@ -281,220 +578,195 @@ export function TokoPembelianClientManager({
         </div>
       </section>
 
-      {/* Modal Buat Surat Pesanan PO Baru */}
+      {/* Modal Buat PO Baru */}
       {isAddModalOpen ? (
-        <CrudModal isOpen={true} maxWidth="max-w-2xl" title="Buat Surat Pesanan (PO Supplier) Baru" onClose={() => setIsAddModalOpen(false)}>
-          <form action={createPurchaseOrder} className="space-y-4">
-            <input type="hidden" name="items_json" value={JSON.stringify(poCart)} />
-
-            {/* Step 1: Info Supplier */}
+        <CrudModal
+          isOpen={true}
+          maxWidth="max-w-2xl"
+          title="Buat Surat Pesanan Supplier (PO Baru)"
+          onClose={() => setIsAddModalOpen(false)}
+        >
+          <form action={createPurchaseOrder} className="space-y-4 text-xs">
             <div className="grid gap-3 sm:grid-cols-2">
               <label className="block">
-                <span className="text-xs font-bold uppercase text-[#475569]">Nama Distributor / Supplier *</span>
+                <span className="font-bold text-[#475569]">Nama Distributor / Supplier *</span>
                 <input
-                  className="mt-1.5 h-11 w-full rounded-xl border border-[#dbe5f1] bg-[#f8fbff] px-2 text-xs font-bold outline-none focus:border-[#2563eb] focus:bg-white"
+                  type="text"
                   name="supplier_name"
-                  placeholder="Contoh: PT Sayap Mas Utama / Distributor Beras Jaya"
                   required
+                  placeholder="Contoh: PT. Sumber Pangan Jaya"
+                  className="mt-1 h-11 w-full rounded-xl border border-[#dbe5f1] bg-[#f8fbff] px-2 text-xs font-bold outline-none focus:border-[#2563eb]"
                 />
               </label>
 
               <label className="block">
-                <span className="text-xs font-bold uppercase text-[#475569]">No. Telepon / Sales</span>
+                <span className="font-bold text-[#475569]">No. Telepon / Sales *</span>
                 <input
-                  className="mt-1.5 h-11 w-full rounded-xl border border-[#dbe5f1] bg-[#f8fbff] px-2 text-xs font-bold outline-none focus:border-[#2563eb] focus:bg-white"
+                  type="text"
                   name="supplier_phone"
-                  placeholder="Contoh: 0812-3456-7890"
+                  required
+                  placeholder="Contoh: 08123456789"
+                  className="mt-1 h-11 w-full rounded-xl border border-[#dbe5f1] bg-[#f8fbff] px-2 text-xs font-bold outline-none focus:border-[#2563eb]"
                 />
               </label>
             </div>
 
-            <div className="grid gap-3 sm:grid-cols-2">
+            <div className="grid gap-3 sm:grid-cols-3">
               <label className="block">
-                <span className="text-xs font-bold uppercase text-[#475569]">Jenis Pembayaran</span>
+                <span className="font-bold text-[#475569]">Tanggal Pesan *</span>
+                <input
+                  type="date"
+                  name="order_date"
+                  required
+                  defaultValue={new Date().toISOString().slice(0, 10)}
+                  className="mt-1 h-11 w-full rounded-xl border border-[#dbe5f1] bg-[#f8fbff] px-2 text-xs font-bold outline-none focus:border-[#2563eb]"
+                />
+              </label>
+
+              <label className="block">
+                <span className="font-bold text-[#475569]">Jenis Pembayaran *</span>
                 <CustomSelect
                   name="payment_type"
+                  required
                   defaultValue="cash"
-                  className="mt-1.5 h-11"
+                  className="mt-1"
                   options={[
-                    { value: "cash", label: "💵 Tunai (Langsung Bayar)" },
-                    { value: "tempo", label: "📅 Tempo (Kredit Supplier 14-30 Hari)" },
+                    { value: "cash", label: "💵 Tunai / Cash" },
+                    { value: "tempo", label: "⏳ Tempo (Hutang Supplier)" },
                   ]}
                 />
               </label>
 
               <label className="block">
-                <span className="text-xs font-bold uppercase text-[#475569]">Tgl Jatuh Tempo (Jika Tempo)</span>
+                <span className="font-bold text-[#475569]">Jatuh Tempo (Jika Tempo)</span>
                 <input
                   type="date"
                   name="due_date"
-                  className="mt-1.5 h-11 w-full rounded-xl border border-[#dbe5f1] bg-[#f8fbff] px-2 text-xs font-bold outline-none focus:border-[#2563eb] focus:bg-white"
+                  className="mt-1 h-11 w-full rounded-xl border border-[#dbe5f1] bg-[#f8fbff] px-2 text-xs font-bold outline-none focus:border-[#2563eb]"
                 />
               </label>
             </div>
 
-            {/* Step 2: Custom Modern Product Picker */}
-            <div className="rounded-2xl border border-[#cbd5e1] bg-[#f8fbff] p-4 space-y-3 shadow-xs">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-black uppercase tracking-wider text-[#0b1220] flex items-center gap-1.5">
-                  <PackageCheck className="size-4 text-[#2563eb]" />
-                  1. Pilih Barang dari Katalog Sembako
-                </span>
-                <span className="text-[11px] font-semibold text-[#64748b]">
-                  {products.length} Barang Tersedia
-                </span>
-              </div>
+            {/* Custom Product Selection Area */}
+            <div className="rounded-xl border border-[#dbe5f1] bg-[#f8fbff] p-3 space-y-3">
+              <span className="font-black text-xs text-[#0b1220]">Tambah Barang Pesanan ke PO</span>
 
-              {/* Custom Search & Dropdown Combobox */}
-              <div className="relative">
-                <div
-                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                  className="flex h-12 w-full cursor-pointer items-center justify-between rounded-xl border border-[#cbd5e1] bg-white px-2 text-xs font-bold text-[#0b1220] shadow-xs hover:border-[#2563eb] transition-all"
-                >
-                  {selectedProd ? (
-                    <div className="flex items-center gap-2">
-                      <Store className="size-4 text-[#2563eb]" />
-                      <span className="font-black text-sm text-[#0b1220]">{selectedProd.name}</span>
-                      <span className="rounded-full bg-[#eff6ff] px-2 py-0.5 text-[10px] font-bold text-[#2563eb]">
-                        HPP: {formatRupiah(selectedProd.buy_price)}
-                      </span>
-                    </div>
-                  ) : (
-                    <span className="text-[#94a3b8]">-- Klik untuk mencari / memilih barang sembako --</span>
-                  )}
-                  <ChevronDown className={`size-4 text-[#64748b] transition-transform ${isDropdownOpen ? "rotate-180" : ""}`} />
-                </div>
+              <div className="grid gap-2 sm:grid-cols-[1fr_90px_auto]">
+                <div className="relative">
+                  <div
+                    onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                    className="flex h-11 cursor-pointer items-center justify-between rounded-xl border border-[#dbe5f1] bg-white px-2.5 text-xs font-bold"
+                  >
+                    <span className={selectedProd ? "text-[#0b1220]" : "text-[#94a3b8]"}>
+                      {selectedProd
+                        ? `${selectedProd.name} (HPP: ${formatRupiah(selectedProd.buy_price)})`
+                        : "Pilih Barang dari Master Produk..."}
+                    </span>
+                    <ChevronDown className="size-4 text-[#64748b]" />
+                  </div>
 
-                {/* Dropdown Menu Popup */}
-                {isDropdownOpen ? (
-                  <div className="absolute z-50 mt-1.5 max-h-60 w-full overflow-y-auto rounded-2xl border border-[#cbd5e1] bg-white p-2 shadow-xl">
-                    <div className="relative mb-2">
-                      <Search className="absolute left-3 top-2.5 size-4 text-[#94a3b8]" />
-                      <input
-                        type="text"
-                        value={prodSearch}
-                        onChange={(e) => setProdSearch(e.target.value)}
-                        placeholder="Ketik nama atau kategori barang..."
-                        className="h-9 w-full rounded-xl border border-[#e2e8f0] bg-[#f8fbff] pl-9 pr-3 text-xs font-bold outline-none focus:border-[#2563eb]"
-                        autoFocus
-                      />
-                    </div>
-
-                    <div className="space-y-1">
-                      {filteredCatalog.length ? (
-                        filteredCatalog.map((prod) => (
+                  {isDropdownOpen ? (
+                    <div className="absolute left-0 top-12 z-50 w-full rounded-xl border border-[#cbd5e1] bg-white p-2 shadow-xl">
+                      <div className="relative mb-2">
+                        <Search className="absolute left-2.5 top-2.5 size-3.5 text-[#94a3b8]" />
+                        <input
+                          type="text"
+                          value={prodSearch}
+                          onChange={(e) => setProdSearch(e.target.value)}
+                          placeholder="Cari nama barang..."
+                          className="h-8.5 w-full rounded-lg border border-[#e2e8f0] bg-[#f8fbff] pl-7 pr-2 text-xs font-bold outline-none focus:border-[#2563eb]"
+                          autoFocus
+                        />
+                      </div>
+                      <div className="max-h-48 overflow-y-auto space-y-1">
+                        {filteredCatalog.map((p) => (
                           <div
-                            key={prod.id}
-                            onClick={() => handleSelectProduct(prod)}
-                            className="flex cursor-pointer items-center justify-between rounded-xl p-2.5 hover:bg-[#eff6ff] transition-colors"
+                            key={p.id}
+                            onClick={() => handleSelectProduct(p)}
+                            className="flex cursor-pointer items-center justify-between rounded-lg p-2 text-xs hover:bg-[#eff6ff]"
                           >
-                            <div>
-                              <p className="font-bold text-xs text-[#0b1220]">{prod.name}</p>
-                              <p className="text-[11px] font-semibold text-[#64748b]">
-                                Satuan: {prod.unit_name ?? "Pcs"} · Stok Saat Ini: {prod.stock_qty}
-                              </p>
-                            </div>
-                            <span className="rounded-lg bg-[#f1f5f9] px-2.5 py-1 text-xs font-black text-[#2563eb]">
-                              HPP: {formatRupiah(prod.buy_price)}
+                            <span className="font-bold text-[#0b1220]">{p.name}</span>
+                            <span className="text-[11px] font-bold text-[#2563eb]">
+                              HPP: {formatRupiah(p.buy_price)}
                             </span>
                           </div>
-                        ))
-                      ) : (
-                        <p className="p-4 text-center text-xs font-bold text-[#64748b]">
-                          Tidak ada barang ditemukan.
-                        </p>
-                      )}
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                ) : null}
+                  ) : null}
+                </div>
+
+                <div>
+                  <input
+                    type="number"
+                    min="1"
+                    value={orderQty}
+                    onChange={(e) => setOrderQty(e.target.value)}
+                    placeholder="Qty"
+                    className="h-11 w-full rounded-xl border border-[#dbe5f1] bg-white px-2 text-center text-xs font-bold outline-none focus:border-[#2563eb]"
+                  />
+                </div>
+
+                <button
+                  type="button"
+                  onClick={addItemToPoCart}
+                  disabled={!selectedProd}
+                  className="h-11 rounded-xl bg-[#2563eb] px-4 font-bold text-white hover:bg-[#1d4ed8] disabled:opacity-40 cursor-pointer"
+                >
+                  + Tambah
+                </button>
               </div>
 
-              {/* Quantity Input & Add Button */}
-              {selectedProd ? (
-                <div className="flex items-center gap-3 rounded-xl bg-white p-3 border border-[#2563eb] shadow-xs">
-                  <div className="flex-1">
-                    <p className="text-[11px] font-bold uppercase text-[#64748b]">Jumlah Order (Qty)</p>
-                    <div className="mt-1 flex items-center gap-2">
-                      <input
-                        type="number"
-                        min="1"
-                        value={orderQty}
-                        onChange={(e) => setOrderQty(e.target.value)}
-                        className="h-10 w-28 rounded-xl border border-[#cbd5e1] bg-[#f8fbff] px-2 text-sm font-black outline-none focus:border-[#2563eb]"
-                      />
-                      <span className="font-bold text-xs text-[#475569]">{selectedProd.unit_name ?? "Pcs"}</span>
-                    </div>
+              {/* Items in Cart Table */}
+              {poCart.length ? (
+                <div className="rounded-xl border border-[#dbe5f1] bg-white overflow-hidden">
+                  <table className="w-full text-left text-xs">
+                    <thead className="bg-[#f8fbff] text-[#475569] border-b border-[#dbe5f1]">
+                      <tr>
+                        <th className="px-2.5 py-2 font-bold">Barang</th>
+                        <th className="px-2.5 py-2 font-bold text-center">Qty</th>
+                        <th className="px-2.5 py-2 font-bold text-right">Harga HPP</th>
+                        <th className="px-2.5 py-2 font-bold text-right">Subtotal</th>
+                        <th className="px-2.5 py-2 font-bold text-center">Aksi</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-[#e2e8f0]">
+                      {poCart.map((item) => (
+                        <tr key={item.product_id}>
+                          <td className="px-2.5 py-2 font-bold text-[#0b1220]">{item.product_name}</td>
+                          <td className="px-2.5 py-2 text-center font-bold">
+                            {item.qty_ordered} {item.unit_name}
+                          </td>
+                          <td className="px-2.5 py-2 text-right">{formatRupiah(item.buy_price)}</td>
+                          <td className="px-2.5 py-2 text-right font-black text-[#0b1220]">
+                            {formatRupiah(item.subtotal)}
+                          </td>
+                          <td className="px-2.5 py-2 text-center">
+                            <button
+                              type="button"
+                              onClick={() => removePoItem(item.product_id)}
+                              className="text-[#94a3b8] hover:text-rose-600"
+                            >
+                              <Trash2 className="size-4" />
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                  <div className="flex justify-between bg-[#f8fbff] px-3 py-2.5 font-black text-xs border-t border-[#dbe5f1]">
+                    <span>TOTAL PO:</span>
+                    <span className="text-[#2563eb] text-sm">{formatRupiah(cartTotal)}</span>
                   </div>
-
-                  <div className="text-right pr-2">
-                    <p className="text-[11px] font-bold uppercase text-[#64748b]">Subtotal Estimate</p>
-                    <p className="text-sm font-black text-[#2563eb]">
-                      {formatRupiah((Number(orderQty) || 1) * selectedProd.buy_price)}
-                    </p>
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={addItemToPoCart}
-                    className="h-10 rounded-xl bg-[#2563eb] px-2 text-xs font-bold text-white hover:bg-[#1d4ed8] shadow-xs flex items-center gap-1.5 shrink-0"
-                  >
-                    <Plus className="size-4" />
-                    <span>Tambahkan Barang</span>
-                  </button>
                 </div>
               ) : null}
-
-              {/* Step 3: PO Cart Items Table */}
-              <div className="pt-2">
-                <span className="text-xs font-black uppercase tracking-wider text-[#0b1220] flex items-center gap-1.5 mb-2">
-                  <ShoppingBag className="size-4 text-[#2563eb]" />
-                  2. Daftar Barang Dalam Surat Pesanan ({poCart.length} Item)
-                </span>
-
-                <div className="space-y-2">
-                  {poCart.length ? (
-                    poCart.map((item) => (
-                      <div
-                        key={item.product_id}
-                        className="flex items-center justify-between rounded-xl bg-white p-3 border border-[#cbd5e1] shadow-xs"
-                      >
-                        <div className="min-w-0 flex-1 pr-3">
-                          <p className="font-bold text-xs text-[#0b1220] truncate">{item.product_name}</p>
-                          <p className="text-[11px] font-semibold text-[#64748b]">
-                            {item.qty_ordered} {item.unit_name} × {formatRupiah(item.buy_price)}
-                          </p>
-                        </div>
-                        <div className="flex items-center gap-4">
-                          <span className="font-black text-sm text-[#0b1220]">
-                            {formatRupiah(item.subtotal)}
-                          </span>
-                          <button
-                            type="button"
-                            onClick={() => removePoItem(item.product_id)}
-                            className="rounded-lg p-1.5 text-[#94a3b8] hover:bg-rose-50 hover:text-rose-600 transition-colors"
-                          >
-                            <Trash2 className="size-4" />
-                          </button>
-                        </div>
-                      </div>
-                    ))
-                  ) : (
-                    <div className="rounded-xl border border-dashed border-[#cbd5e1] p-6 text-center text-xs font-bold text-[#94a3b8]">
-                      Belum ada barang di-order. Pilih barang di atas lalu klik "+ Tambahkan Barang".
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Cart Grand Total */}
-              <div className="flex justify-between items-center pt-3 border-t border-[#cbd5e1] font-bold text-xs">
-                <span className="text-[#0b1220] font-black uppercase">TOTAL NILAI SURAT PESANAN (PO):</span>
-                <span className="text-base font-black text-[#2563eb]">{formatRupiah(cartTotal)}</span>
-              </div>
             </div>
 
+            {/* Hidden Input for Cart Items JSON */}
+            <input type="hidden" name="items_json" value={JSON.stringify(poCart)} />
+
             <label className="block">
-              <span className="text-xs font-bold uppercase text-[#475569]">Catatan Tambahan</span>
+              <span className="font-bold text-[#475569]">Catatan Tambahan PO</span>
               <input
                 type="text"
                 name="notes"
