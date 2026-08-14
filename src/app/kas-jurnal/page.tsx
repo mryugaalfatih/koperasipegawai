@@ -4,13 +4,17 @@ import {
   ArrowUpRight,
   Banknote,
   BookOpenCheck,
+  Building2,
   Calculator,
   Calendar,
+  CreditCard,
   FileText,
   Landmark,
   Plus,
   ReceiptText,
   Scale,
+  TrendingDown,
+  TrendingUp,
 } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -19,6 +23,8 @@ import { createClient } from "@/lib/supabase/server";
 import { DashboardNavigation } from "@/components/DashboardNavigation";
 import { navItems, mobileNavItems } from "@/lib/dashboardNavigation";
 import { CurrencyInput } from "@/components/CurrencyInput";
+import { CustomSelect } from "@/components/CustomSelect";
+import { SearchableSelect } from "@/components/SearchableSelect";
 import { SubmitButton } from "@/components/SubmitButton";
 import { ToastNotification } from "@/components/ToastNotification";
 
@@ -55,9 +61,11 @@ type JournalLineRow = {
   accounts: {
     code: string;
     name: string;
+    category?: string;
   } | {
     code: string;
     name: string;
+    category?: string;
   }[] | null;
 };
 
@@ -67,6 +75,7 @@ type JournalRow = {
   entry_date: string;
   memo: string | null;
   source_type: string | null;
+  status: string | null;
   journal_lines: JournalLineRow[];
 };
 
@@ -75,14 +84,6 @@ const currency = new Intl.NumberFormat("id-ID", {
   currency: "IDR",
   maximumFractionDigits: 0,
 });
-
-const categoryLabels: Record<string, string> = {
-  asset: "Aset",
-  liability: "Kewajiban",
-  equity: "Modal",
-  income: "Pendapatan",
-  expense: "Beban",
-};
 
 export default async function KasJurnalPage({ searchParams }: KasJurnalPageProps) {
   const supabase = await createClient();
@@ -122,7 +123,7 @@ export default async function KasJurnalPage({ searchParams }: KasJurnalPageProps
   }
 
   const [{ data: profile }, { data: accounts }, { data: cashTransactions }, { data: journalEntries }, { data: businessUnits }] = await Promise.all([
-    supabase.from("profiles").select("id").eq("id", user.id).single(),
+    supabase.from("profiles").select("id, branch_id").eq("id", user.id).single(),
     supabase.from("accounts").select("id, code, name, category").order("code"),
     supabase
       .from("cash_transactions")
@@ -132,7 +133,7 @@ export default async function KasJurnalPage({ searchParams }: KasJurnalPageProps
       .limit(500),
     supabase
       .from("journal_entries")
-      .select("id, entry_no, entry_date, memo, source_type, journal_lines(debit, credit, accounts(code, name))")
+      .select("id, entry_no, entry_date, memo, source_type, status, journal_lines(debit, credit, accounts(code, name, category))")
       .order("entry_date", { ascending: false })
       .order("created_at", { ascending: false })
       .limit(500),
@@ -165,16 +166,6 @@ export default async function KasJurnalPage({ searchParams }: KasJurnalPageProps
   const cashIn = cashRows.filter((row) => row.direction === "in").reduce((sum, row) => sum + Number(row.amount ?? 0), 0);
   const cashOut = cashRows.filter((row) => row.direction === "out").reduce((sum, row) => sum + Number(row.amount ?? 0), 0);
   const cashBalance = cashIn - cashOut;
-  const journalTotals = journalRows.reduce(
-    (summary, journal) => {
-      for (const line of journal.journal_lines ?? []) {
-        summary.debit += Number(line.debit ?? 0);
-        summary.credit += Number(line.credit ?? 0);
-      }
-      return summary;
-    },
-    { debit: 0, credit: 0 },
-  );
 
   const buildUrl = (newParams: Record<string, string | undefined>) => {
     const p = new URLSearchParams();
@@ -193,333 +184,498 @@ export default async function KasJurnalPage({ searchParams }: KasJurnalPageProps
 
   return (
     <main className="min-h-screen bg-[#f4f7fb] text-[#0b1220]">
+      <ToastNotification error={params.error} saved={params.saved} />
+
       <div className="lg:grid lg:min-h-screen lg:grid-cols-[auto_1fr]">
         <DashboardNavigation navItems={navItems} mobileNavItems={mobileNavItems} />
-        <section className="min-w-0 pb-24 lg:pb-0">
-          <header className="sticky top-0 z-20 border-b border-[#dbe5f1] bg-[#f8fbff]/95 px-2 py-2 backdrop-blur md:px-2">
-        <div className="mx-auto flex max-w-[1500px] items-center justify-between gap-3">
-          <div className="flex min-w-0 items-center gap-3">
-            <Link className="grid size-10 place-items-center rounded-2xl border border-[#dbe5f1] bg-white" href="/home">
-              <ArrowLeft className="size-5" />
-            </Link>
-            <div>
-              <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#2563eb]">Kas & jurnal</p>
-              <h1 className="text-xl font-black md:text-2xl">Pembukuan operasional koperasi</h1>
-            </div>
-          </div>
-          <Link className="hidden h-10 items-center rounded-2xl bg-[#0b1220] px-2 text-sm font-black text-white md:inline-flex" href="/konfigurasi">
-            COA & periode
-          </Link>
-        </div>
-      </header>
 
-      <div className="mx-auto grid max-w-[1500px] gap-5 px-2 py-5 md:px-2 xl:grid-cols-[1fr_420px]">
-        <section className="space-y-5">
-          <section className="rounded-[28px] bg-[#07152f] p-5 text-white shadow-sm md:p-6">
-            <div className="flex flex-wrap items-start justify-between gap-4">
-              <div>
-                <p className="text-xs font-bold uppercase tracking-wider text-[#bfdbfe]">Kontrol pembukuan</p>
-                <h2 className="mt-1.5 text-xl font-bold md:text-2xl">Kas masuk, kas keluar, dan jurnal umum</h2>
-                <p className="mt-2 max-w-3xl text-sm font-medium leading-relaxed text-[#cbd5e1]">
-                  Setiap transaksi kas manual langsung dibuatkan jurnal dua sisi agar laporan laba rugi dan SHU punya dasar akuntansi.
+        <section className="min-w-0 pb-24 lg:pb-8">
+          {/* Header */}
+          <header className="sticky top-0 z-20 border-b border-[#dbe5f1] bg-[#f8fbff]/95 px-3 py-2.5 backdrop-blur md:px-4">
+            <div className="mx-auto flex max-w-[1500px] flex-wrap items-center justify-between gap-3">
+              <div className="flex min-w-0 items-center gap-3">
+                <Link
+                  className="grid size-9 place-items-center rounded-xl border border-[#dbe5f1] bg-white text-[#64748b] hover:bg-slate-50 transition-all shadow-sm"
+                  href="/home"
+                >
+                  <ArrowLeft className="size-4" />
+                </Link>
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-wider text-[#2563eb]">Pembukuan Operasional</p>
+                  <h1 className="text-lg font-bold text-[#0b1220] md:text-xl">Buku Kas & Jurnal Umum</h1>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <Link
+                  className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-[#dbe5f1] bg-white px-2.5 text-xs font-bold text-[#0b1220] shadow-sm hover:bg-slate-50 transition-all"
+                  href="/akuntansi"
+                >
+                  <BookOpenCheck className="size-3.5 text-[#2563eb]" />
+                  <span>Modul Akuntansi</span>
+                </Link>
+                <Link
+                  className="inline-flex h-9 items-center gap-1.5 rounded-xl bg-[#0b1220] px-2.5 text-xs font-bold text-white shadow-sm hover:bg-[#1e293b] transition-all"
+                  href="/konfigurasi"
+                >
+                  <Calculator className="size-3.5 text-blue-400" />
+                  <span>Master COA</span>
+                </Link>
+              </div>
+            </div>
+          </header>
+
+          <div className="mx-auto max-w-[1500px] space-y-4 px-2 py-3 md:px-4">
+            {/* ============================================================ */}
+            {/* FILTER TOOLBAR: PERIODE & UNIT USAHA                          */}
+            {/* ============================================================ */}
+            <div className="rounded-2xl bg-white p-3.5 shadow-sm ring-1 ring-[#dbe5f1] space-y-2.5">
+              {/* Periode Filter Buttons */}
+              <div className="flex flex-wrap items-center gap-1.5 pb-2 border-b border-[#f1f5f9]">
+                <span className="text-xs font-bold text-[#64748b] mr-1 flex items-center gap-1">
+                  <Calendar className="size-3.5 text-[#2563eb]" /> Periode:
+                </span>
+                {[
+                  { id: "this_month", label: "Bulan Ini" },
+                  { id: "today", label: "Hari Ini" },
+                  { id: "last_month", label: "Bulan Lalu" },
+                  { id: "this_year", label: "Tahun Ini" },
+                  { id: "all", label: "Semua Periode" },
+                ].map((p) => {
+                  const isActive = period === p.id && !params.startDate;
+                  return (
+                    <Link
+                      key={p.id}
+                      href={buildUrl({ period: p.id, startDate: undefined, endDate: undefined })}
+                      className={`h-7.5 rounded-xl px-2.5 text-xs font-bold transition-all inline-flex items-center ${
+                        isActive
+                          ? "bg-[#2563eb] text-white shadow-sm"
+                          : "bg-[#f8fbff] text-[#64748b] ring-1 ring-[#dbe5f1] hover:bg-slate-100"
+                      }`}
+                    >
+                      {p.label}
+                    </Link>
+                  );
+                })}
+                {startDate && endDate && (
+                  <span className="ml-auto text-[11px] font-semibold text-[#64748b] bg-slate-50 px-2 py-0.5 rounded-lg border border-slate-200">
+                    📅 {startDate} s/d {endDate}
+                  </span>
+                )}
+              </div>
+
+              {/* Unit Usaha Filter Buttons */}
+              <div className="flex flex-wrap items-center gap-1.5">
+                <span className="text-xs font-bold text-[#64748b] mr-1 flex items-center gap-1">
+                  <Building2 className="size-3.5 text-[#2563eb]" /> Unit:
+                </span>
+                <Link
+                  href={buildUrl({ unit: "" })}
+                  className={`h-7.5 rounded-xl px-2.5 text-xs font-bold transition-all inline-flex items-center ${
+                    !selectedUnit
+                      ? "bg-[#0b1220] text-white shadow-sm"
+                      : "bg-[#f8fbff] text-[#64748b] ring-1 ring-[#dbe5f1] hover:bg-slate-100"
+                  }`}
+                >
+                  Semua Unit ({rawJournalRows.length})
+                </Link>
+                {unitList.map((u) => {
+                  const isActive =
+                    selectedUnit.toLowerCase() === u.name.toLowerCase() ||
+                    selectedUnit.toLowerCase() === u.code.toLowerCase();
+                  return (
+                    <Link
+                      key={u.id}
+                      href={buildUrl({ unit: u.name })}
+                      className={`h-7.5 rounded-xl px-2.5 text-xs font-bold transition-all inline-flex items-center ${
+                        isActive
+                          ? "bg-[#2563eb] text-white shadow-sm"
+                          : "bg-[#f8fbff] text-[#64748b] ring-1 ring-[#dbe5f1] hover:bg-slate-100"
+                      }`}
+                    >
+                      {u.code} · {u.name}
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* ============================================================ */}
+            {/* KPI STAT CARDS                                                */}
+            {/* ============================================================ */}
+            <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-4">
+              <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-[#dbe5f1] border-l-4 border-l-[#2563eb]">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-[#64748b]">Saldo Kas Periode</span>
+                  <span className="grid size-8 place-items-center rounded-xl bg-blue-50 text-[#2563eb]">
+                    <Landmark className="size-4" />
+                  </span>
+                </div>
+                <p className="mt-2 text-lg font-black text-[#0b1220]">{currency.format(cashBalance)}</p>
+                <p className="mt-1 text-[11px] font-semibold text-[#64748b]">Kas masuk dikurangi kas keluar</p>
+              </div>
+
+              <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-[#dbe5f1] border-l-4 border-l-emerald-500">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-[#64748b]">Total Kas Masuk</span>
+                  <span className="grid size-8 place-items-center rounded-xl bg-emerald-50 text-emerald-600">
+                    <ArrowDownLeft className="size-4" />
+                  </span>
+                </div>
+                <p className="mt-2 text-lg font-black text-emerald-600">+{currency.format(cashIn)}</p>
+                <p className="mt-1 text-[11px] font-semibold text-[#64748b]">
+                  {cashRows.filter((r) => r.direction === "in").length} transaksi penerimaan
                 </p>
               </div>
-              <BookOpenCheck className="size-8 text-[#93c5fd]" />
-            </div>
-          </section>
 
-          {/* Filter Bar: Periode & Unit Usaha */}
-          <div className="space-y-2.5 rounded-2xl bg-white p-3.5 shadow-sm ring-1 ring-[#dbe5f1]">
-            {/* Periode Filter Buttons */}
-            <div className="flex flex-wrap items-center gap-1.5 pb-2 border-b border-[#f1f5f9]">
-              <span className="text-xs font-bold text-[#64748b] mr-1 flex items-center gap-1">
-                <Calendar className="size-3.5 text-[#2563eb]" /> Periode:
-              </span>
-              {[
-                { id: "this_month", label: "Bulan Ini" },
-                { id: "today", label: "Hari Ini" },
-                { id: "last_month", label: "Bulan Lalu" },
-                { id: "this_year", label: "Tahun Ini" },
-                { id: "all", label: "Semua Periode" },
-              ].map((p) => {
-                const isActive = period === p.id && !params.startDate;
-                return (
-                  <Link
-                    key={p.id}
-                    href={buildUrl({ period: p.id, startDate: undefined, endDate: undefined })}
-                    className={`h-7.5 rounded-xl px-2.5 text-xs font-bold transition-all inline-flex items-center ${
-                      isActive
-                        ? "bg-[#2563eb] text-white shadow-sm"
-                        : "bg-[#f8fbff] text-[#64748b] ring-1 ring-[#dbe5f1] hover:bg-slate-100"
-                    }`}
-                  >
-                    {p.label}
-                  </Link>
-                );
-              })}
-              {startDate && endDate && (
-                <span className="ml-auto text-[11px] font-semibold text-[#64748b] bg-slate-50 px-2 py-0.5 rounded-lg border border-slate-200">
-                  📅 {startDate} s/d {endDate}
-                </span>
-              )}
+              <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-[#dbe5f1] border-l-4 border-l-rose-500">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-[#64748b]">Total Kas Keluar</span>
+                  <span className="grid size-8 place-items-center rounded-xl bg-rose-50 text-rose-600">
+                    <ArrowUpRight className="size-4" />
+                  </span>
+                </div>
+                <p className="mt-2 text-lg font-black text-rose-600">-{currency.format(cashOut)}</p>
+                <p className="mt-1 text-[11px] font-semibold text-[#64748b]">
+                  {cashRows.filter((r) => r.direction === "out").length} transaksi pengeluaran
+                </p>
+              </div>
+
+              <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-[#dbe5f1] border-l-4 border-l-indigo-500">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-[#64748b]">Jurnal Terposting</span>
+                  <span className="grid size-8 place-items-center rounded-xl bg-indigo-50 text-indigo-600">
+                    <ReceiptText className="size-4" />
+                  </span>
+                </div>
+                <p className="mt-2 text-lg font-black text-[#0b1220]">{journalRows.length} Jurnal</p>
+                <p className="mt-1 text-[11px] font-semibold text-[#64748b]">Double-entry berimbang</p>
+              </div>
             </div>
 
-            {/* Unit Usaha Filter Buttons */}
-            <div className="flex flex-wrap items-center gap-1.5">
-              <span className="text-xs font-bold text-[#64748b] mr-1">Unit Usaha:</span>
-              <Link
-                href={buildUrl({ unit: "" })}
-                className={`h-7.5 rounded-xl px-2.5 text-xs font-bold transition-all inline-flex items-center ${
-                  !selectedUnit
-                    ? "bg-[#0b1220] text-white shadow-sm"
-                    : "bg-[#f8fbff] text-[#64748b] ring-1 ring-[#dbe5f1] hover:bg-slate-100"
-                }`}
-              >
-                Semua Unit ({rawJournalRows.length})
-              </Link>
-              {unitList.map((u) => {
-                const isActive = selectedUnit.toLowerCase() === u.name.toLowerCase() || selectedUnit.toLowerCase() === u.code.toLowerCase();
-                return (
-                  <Link
-                    key={u.id}
-                    href={buildUrl({ unit: u.name })}
-                    className={`h-7.5 rounded-xl px-2.5 text-xs font-bold transition-all inline-flex items-center ${
-                      isActive
-                        ? "bg-[#0b1220] text-white shadow-sm"
-                        : "bg-[#f8fbff] text-[#64748b] ring-1 ring-[#dbe5f1] hover:bg-slate-100"
-                    }`}
-                  >
-                    {u.code} · {u.name}
-                  </Link>
-                );
-              })}
-            </div>
-          </div>
+            {/* ============================================================ */}
+            {/* 2-COLUMN MAIN CONTENT: LISTS & SIDEBAR FORMS                 */}
+            {/* ============================================================ */}
+            <div className="grid gap-4 xl:grid-cols-[1fr_380px]">
+              <div className="space-y-4">
+                {/* 1. JURNAL UMUM POSTING TERBARU */}
+                <section className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-[#dbe5f1] md:p-5">
+                  <div className="flex items-center justify-between border-b border-[#f1f5f9] pb-3 mb-4">
+                    <div>
+                      <p className="text-xs font-bold uppercase tracking-wider text-[#2563eb]">Buku Jurnal</p>
+                      <h2 className="text-base font-bold text-[#0b1220]">Entri Jurnal Umum Terposting ({journalRows.length})</h2>
+                    </div>
+                    <ReceiptText className="size-5 text-[#2563eb]" />
+                  </div>
 
-          <div className="grid gap-3 md:grid-cols-4">
-            {[
-              { label: "Saldo kas ringkas", value: currency.format(cashBalance), icon: Landmark },
-              { label: "Kas masuk", value: currency.format(cashIn), icon: ArrowDownLeft },
-              { label: "Kas keluar", value: currency.format(cashOut), icon: ArrowUpRight },
-              { label: "Jurnal terbaru", value: String(journalRows.length), icon: ReceiptText },
-            ].map((item) => (
-              <article className="rounded-3xl bg-white p-5 shadow-sm ring-1 ring-[#dbe5f1]" key={item.label}>
-                <item.icon className="size-5 text-[#2563eb]" />
-                <p className="mt-3 text-xs font-bold text-[#64748b]">{item.label}</p>
-                <p className="mt-1 text-lg font-bold text-[#0b1220]">{item.value}</p>
-              </article>
-            ))}
-          </div>
+                  <div className="space-y-3">
+                    {journalRows.length ? (
+                      journalRows.map((journal) => {
+                        const debit = (journal.journal_lines ?? []).reduce((sum, line) => sum + Number(line.debit ?? 0), 0);
+                        const credit = (journal.journal_lines ?? []).reduce((sum, line) => sum + Number(line.credit ?? 0), 0);
 
-          <section className="rounded-[28px] bg-white p-4 shadow-sm ring-1 ring-[#dbe5f1] md:p-5">
-            <div>
-              <p className="text-xs font-bold uppercase tracking-wider text-[#64748b]">Jurnal umum</p>
-              <h2 className="text-lg font-bold text-[#0b1220]">Posting terbaru</h2>
-            </div>
+                        return (
+                          <div className="rounded-2xl border border-[#e2e8f0] bg-white p-3.5 hover:shadow-sm transition-all" key={journal.id}>
+                            <div className="flex flex-wrap items-start justify-between gap-2 border-b border-[#f1f5f9] pb-2">
+                              <div>
+                                <p className="font-bold text-sm text-[#0b1220]">{journal.entry_no}</p>
+                                <p className="text-xs font-semibold text-[#64748b]">
+                                  {journal.entry_date} · {journal.memo ?? journal.source_type ?? "Jurnal Umum"}
+                                </p>
+                              </div>
+                              <div className="text-right">
+                                <span className="rounded-full bg-blue-50 px-2.5 py-0.5 text-[11px] font-bold text-[#2563eb] border border-blue-200">
+                                  {currency.format(debit)}
+                                </span>
+                              </div>
+                            </div>
 
-            <div className="mt-5 overflow-hidden rounded-3xl border border-[#dbe5f1]">
-              {journalRows.length ? (
-                journalRows.map((journal) => {
-                  const debit = (journal.journal_lines ?? []).reduce((sum, line) => sum + Number(line.debit ?? 0), 0);
-                  const credit = (journal.journal_lines ?? []).reduce((sum, line) => sum + Number(line.credit ?? 0), 0);
+                            {/* Lines */}
+                            <div className="mt-2.5 divide-y divide-[#f1f5f9] rounded-xl bg-[#f8fbff] p-2.5 border border-[#e2e8f0]">
+                              {(journal.journal_lines ?? []).map((line, index) => {
+                                const act = Array.isArray(line.accounts)
+                                  ? line.accounts[0]
+                                  : (line.accounts as unknown as { code: string; name: string } | null);
+                                const isDebit = Number(line.debit ?? 0) > 0;
 
-                  return (
-                    <div className="border-b border-[#dbe5f1] p-4 last:border-b-0" key={journal.id}>
-                      <div className="flex flex-wrap items-start justify-between gap-3">
-                        <div>
-                          <p className="font-black">{journal.entry_no}</p>
-                          <p className="mt-1 text-sm font-semibold text-[#64748b]">{journal.memo ?? journal.source_type ?? "Jurnal"}</p>
-                        </div>
-                        <div className="text-left md:text-right">
-                          <p className="text-sm font-black text-[#2563eb]">{journal.entry_date}</p>
-                          <p className="mt-1 text-xs font-bold text-[#64748b]">
-                            Debit {currency.format(debit)} | Kredit {currency.format(credit)}
-                          </p>
-                        </div>
+                                return (
+                                  <div
+                                    className={`flex items-center justify-between py-1 text-xs ${
+                                      index === 0 ? "pt-0" : ""
+                                    } ${index === (journal.journal_lines ?? []).length - 1 ? "pb-0" : ""}`}
+                                    key={`${journal.id}-${index}`}
+                                  >
+                                    <div className={`flex items-center gap-1.5 ${isDebit ? "" : "pl-5"}`}>
+                                      <span className="font-mono font-bold text-[#2563eb] text-[11px]">{act?.code ?? "-"}</span>
+                                      <span className="font-semibold text-[#0b1220]">{act?.name ?? "Akun"}</span>
+                                    </div>
+                                    <span className="font-mono font-bold text-[#0b1220]">
+                                      {isDebit ? currency.format(Number(line.debit)) : currency.format(Number(line.credit))}
+                                    </span>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        );
+                      })
+                    ) : (
+                      <div className="rounded-xl bg-white p-8 text-center ring-1 ring-[#dbe5f1]">
+                        <FileText className="mx-auto size-9 text-[#94a3b8]" />
+                        <p className="mt-3 font-bold text-[#0b1220]">Tidak ada jurnal pada periode ini</p>
+                        <p className="text-xs text-[#64748b] mt-1">Posting transaksi kas atau jurnal baru dari form di sebelah kanan.</p>
                       </div>
-                      <div className="mt-3 grid gap-2 md:grid-cols-2">
-                        {(journal.journal_lines ?? []).map((line, index) => {
-                          const act = Array.isArray(line.accounts)
-                            ? line.accounts[0]
-                            : (line.accounts as unknown as { code: string; name: string } | null);
+                    )}
+                  </div>
+                </section>
 
-                          return (
-                            <div className="rounded-2xl bg-[#f4f7fb] p-3 text-sm font-semibold text-[#475569]" key={`${journal.id}-${index}`}>
-                              <p className="font-black text-[#0b1220]">
-                                {act?.code ?? "-"} {act?.name ?? "Akun"}
+                {/* 2. MUTASI KAS OPERASIONAL */}
+                <section className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-[#dbe5f1] md:p-5">
+                  <div className="flex items-center justify-between border-b border-[#f1f5f9] pb-3 mb-4">
+                    <div>
+                      <p className="text-xs font-bold uppercase tracking-wider text-[#2563eb]">Buku Kas</p>
+                      <h2 className="text-base font-bold text-[#0b1220]">Mutasi Kas Harian ({cashRows.length})</h2>
+                    </div>
+                    <Landmark className="size-5 text-[#2563eb]" />
+                  </div>
+
+                  <div className="space-y-2">
+                    {cashRows.length ? (
+                      cashRows.map((transaction) => (
+                        <div
+                          className="flex items-center justify-between gap-3 rounded-xl bg-[#f8fbff] p-3 border border-[#e2e8f0] hover:bg-white transition-all"
+                          key={transaction.id}
+                        >
+                          <div className="flex min-w-0 items-center gap-3">
+                            <div
+                              className={`grid size-9 shrink-0 place-items-center rounded-xl ${
+                                transaction.direction === "in"
+                                  ? "bg-[#dcfce7] text-[#16a34a]"
+                                  : "bg-[#fee2e2] text-[#dc2626]"
+                              }`}
+                            >
+                              {transaction.direction === "in" ? (
+                                <ArrowDownLeft className="size-4" />
+                              ) : (
+                                <ArrowUpRight className="size-4" />
+                              )}
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <p className="font-bold text-xs text-[#0b1220] leading-snug break-words">
+                                {transaction.description ?? transaction.source_type}
                               </p>
-                              <p className="mt-1">
-                                Debit {currency.format(Number(line.debit ?? 0))} | Kredit {currency.format(Number(line.credit ?? 0))}
+                              <p className="mt-0.5 text-[11px] font-semibold text-[#64748b]">
+                                {transaction.transaction_date} · {transaction.source_type}
                               </p>
                             </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  );
-                })
-              ) : (
-                <div className="p-8 text-center">
-                  <FileText className="mx-auto size-10 text-[#94a3b8]" />
-                  <p className="mt-3 font-black">Belum ada jurnal</p>
-                  <p className="mt-1 text-sm font-semibold text-[#64748b]">Posting kas atau jurnal umum pertama dari form di samping.</p>
-                </div>
-              )}
-            </div>
-          </section>
-
-          <section className="rounded-[28px] bg-white p-4 shadow-sm ring-1 ring-[#dbe5f1] md:p-5">
-            <div>
-              <p className="text-sm font-bold text-[#64748b]">Kas operasional</p>
-              <h2 className="text-2xl font-black">Mutasi kas terbaru</h2>
-            </div>
-            <div className="mt-5 space-y-3">
-              {cashRows.length ? (
-                cashRows.map((transaction) => (
-                  <div className="flex items-center justify-between gap-4 rounded-2xl bg-[#f4f7fb] p-4" key={transaction.id}>
-                    <div className="flex min-w-0 items-center gap-3">
-                      <div className={`grid size-10 shrink-0 place-items-center rounded-2xl ${transaction.direction === "in" ? "bg-[#dbeafe] text-[#1d4ed8]" : "bg-[#fff1f2] text-[#be123c]"}`}>
-                        {transaction.direction === "in" ? <ArrowDownLeft className="size-5" /> : <ArrowUpRight className="size-5" />}
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <p className="font-bold text-sm text-[#0b1220] leading-snug break-words">{transaction.description ?? transaction.source_type}</p>
-                        <p className="mt-0.5 text-xs font-semibold text-[#64748b]">{transaction.transaction_date}</p>
-                      </div>
-                    </div>
-                    <p className="font-black">{currency.format(Number(transaction.amount ?? 0))}</p>
+                          </div>
+                          <p
+                            className={`font-mono text-xs font-black text-right shrink-0 ${
+                              transaction.direction === "in" ? "text-[#16a34a]" : "text-[#dc2626]"
+                            }`}
+                          >
+                            {transaction.direction === "in" ? "+" : "-"}
+                            {currency.format(Number(transaction.amount ?? 0))}
+                          </p>
+                        </div>
+                      ))
+                    ) : (
+                      <p className="py-6 text-center text-xs text-[#64748b] italic">Belum ada mutasi kas pada periode ini.</p>
+                    )}
                   </div>
-                ))
-              ) : (
-                <p className="rounded-2xl bg-[#f4f7fb] p-4 text-sm font-bold text-[#64748b]">Belum ada mutasi kas.</p>
-              )}
+                </section>
+              </div>
+
+              {/* ============================================================ */}
+              {/* SIDEBAR: FORMS WITH MODERN CUSTOM SELECT & SEARCHABLE SELECT */}
+              {/* ============================================================ */}
+              <aside className="space-y-4">
+                {/* Form 1: Posting Kas Manual */}
+                <section className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-[#dbe5f1] md:p-5">
+                  <div className="flex items-center justify-between border-b border-[#f1f5f9] pb-3 mb-4">
+                    <div>
+                      <p className="text-xs font-bold uppercase tracking-wider text-[#2563eb]">Entri Kas</p>
+                      <h2 className="text-base font-bold text-[#0b1220]">Posting Transaksi Kas</h2>
+                    </div>
+                    <Banknote className="size-5 text-[#2563eb]" />
+                  </div>
+
+                  <form action={postCashTransaction} className="space-y-3.5">
+                    <label className="block">
+                      <span className="text-xs font-bold uppercase text-[#475569]">Unit Usaha</span>
+                      <CustomSelect name="unit_name" className="mt-1.5 h-10">
+                        <option value="Pusat / Umum">🏢 Kantor Pusat / Umum</option>
+                        {unitList.map((u) => (
+                          <option key={u.id} value={u.name}>
+                            {u.code} · {u.name}
+                          </option>
+                        ))}
+                      </CustomSelect>
+                    </label>
+
+                    <div className="grid grid-cols-2 gap-2">
+                      <label className="block">
+                        <span className="text-xs font-bold uppercase text-[#475569]">Jenis Kas</span>
+                        <CustomSelect name="direction" defaultValue="in" className="mt-1.5 h-10">
+                          <option value="in">Kas Masuk (+)</option>
+                          <option value="out">Kas Keluar (-)</option>
+                        </CustomSelect>
+                      </label>
+                      <label className="block">
+                        <span className="text-xs font-bold uppercase text-[#475569]">Sumber Kas</span>
+                        <CustomSelect name="fund_source" defaultValue="kas" className="mt-1.5 h-10">
+                          <option value="kas">Kas Tunai (1001)</option>
+                          <option value="bank">Bank (1002)</option>
+                        </CustomSelect>
+                      </label>
+                    </div>
+
+                    <label className="block">
+                      <span className="text-xs font-bold uppercase text-[#475569]">Kategori / Akun Lawan *</span>
+                      <SearchableSelect
+                        name="counter_account_id"
+                        required
+                        placeholder="-- Pilih Akun Lawan --"
+                        searchPlaceholder="Ketik kode / nama akun..."
+                        className="mt-1.5 h-10 text-xs"
+                        options={accountRows
+                          .filter((a) => a.code !== "1001" && a.code !== "1002")
+                          .map((a) => ({
+                            value: a.id,
+                            label: `${a.code} · ${a.name}`,
+                            sublabel: `Kategori: ${a.category}`,
+                          }))}
+                      />
+                    </label>
+
+                    <label className="block">
+                      <span className="text-xs font-bold uppercase text-[#475569]">Nominal Kas (Rp)</span>
+                      <CurrencyInput
+                        className="mt-1.5 h-10 w-full rounded-xl border border-[#dbe5f1] bg-[#f8fbff] px-2.5 text-xs font-bold outline-none focus:border-[#2563eb]"
+                        name="amount"
+                        placeholder="0"
+                        required
+                      />
+                    </label>
+
+                    <label className="block">
+                      <span className="text-xs font-bold uppercase text-[#475569]">Tanggal Transaksi</span>
+                      <input
+                        className="mt-1.5 h-10 w-full rounded-xl border border-[#dbe5f1] bg-[#f8fbff] px-2.5 text-xs font-bold outline-none focus:border-[#2563eb]"
+                        defaultValue={new Date().toISOString().slice(0, 10)}
+                        name="transaction_date"
+                        type="date"
+                      />
+                    </label>
+
+                    <label className="block">
+                      <span className="text-xs font-bold uppercase text-[#475569]">Keterangan</span>
+                      <textarea
+                        className="mt-1.5 min-h-16 w-full rounded-xl border border-[#dbe5f1] bg-[#f8fbff] px-2.5 py-2 text-xs font-semibold outline-none focus:border-[#2563eb]"
+                        name="description"
+                        placeholder="Contoh: Pembayaran operasional kantor..."
+                      />
+                    </label>
+
+                    <SubmitButton className="h-10 w-full rounded-xl bg-[#2563eb] text-xs font-bold text-white shadow-sm hover:bg-[#1d4ed8]">
+                      Posting Transaksi Kas
+                    </SubmitButton>
+                  </form>
+                </section>
+
+                {/* Form 2: Input Jurnal Manual Dua Sisi */}
+                <section className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-[#dbe5f1] md:p-5">
+                  <div className="flex items-center justify-between border-b border-[#f1f5f9] pb-3 mb-4">
+                    <div>
+                      <p className="text-xs font-bold uppercase tracking-wider text-[#2563eb]">Jurnal Umum</p>
+                      <h2 className="text-base font-bold text-[#0b1220]">Input Jurnal Dua Sisi</h2>
+                    </div>
+                    <Plus className="size-5 text-[#2563eb]" />
+                  </div>
+
+                  <form action={postManualJournal} className="space-y-3.5">
+                    <label className="block">
+                      <span className="text-xs font-bold uppercase text-[#475569]">Unit Usaha</span>
+                      <CustomSelect name="unit_name" className="mt-1.5 h-10">
+                        <option value="Pusat / Umum">🏢 Kantor Pusat / Umum</option>
+                        {unitList.map((u) => (
+                          <option key={u.id} value={u.name}>
+                            {u.code} · {u.name}
+                          </option>
+                        ))}
+                      </CustomSelect>
+                    </label>
+
+                    <label className="block">
+                      <span className="text-xs font-bold uppercase text-[#475569]">Akun Debit (Dr)</span>
+                      <SearchableSelect
+                        name="debit_account_id"
+                        required
+                        placeholder="-- Pilih Akun Debit --"
+                        searchPlaceholder="Ketik kode / nama akun..."
+                        className="mt-1.5 h-10 text-xs"
+                        options={accountRows.map((a) => ({
+                          value: a.id,
+                          label: `${a.code} · ${a.name}`,
+                          sublabel: `Kategori: ${a.category}`,
+                        }))}
+                      />
+                    </label>
+
+                    <label className="block">
+                      <span className="text-xs font-bold uppercase text-[#475569]">Akun Kredit (Cr)</span>
+                      <SearchableSelect
+                        name="credit_account_id"
+                        required
+                        placeholder="-- Pilih Akun Kredit --"
+                        searchPlaceholder="Ketik kode / nama akun..."
+                        className="mt-1.5 h-10 text-xs"
+                        options={accountRows.map((a) => ({
+                          value: a.id,
+                          label: `${a.code} · ${a.name}`,
+                          sublabel: `Kategori: ${a.category}`,
+                        }))}
+                      />
+                    </label>
+
+                    <label className="block">
+                      <span className="text-xs font-bold uppercase text-[#475569]">Nominal Jurnal (Rp)</span>
+                      <CurrencyInput
+                        className="mt-1.5 h-10 w-full rounded-xl border border-[#dbe5f1] bg-[#f8fbff] px-2.5 text-xs font-bold outline-none focus:border-[#2563eb]"
+                        name="amount"
+                        placeholder="0"
+                        required
+                      />
+                    </label>
+
+                    <label className="block">
+                      <span className="text-xs font-bold uppercase text-[#475569]">Tanggal Jurnal</span>
+                      <input
+                        className="mt-1.5 h-10 w-full rounded-xl border border-[#dbe5f1] bg-[#f8fbff] px-2.5 text-xs font-bold outline-none focus:border-[#2563eb]"
+                        defaultValue={new Date().toISOString().slice(0, 10)}
+                        name="entry_date"
+                        type="date"
+                      />
+                    </label>
+
+                    <label className="block">
+                      <span className="text-xs font-bold uppercase text-[#475569]">Memo / Keterangan</span>
+                      <textarea
+                        className="mt-1.5 min-h-16 w-full rounded-xl border border-[#dbe5f1] bg-[#f8fbff] px-2.5 py-2 text-xs font-semibold outline-none focus:border-[#2563eb]"
+                        name="memo"
+                        placeholder="Contoh: Penyesuaian akhir bulan..."
+                      />
+                    </label>
+
+                    <SubmitButton className="h-10 w-full rounded-xl bg-[#0b1220] text-xs font-bold text-white shadow-sm hover:bg-[#1e293b]">
+                      Posting Jurnal Dua Sisi
+                    </SubmitButton>
+                  </form>
+                </section>
+              </aside>
             </div>
-          </section>
+          </div>
         </section>
-
-        <aside className="space-y-5 xl:sticky xl:top-24 xl:self-start">
-          {params.error ? (
-            <div className="rounded-2xl bg-[#fff1f2] p-4 text-sm font-bold text-[#be123c]">{params.error}</div>
-          ) : null}
-          {params.saved ? (
-            <div className="rounded-2xl bg-[#eff6ff] p-4 text-sm font-bold text-[#1d4ed8]">Data berhasil diposting.</div>
-          ) : null}
-
-          <section className="rounded-[28px] bg-white p-5 shadow-sm ring-1 ring-[#dbe5f1] md:p-6">
-            <div className="flex items-center gap-3">
-              <div className="grid size-11 place-items-center rounded-2xl bg-[#2563eb] text-white">
-                <Banknote className="size-5" />
-              </div>
-              <div>
-                <p className="text-sm font-bold text-[#64748b]">Kas</p>
-                <h2 className="text-xl font-black">Posting kas manual</h2>
-              </div>
-            </div>
-            <form action={postCashTransaction} className="mt-5 space-y-4">
-              <label className="block">
-                <span className="text-sm font-black">Jenis kas</span>
-                <select className="mt-2 h-12 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-2 text-sm font-bold outline-none" name="direction">
-                  <option value="in">Kas masuk</option>
-                  <option value="out">Kas keluar</option>
-                </select>
-              </label>
-              <label className="block">
-                <span className="text-sm font-black">Akun lawan</span>
-                <select className="mt-2 h-12 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-2 text-sm font-bold outline-none" name="counter_account_id" required>
-                  <option value="">Pilih akun</option>
-                  {accountRows.filter((account) => account.code !== "1001").map((account) => (
-                    <option key={account.id} value={account.id}>
-                      {account.code} | {account.name}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label className="block">
-                <span className="text-sm font-black">Nominal</span>
-                <CurrencyInput name="amount" placeholder="0" required />
-              </label>
-              <label className="block">
-                <span className="text-sm font-black">Tanggal</span>
-                <input className="mt-2 h-12 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-2 text-sm font-bold outline-none" name="transaction_date" type="date" />
-              </label>
-              <label className="block">
-                <span className="text-sm font-black">Keterangan</span>
-                <textarea className="mt-2 min-h-20 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-2 py-2 text-sm font-bold outline-none" name="description" placeholder="Contoh: pembayaran listrik kantor" />
-              </label>
-              <SubmitButton className="h-12 w-full rounded-2xl bg-[#2563eb] text-sm font-black text-white hover:bg-[#1d4ed8]">
-                Posting kas
-              </SubmitButton>
-            </form>
-          </section>
-
-          <section className="rounded-[28px] bg-white p-5 shadow-sm ring-1 ring-[#dbe5f1] md:p-6">
-            <div className="flex items-center gap-3">
-              <div className="grid size-11 place-items-center rounded-2xl bg-[#eaf2ff] text-[#2563eb]">
-                <Plus className="size-5" />
-              </div>
-              <div>
-                <p className="text-sm font-bold text-[#64748b]">Jurnal umum</p>
-                <h2 className="text-xl font-black">Input jurnal dua sisi</h2>
-              </div>
-            </div>
-            <form action={postManualJournal} className="mt-5 space-y-4">
-              <label className="block">
-                <span className="text-sm font-black">Akun debit</span>
-                <select className="mt-2 h-12 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-2 text-sm font-bold outline-none" name="debit_account_id" required>
-                  <option value="">Pilih akun debit</option>
-                  {accountRows.map((account) => (
-                    <option key={account.id} value={account.id}>
-                      {account.code} | {account.name}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label className="block">
-                <span className="text-sm font-black">Akun kredit</span>
-                <select className="mt-2 h-12 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-2 text-sm font-bold outline-none" name="credit_account_id" required>
-                  <option value="">Pilih akun kredit</option>
-                  {accountRows.map((account) => (
-                    <option key={account.id} value={account.id}>
-                      {account.code} | {account.name}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label className="block">
-                <span className="text-sm font-black">Nominal</span>
-                <CurrencyInput name="amount" placeholder="0" required />
-              </label>
-              <label className="block">
-                <span className="text-sm font-black">Tanggal jurnal</span>
-                <input className="mt-2 h-12 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-2 text-sm font-bold outline-none" name="entry_date" type="date" />
-              </label>
-              <label className="block">
-                <span className="text-sm font-black">Memo</span>
-                <textarea className="mt-2 min-h-20 w-full rounded-2xl border border-[#dbe5f1] bg-[#f8fbff] px-2 py-2 text-sm font-bold outline-none" name="memo" placeholder="Keterangan jurnal" />
-              </label>
-              <SubmitButton className="h-12 w-full rounded-2xl bg-[#0b1220] text-sm font-black text-white hover:bg-slate-800">
-                Posting jurnal
-              </SubmitButton>
-            </form>
-          </section>
-
-          <section className="rounded-[28px] bg-[#eaf2ff] p-5 md:p-6">
-            <h2 className="text-lg font-black text-[#0b1220]">Chart of Accounts (CoA)</h2>
-            <div className="mt-4 space-y-2">
-              {accountRows.map((account) => (
-                <div className="flex items-center justify-between gap-3 rounded-2xl bg-[#f4f7fb] p-3" key={account.id}>
-                  <div>
-                    <p className="text-sm font-black">{account.code} {account.name}</p>
-                    <p className="text-xs font-bold text-[#64748b]">{categoryLabels[account.category] ?? account.category}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </section>
-        </aside>
       </div>
-    </section>
-    </div>
-    <ToastNotification error={params.error} saved={params.saved} />
     </main>
   );
 }
