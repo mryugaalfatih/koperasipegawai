@@ -70,6 +70,7 @@ export function TokoKasirClientManager({
 
   const [search, setSearch] = useState("");
   const [cart, setCart] = useState<CartItem[]>([]);
+  const [customerType, setCustomerType] = useState<"general" | "member">("general");
   const [selectedMember, setSelectedMember] = useState<MemberOption | null>(null);
   const [paymentMethod, setPaymentMethod] = useState<"cash" | "bank" | "credit">("cash");
   const [paidAmountInput, setPaidAmountInput] = useState<string>("");
@@ -82,12 +83,20 @@ export function TokoKasirClientManager({
   const [isMemberDropdownOpen, setIsMemberDropdownOpen] = useState(false);
   const [memberSearch, setMemberSearch] = useState("");
 
+  const formatThousand = (val: string | number) => {
+    const clean = String(val ?? "").replace(/\D/g, "");
+    return clean ? new Intl.NumberFormat("id-ID").format(Number(clean)) : "";
+  };
+
+  const parseThousand = (val: string | number) => Number(String(val ?? "").replace(/\D/g, "") || "0");
+
   const filteredMembers = members.filter((m) => {
     if (!memberSearch.trim()) return true;
     const q = memberSearch.toLowerCase().trim();
     return (
       m.full_name.toLowerCase().includes(q) ||
-      m.member_no.toLowerCase().includes(q)
+      m.member_no.toLowerCase().includes(q) ||
+      (m.department && m.department.toLowerCase().includes(q))
     );
   });
 
@@ -149,21 +158,23 @@ export function TokoKasirClientManager({
   const clearCart = () => {
     setCart([]);
     setSelectedMember(null);
+    setCustomerType("general");
+    setPaymentMethod("cash");
     setPaidAmountInput("");
     setDiscountInput("0");
     setNotes("");
   };
 
   // Calculate Subtotal & Totals based on member toggle
-  const isMember = !!selectedMember;
+  const isMember = customerType === "member" && !!selectedMember;
   const subtotal = cart.reduce((sum, item) => {
     const price = isMember ? item.sell_price_member : item.sell_price_general;
     return sum + price * item.qty;
   }, 0);
 
-  const discount = Math.max(0, Number(discountInput) || 0);
+  const discount = Math.max(0, parseThousand(discountInput));
   const grandTotal = Math.max(0, subtotal - discount);
-  const paidAmount = Number(paidAmountInput) || 0;
+  const paidAmount = parseThousand(paidAmountInput);
   const changeAmount = paymentMethod === "cash" ? Math.max(0, paidAmount - grandTotal) : 0;
 
   // Prepare items JSON for server action submission
@@ -191,31 +202,93 @@ export function TokoKasirClientManager({
           <div>
             <h1 className="text-base font-black text-[#0b1220]">Kasir POS Waserda Toko</h1>
             <p className="text-xs font-bold text-[#64748b]">
-              Touchscreen & Barcode POS · Dual Harga (Umum / Anggota Koperasi)
+              Touchscreen & Barcode POS · Validasi Dual Tarif (Umum / Anggota Koperasi)
             </p>
           </div>
         </div>
+      </div>
 
-        {/* Custom Searchable Member Combobox */}
-        <div className="relative">
-          {selectedMember ? (
-            <div className="flex items-center gap-2 rounded-xl bg-[#eff6ff] p-2 pr-3 border border-[#2563eb]">
-              <div className="grid size-8 place-items-center rounded-lg bg-[#2563eb] text-white">
-                <Sparkles className="size-4" />
+      {/* Customer Type Validation & Selection Bar */}
+      <div className="rounded-2xl bg-white p-3.5 shadow-sm ring-1 ring-[#dbe5f1] flex flex-col lg:flex-row items-start lg:items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-xs font-bold text-[#64748b]">Validasi Pembeli:</span>
+          <div className="inline-flex rounded-xl bg-[#f1f5f9] p-1 border border-[#dbe5f1]">
+            <button
+              type="button"
+              onClick={() => {
+                setCustomerType("general");
+                setSelectedMember(null);
+                if (paymentMethod === "credit") setPaymentMethod("cash");
+              }}
+              className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-black transition-all cursor-pointer ${
+                customerType === "general"
+                  ? "bg-white text-[#0b1220] shadow-sm"
+                  : "text-[#64748b] hover:text-[#0b1220]"
+              }`}
+            >
+              <User className="size-3.5" />
+              <span>Pembeli Umum (Non-Anggota)</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setCustomerType("member");
+                if (!selectedMember) setIsMemberDropdownOpen(true);
+              }}
+              className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-black transition-all cursor-pointer ${
+                customerType === "member"
+                  ? "bg-[#2563eb] text-white shadow-sm"
+                  : "text-[#64748b] hover:text-[#0b1220]"
+              }`}
+            >
+              <Sparkles className="size-3.5" />
+              <span>Anggota Koperasi (Harga Khusus)</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Member Status / Selector */}
+        <div className="w-full lg:w-auto">
+          {customerType === "general" ? (
+            <div className="inline-flex items-center gap-2 rounded-xl bg-slate-50 px-3 py-1.5 border border-slate-200 text-xs font-bold text-[#64748b]">
+              <span>🛒 Status: <strong className="text-[#0b1220]">Harga Umum Reguler</strong></span>
+              <span className="rounded bg-slate-200 px-1.5 py-0.5 text-[10px] text-slate-700 font-semibold">
+                Potong Gaji Nonaktif
+              </span>
+            </div>
+          ) : selectedMember ? (
+            <div className="flex items-center gap-2 rounded-xl bg-[#eff6ff] px-3 py-1.5 border border-[#2563eb]">
+              <div className="grid size-6 place-items-center rounded-lg bg-[#2563eb] text-white">
+                <Sparkles className="size-3.5" />
               </div>
-              <div>
-                <p className="font-black text-xs text-[#1d4ed8]">{selectedMember.full_name}</p>
-                <p className="text-[10px] text-[#2563eb] font-bold">
-                  🌟 Member Diskon Aktif ({selectedMember.member_no})
-                </p>
+              <div className="text-xs">
+                <span className="font-black text-[#1d4ed8]">{selectedMember.full_name}</span>
+                <span className="text-[#2563eb] text-[11px] font-bold ml-1.5">({selectedMember.member_no})</span>
+                {selectedMember.department ? (
+                  <span className="text-[#64748b] text-[10px] ml-1">· {selectedMember.department}</span>
+                ) : null}
               </div>
               <button
                 type="button"
-                onClick={() => setSelectedMember(null)}
-                className="ml-2 rounded-lg p-1 text-[#2563eb] hover:bg-[#dbe5f1]"
-                title="Batal pilih anggota"
+                onClick={() => {
+                  setSelectedMember(null);
+                  setIsMemberDropdownOpen(true);
+                }}
+                className="text-[11px] font-bold text-[#2563eb] underline hover:text-[#1d4ed8] ml-2 cursor-pointer"
               >
-                <X className="size-4" />
+                Ganti
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedMember(null);
+                  setCustomerType("general");
+                  if (paymentMethod === "credit") setPaymentMethod("cash");
+                }}
+                className="rounded-lg p-0.5 text-[#2563eb] hover:bg-[#dbe5f1] cursor-pointer"
+                title="Batalkan Anggota"
+              >
+                <X className="size-3.5" />
               </button>
             </div>
           ) : (
@@ -223,11 +296,11 @@ export function TokoKasirClientManager({
               <button
                 type="button"
                 onClick={() => setIsMemberDropdownOpen(!isMemberDropdownOpen)}
-                className="flex h-11 items-center gap-2 rounded-xl border border-[#cbd5e1] bg-[#f8fbff] px-2.5 text-xs font-bold text-[#0b1220] shadow-xs hover:border-[#2563eb] hover:bg-white transition-all"
+                className="flex h-9 items-center gap-2 rounded-xl border-2 border-dashed border-[#2563eb] bg-[#eff6ff] px-3 text-xs font-bold text-[#1d4ed8] hover:bg-[#dbeafe] transition-all cursor-pointer"
               >
                 <UserCheck className="size-4 text-[#2563eb]" />
-                <span>Pilih Anggota (Harga Khusus)</span>
-                <ChevronDown className={`size-3.5 text-[#64748b] transition-transform ${isMemberDropdownOpen ? "rotate-180" : ""}`} />
+                <span>👉 Klik di sini untuk Cari & Pilih Anggota</span>
+                <ChevronDown className={`size-3.5 text-[#2563eb] transition-transform ${isMemberDropdownOpen ? "rotate-180" : ""}`} />
               </button>
 
               {/* Searchable Member Dropdown Menu */}
@@ -239,23 +312,13 @@ export function TokoKasirClientManager({
                       type="text"
                       value={memberSearch}
                       onChange={(e) => setMemberSearch(e.target.value)}
-                      placeholder="Cari nama atau No. Anggota..."
+                      placeholder="Cari nama, NIK, atau No. Anggota..."
                       className="h-9 w-full rounded-xl border border-[#e2e8f0] bg-[#f8fbff] pl-8 pr-3 text-xs font-bold outline-none focus:border-[#2563eb]"
                       autoFocus
                     />
                   </div>
 
                   <div className="space-y-1">
-                    <div
-                      onClick={() => {
-                        setSelectedMember(null);
-                        setIsMemberDropdownOpen(false);
-                      }}
-                      className="flex cursor-pointer items-center justify-between rounded-xl p-2 text-xs hover:bg-[#f1f5f9] transition-colors"
-                    >
-                      <span className="font-bold text-[#64748b]">👤 Pembeli Umum / Non-Anggota</span>
-                    </div>
-
                     {filteredMembers.length ? (
                       filteredMembers.map((m) => (
                         <div
@@ -273,7 +336,7 @@ export function TokoKasirClientManager({
                             </p>
                           </div>
                           <span className="rounded-md bg-[#eff6ff] px-2 py-0.5 text-[10px] font-bold text-[#2563eb]">
-                            Member
+                            Pilih
                           </span>
                         </div>
                       ))
@@ -319,7 +382,7 @@ export function TokoKasirClientManager({
                   type="button"
                   disabled={isOut}
                   onClick={() => addToCart(product)}
-                  className={`flex flex-col justify-between rounded-xl border p-3.5 text-left transition-all ${
+                  className={`flex flex-col justify-between rounded-xl border p-3.5 text-left transition-all cursor-pointer ${
                     isOut
                       ? "border-slate-200 bg-slate-50 opacity-60 cursor-not-allowed"
                       : "border-[#dbe5f1] bg-white hover:border-[#2563eb] hover:shadow-sm active:scale-[0.98]"
@@ -328,8 +391,10 @@ export function TokoKasirClientManager({
                   <div>
                     <div className="flex items-start justify-between gap-2">
                       <span className="truncate font-bold text-xs text-[#0b1220]">{product.name}</span>
-                      <span className="shrink-0 rounded-full bg-[#f1f5f9] px-2 py-0.5 text-[10px] font-bold text-[#475569]">
-                        {product.stock_qty} {product.unit_name ?? "Pcs"}
+                      <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                        isOut ? "bg-rose-100 text-rose-700" : "bg-[#f1f5f9] text-[#475569]"
+                      }`}>
+                        {isOut ? "Habis" : `${product.stock_qty} ${product.unit_name ?? "Pcs"}`}
                       </span>
                     </div>
                     <p className="mt-1 text-[11px] font-semibold text-[#64748b]">
@@ -368,7 +433,7 @@ export function TokoKasirClientManager({
                 <button
                   type="button"
                   onClick={clearCart}
-                  className="text-xs font-bold text-rose-600 hover:underline"
+                  className="text-xs font-bold text-rose-600 hover:underline cursor-pointer"
                 >
                   Kosongkan
                 </button>
@@ -376,7 +441,7 @@ export function TokoKasirClientManager({
             </div>
 
             {/* Cart Item List */}
-            <div className="mt-3 space-y-2 max-h-[300px] overflow-y-auto pr-1">
+            <div className="mt-3 space-y-2 max-h-[260px] overflow-y-auto pr-1">
               {cart.length ? (
                 cart.map((item) => {
                   const price = isMember ? item.sell_price_member : item.sell_price_general;
@@ -399,7 +464,7 @@ export function TokoKasirClientManager({
                           <button
                             type="button"
                             onClick={() => updateQty(item.product_id, -1)}
-                            className="grid size-7 place-items-center text-[#475569] hover:bg-[#f1f5f9]"
+                            className="grid size-7 place-items-center text-[#475569] hover:bg-[#f1f5f9] cursor-pointer"
                           >
                             <Minus className="size-3.5" />
                           </button>
@@ -407,7 +472,7 @@ export function TokoKasirClientManager({
                           <button
                             type="button"
                             onClick={() => updateQty(item.product_id, 1)}
-                            className="grid size-7 place-items-center text-[#475569] hover:bg-[#f1f5f9]"
+                            className="grid size-7 place-items-center text-[#475569] hover:bg-[#f1f5f9] cursor-pointer"
                           >
                             <Plus className="size-3.5" />
                           </button>
@@ -420,7 +485,7 @@ export function TokoKasirClientManager({
                         <button
                           type="button"
                           onClick={() => removeFromCart(item.product_id)}
-                          className="text-[#94a3b8] hover:text-rose-600"
+                          className="text-[#94a3b8] hover:text-rose-600 cursor-pointer"
                         >
                           <Trash2 className="size-4" />
                         </button>
@@ -437,7 +502,7 @@ export function TokoKasirClientManager({
           </div>
 
           {/* Checkout & Payment Section */}
-          <div className="mt-4 border-t border-[#dbe5f1] pt-4 space-y-3">
+          <div className="mt-4 border-t border-[#dbe5f1] pt-3 space-y-3">
             {/* Payment Method Selector */}
             <div>
               <span className="text-xs font-bold uppercase text-[#475569]">Metode Pembayaran</span>
@@ -445,10 +510,10 @@ export function TokoKasirClientManager({
                 <button
                   type="button"
                   onClick={() => setPaymentMethod("cash")}
-                  className={`flex h-10 items-center justify-center gap-1.5 rounded-xl border text-xs font-bold transition-all ${
+                  className={`flex h-10 items-center justify-center gap-1.5 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
                     paymentMethod === "cash"
-                      ? "border-[#2563eb] bg-[#eff6ff] text-[#2563eb]"
-                      : "border-[#dbe5f1] bg-[#f8fbff] text-[#475569]"
+                      ? "border-[#2563eb] bg-[#eff6ff] text-[#2563eb] shadow-xs font-black"
+                      : "border-[#dbe5f1] bg-[#f8fbff] text-[#475569] hover:bg-slate-50"
                   }`}
                 >
                   <Banknote className="size-4" />
@@ -458,10 +523,10 @@ export function TokoKasirClientManager({
                 <button
                   type="button"
                   onClick={() => setPaymentMethod("bank")}
-                  className={`flex h-10 items-center justify-center gap-1.5 rounded-xl border text-xs font-bold transition-all ${
+                  className={`flex h-10 items-center justify-center gap-1.5 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
                     paymentMethod === "bank"
-                      ? "border-[#2563eb] bg-[#eff6ff] text-[#2563eb]"
-                      : "border-[#dbe5f1] bg-[#f8fbff] text-[#475569]"
+                      ? "border-[#2563eb] bg-[#eff6ff] text-[#2563eb] shadow-xs font-black"
+                      : "border-[#dbe5f1] bg-[#f8fbff] text-[#475569] hover:bg-slate-50"
                   }`}
                 >
                   <CreditCard className="size-4" />
@@ -471,40 +536,78 @@ export function TokoKasirClientManager({
                 <button
                   type="button"
                   disabled={!isMember}
-                  onClick={() => setPaymentMethod("credit")}
+                  onClick={() => {
+                    if (isMember) setPaymentMethod("credit");
+                  }}
                   className={`flex h-10 items-center justify-center gap-1.5 rounded-xl border text-xs font-bold transition-all ${
                     !isMember
                       ? "opacity-40 cursor-not-allowed border-slate-200 bg-slate-100 text-slate-400"
                       : paymentMethod === "credit"
-                      ? "border-[#2563eb] bg-[#eff6ff] text-[#2563eb]"
-                      : "border-[#dbe5f1] bg-[#f8fbff] text-[#475569]"
+                      ? "border-[#2563eb] bg-[#eff6ff] text-[#2563eb] shadow-xs font-black cursor-pointer"
+                      : "border-[#dbe5f1] bg-[#f8fbff] text-[#475569] hover:bg-slate-50 cursor-pointer"
                   }`}
-                  title={!isMember ? "Hanya untuk Anggota Koperasi" : ""}
+                  title={!isMember ? "Hanya untuk Anggota Koperasi (Pilih Anggota terlebih dahulu)" : "Potong Gaji Bulanan"}
                 >
                   <UserCheck className="size-4" />
                   <span>Potong Gaji</span>
+                  {!isMember ? (
+                    <span className="text-[9px] bg-slate-200 text-slate-600 px-1 rounded">Locked</span>
+                  ) : null}
                 </button>
               </div>
             </div>
 
-            {/* Cash Input */}
+            {/* Cash Input with Thousand Separator & Quick Denomination Buttons */}
             {paymentMethod === "cash" ? (
-              <div className="grid gap-2 sm:grid-cols-2">
-                <label className="block">
-                  <span className="text-[11px] font-bold uppercase text-[#475569]">Uang Diterima</span>
-                  <input
-                    type="number"
-                    value={paidAmountInput}
-                    onChange={(e) => setPaidAmountInput(e.target.value)}
-                    placeholder="Rp 0"
-                    className="mt-1 h-9 w-full rounded-xl border border-[#dbe5f1] bg-[#f8fbff] px-2 text-xs font-bold outline-none focus:border-[#2563eb]"
-                  />
-                </label>
-                <div>
-                  <span className="text-[11px] font-bold uppercase text-[#475569]">Kembalian</span>
-                  <div className="mt-1 flex h-9 items-center rounded-xl bg-[#f1f5f9] px-2 text-xs font-black text-[#0b1220]">
-                    {formatRupiah(changeAmount)}
+              <div className="space-y-2 rounded-xl bg-[#f8fbff] p-3 border border-[#dbe5f1]">
+                <div className="grid gap-2 sm:grid-cols-2">
+                  <div>
+                    <label className="text-[11px] font-bold uppercase text-[#475569] block mb-1">
+                      Uang Diterima (Rp)
+                    </label>
+                    <div className="relative">
+                      <span className="absolute left-3 top-2 text-xs font-bold text-[#64748b]">Rp</span>
+                      <input
+                        type="text"
+                        value={paidAmountInput}
+                        onChange={(e) => setPaidAmountInput(formatThousand(e.target.value))}
+                        placeholder="0"
+                        className="h-8.5 w-full rounded-lg border border-[#cbd5e1] bg-white pl-8 pr-2 text-xs font-black text-[#0b1220] outline-none focus:border-[#2563eb]"
+                      />
+                    </div>
                   </div>
+                  <div>
+                    <span className="text-[11px] font-bold uppercase text-[#475569] block mb-1">
+                      Kembalian
+                    </span>
+                    <div className={`flex h-8.5 items-center rounded-lg px-2.5 text-xs font-black ${
+                      changeAmount > 0 ? "bg-emerald-50 text-emerald-700 border border-emerald-200" : "bg-[#f1f5f9] text-[#0b1220]"
+                    }`}>
+                      {formatRupiah(changeAmount)}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Quick Cash Buttons */}
+                <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                  <span className="text-[10px] font-bold text-[#64748b]">Cepat:</span>
+                  <button
+                    type="button"
+                    onClick={() => setPaidAmountInput(formatThousand(grandTotal))}
+                    className="rounded-md bg-white border border-[#cbd5e1] px-2 py-0.5 text-[10px] font-black text-[#2563eb] hover:bg-[#eff6ff] cursor-pointer"
+                  >
+                    Uang Pas
+                  </button>
+                  {[20000, 50000, 100000, 200000].map((amt) => (
+                    <button
+                      key={amt}
+                      type="button"
+                      onClick={() => setPaidAmountInput(formatThousand(amt))}
+                      className="rounded-md bg-white border border-[#cbd5e1] px-1.5 py-0.5 text-[10px] font-bold text-[#475569] hover:bg-slate-100 cursor-pointer"
+                    >
+                      {formatThousand(amt)}
+                    </button>
+                  ))}
                 </div>
               </div>
             ) : null}
@@ -518,28 +621,33 @@ export function TokoKasirClientManager({
               {isMember ? (
                 <div className="flex justify-between text-emerald-400 font-bold">
                   <span>Status Diskon Anggota:</span>
-                  <span>AKTIF 🌟</span>
+                  <span>AKTIF 🌟 ({selectedMember?.full_name})</span>
                 </div>
-              ) : null}
+              ) : (
+                <div className="flex justify-between text-[#94a3b8]">
+                  <span>Tarif:</span>
+                  <span>Umum / Reguler</span>
+                </div>
+              )}
               <div className="flex justify-between pt-1 border-t border-slate-700 text-sm font-black">
                 <span>TOTAL BAYAR:</span>
-                <span className="text-[#2563eb] text-base">{formatRupiah(grandTotal)}</span>
+                <span className="text-[#38bdf8] text-base">{formatRupiah(grandTotal)}</span>
               </div>
             </div>
 
             {/* Form Submission */}
             <form action={processPosSale}>
               <input type="hidden" name="items_json" value={JSON.stringify(cartSubmissionItems)} />
-              <input type="hidden" name="member_id" value={selectedMember?.id ?? ""} />
+              <input type="hidden" name="member_id" value={isMember ? selectedMember?.id ?? "" : ""} />
               <input type="hidden" name="payment_method" value={paymentMethod} />
-              <input type="hidden" name="discount_amount" value={discountInput} />
-              <input type="hidden" name="paid_amount" value={paidAmountInput} />
+              <input type="hidden" name="discount_amount" value={parseThousand(discountInput)} />
+              <input type="hidden" name="paid_amount" value={parseThousand(paidAmountInput)} />
               <input type="hidden" name="notes" value={notes} />
 
               <button
                 type="submit"
                 disabled={!cart.length || isPending}
-                className="h-12 w-full rounded-xl bg-[#2563eb] text-sm font-black text-white hover:bg-[#1d4ed8] shadow-sm disabled:opacity-50"
+                className="h-12 w-full rounded-xl bg-[#2563eb] text-sm font-black text-white hover:bg-[#1d4ed8] shadow-sm disabled:opacity-50 cursor-pointer transition-all active:scale-[0.99]"
               >
                 {isPending ? "MEMPROSES TRANSAKSI..." : `BAYAR SEKARANG (${formatRupiah(grandTotal)})`}
               </button>
